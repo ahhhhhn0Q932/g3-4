@@ -1711,7 +1711,7 @@ function renderBoard(){
     + (isToday ? '作业 / 请假 / 提醒一屏看全' : '正在查看这天的作业、请假与提醒');
 
   return '<div class="page-hd">'
-    + '<div class="ico blue">📋</div><div><h1>'+(isToday?"今日总览":"历史回看")+'</h1>'
+    + '<div class="ico blue" data-doc-link="https://docs.qq.com/slide/DR2xJdEZmVHJhb09J?rtkey=65ebd45a6fac7962653a27f3XU82v1" title="双击打开腾讯文档">📋</div><div><h1>'+(isToday?"今日总览":"历史回看")+'</h1>'
     + '<p>'+headDesc+'</p></div>'
     + '<span class="spacer"></span>'
     + (isToday
@@ -2975,6 +2975,16 @@ function bindGlobal(){
     if(h) currentRoute = h;
     renderPage();
     try { window.scrollTo(0,0); } catch(err){}
+  });
+
+  document.addEventListener("dblclick", function(e){
+    var el = e.target;
+    var link = el && el.closest ? el.closest("[data-doc-link]") : null;
+    if(!link) return;
+    e.preventDefault();
+    var url = link.getAttribute("data-doc-link");
+    var w = window.open(url, "_blank");
+    if(!w) toast("浏览器拦截了新窗口，请允许弹窗", "🔗");
   });
 
   var fi = $("importFile");
