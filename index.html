@@ -3,7 +3,7 @@
 <head data-page-node-id="bLDDumLMX9QzKBciMVf40C">
 <meta charset="UTF-8" data-page-node-id="fOXU4EBaWobGq30Qo8XBIe">
 <meta name="viewport" content="width=device-width, initial-scale=1.0" data-page-node-id="MSQiMgiORuISvO6gO1F3HE">
-<title>高二(3)班 · 我们的小屋</title>
+<title>高三(4)班 · 我们的小屋</title>
 <style>
 :root{
   --peach:#ffb89a; --coral:#ff8f7a; --sun:#ffd166;
@@ -698,9 +698,9 @@ table.lv-table tr:last-child td{border-bottom:none}
   <div class="topbar" data-page-node-id="McqdhUuXNBB4MgmCm3APn0">
     <div class="topbar-in" data-page-node-id="tFN672k1S1EwBPipiMIhgl">
       <a class="brand" href="#/home" data-page-node-id="gIJfEP4gssSoJjhEBdImOh">
-        <div class="badge-logo" id="brandBadge" data-egg-logo="1" data-page-node-id="f7hLKK0Z0qx2XoWiQimz6G">3</div>
+        <div class="badge-logo" id="brandBadge" data-egg-logo="1" data-page-node-id="f7hLKK0Z0qx2XoWiQimz6G">4</div>
         <div data-page-node-id="tP1zMBPvVoLAeaoJVldPQx">
-          <div class="nm" id="brandName" data-page-node-id="SJiuJ5SSrEU1LeaFWx7WQl">高二(3)班</div>
+          <div class="nm" id="brandName" data-page-node-id="SJiuJ5SSrEU1LeaFWx7WQl">高三(4)班</div>
           <div class="tm" data-page-node-id="8HdouE1IQ6Mr1l2htHB9Wg">CLASS HOME</div>
         </div>
       </a>
@@ -723,7 +723,7 @@ table.lv-table tr:last-child td{border-bottom:none}
   <div id="page" data-page-node-id="CCCzP86KzdtyPoJKECnXGY"></div>
 
   <div class="footbar" data-page-node-id="pE8FRb6wAtlVegRUedvqWZ">
-    <span data-page-node-id="DaQVaCJsPa5h3tBrAvUP4N">💗 <span id="footClass" data-page-node-id="qr6GkCYBgewKxAqaWeDX6l">高二(3)班</span> · <span class="role-tag guest" id="footRole">访客</span> · 数据存在本机浏览器，换设备请「导出数据」备份</span>
+    <span data-page-node-id="DaQVaCJsPa5h3tBrAvUP4N">💗 <span id="footClass" data-page-node-id="qr6GkCYBgewKxAqaWeDX6l">高三(4)班</span> · <span class="role-tag guest" id="footRole">访客</span> · 数据存在本机浏览器，换设备请「导出数据」备份</span>
     <div class="btn-row" data-page-node-id="IcJGE7mawnOZxeVmsPRIGd">
       <button class="btn ghost tiny" data-act="switchRole">切换身份</button>
       <button class="btn ghost tiny" data-act="export" data-page-node-id="zAPW2n3Fo8zY1AqixIuw9m">导出数据</button>
@@ -735,8 +735,8 @@ table.lv-table tr:last-child td{border-bottom:none}
 
 <div class="login-gate" id="loginGate">
   <div class="login-card">
-    <div class="login-logo" id="loginLogo">3</div>
-    <h1 id="loginTitle">高二(3)班 · 我们的小屋</h1>
+    <div class="login-logo" id="loginLogo">4</div>
+    <h1 id="loginTitle">高三(4)班 · 我们的小屋</h1>
     <p class="login-sub">请选择进入身份</p>
     <div class="login-choices">
       <button class="login-choice guest" data-login="guest" type="button">
@@ -1026,7 +1026,7 @@ function markCloudSync(){
 
 function defaultStore(){
   return {
-    settings: { className:"高二(3)班", classShort:"3", examDate:"2027-06-07", classSize:45, adminPassword:"123", eggText:DEFAULT_EGG_TEXT },
+    settings: { className:"高三(4)班", classShort:"4", examDate:"2027-06-07", classSize:45, adminPassword:"123", eggText:DEFAULT_EGG_TEXT },
     homeworks: [], birthdays: [], leaves: [], reminders: [], messages: [],
     favorites: [], archive: {}, quotes: defaultQuotes(),
     quoteState: { date:"", index:0, manual:-1 }
@@ -1037,6 +1037,10 @@ function normalize(obj){
   var base = defaultStore();
   if(!obj || typeof obj !== "object") return base;
   obj.settings = Object.assign({}, base.settings, obj.settings || {});
+  if(!obj.settings.className || obj.settings.className.indexOf("\u9ad8\u4e8c") === 0){
+    obj.settings.className = "高三(4)班";
+  }
+  if(!obj.settings.classShort || obj.settings.classShort === "3") obj.settings.classShort = "4";
   ["homeworks","birthdays","leaves","reminders","messages","favorites"].forEach(function(k){
     obj[k] = Array.isArray(obj[k]) ? obj[k] : [];
   });
@@ -1588,10 +1592,10 @@ function renderTop(){
   var t = $("topTime"), d = $("topDate");
   if(t) t.textContent = pad(now.getHours())+":"+pad(now.getMinutes());
   if(d) d.textContent = (now.getMonth()+1)+"/"+now.getDate()+" "+WEEK[now.getDay()];
-  var name = store.settings.className || "高二(3)班";
+  var name = store.settings.className || "高三(4)班";
   if($("brandName")) $("brandName").textContent = name;
   if($("footClass")) $("footClass").textContent = name;
-  var num = store.settings.classShort || String(name).replace(/[^0-9]/g,"").slice(0,2) || "3";
+  var num = store.settings.classShort || String(name).replace(/[^0-9]/g,"").slice(0,2) || "4";
   if($("brandBadge")) $("brandBadge").textContent = num;
   if($("loginLogo")) $("loginLogo").textContent = num;
   if($("loginTitle")) $("loginTitle").textContent = name + " · 我们的小屋";
@@ -1651,7 +1655,7 @@ function viewHome(){
   var h = now.getHours();
   var greet = h<6 ? "夜深了" : h<9 ? "早上好" : h<12 ? "上午好" : h<14 ? "午安"
             : h<18 ? "下午好" : h<22 ? "晚上好" : "夜深了";
-  var name = store.settings.className || "高二(3)班";
+  var name = store.settings.className || "高三(4)班";
 
   var cur = currentQuote();
   var hasQuote = !!(cur.q && cur.q.t);
@@ -2573,7 +2577,7 @@ function renderSettings(){
     + '<section class="card">'
     +   '<div class="card-hd"><div class="ico orange">🏫</div><h2>班级信息</h2></div>'
     +   '<div style="display:grid;gap:10px">'
-    +     '<div><label class="fl">班级名称</label><input type="text" id="setClass" value="'+esc(store.settings.className||"")+'" placeholder="高二(3)班"'+dis+'></div>'
+    +     '<div><label class="fl">班级名称</label><input type="text" id="setClass" value="'+esc(store.settings.className||"")+'" placeholder="高三(4)班"'+dis+'></div>'
     +     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
     +       '<div><label class="fl">高考日期</label><input type="date" id="setExam" value="'+esc(store.settings.examDate||"")+'"'+dis+'></div>'
     +       '<div><label class="fl">班级人数（应到）</label><input type="number" id="setSize" min="1" max="99" step="1" value="'+esc(String(store.settings.classSize||45))+'"'+dis+'></div>'
@@ -2915,7 +2919,7 @@ function downloadText(text, filename, mime){
 
 function exportJournalText(){
   var dates = allJournalDates();
-  var cn = store.settings.className || "高二(3)班";
+  var cn = store.settings.className || "高三(4)班";
   var lines = ["# " + cn + " 班级日志", ""];
   dates.slice().reverse().forEach(function(d){
     var snap = store.archive[d] || buildSnapshot(d);
@@ -3257,7 +3261,7 @@ function handleAction(act, el){
       if(!adminOnly("访客不能修改设置")) break;
       var cn = $("setClass"), ex = $("setExam"), sz = $("setSize");
       if(cn && String(cn.value||"").trim()) store.settings.className = String(cn.value).trim();
-      store.settings.classShort = String(store.settings.className||"").replace(/[^0-9]/g,"").slice(0,2) || "3";
+      store.settings.classShort = String(store.settings.className||"").replace(/[^0-9]/g,"").slice(0,2) || "4";
       if(ex && ex.value) store.settings.examDate = ex.value;
       if(sz){
         var n = parseInt(sz.value, 10);
@@ -3370,7 +3374,7 @@ function init(){
     saveSyncMeta();
   }
   if(!store.settings.classShort){
-    store.settings.classShort = String(store.settings.className||"").replace(/[^0-9]/g,"").slice(0,2) || "3";
+    store.settings.classShort = String(store.settings.className||"").replace(/[^0-9]/g,"").slice(0,2) || "4";
   }
   archiveAll();
   currentRoute = hashRoute() || "home";
