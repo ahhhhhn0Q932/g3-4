@@ -572,6 +572,41 @@ table.lv-table tr:last-child td{border-bottom:none}
 .login-foot{margin:18px 0 0;font-size:11px;color:#b4a5aa;font-weight:600;line-height:1.7}
 .pwd-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 
+/* ============ 彩蛋 ============ */
+.egg-mask{
+  position:fixed;inset:0;z-index:400;display:flex;align-items:center;justify-content:center;padding:22px;
+  background:rgba(69,50,50,.34);backdrop-filter:blur(8px);opacity:0;pointer-events:none;transition:.22s ease;
+}
+.egg-mask.show{opacity:1;pointer-events:auto}
+.egg-card{
+  width:min(520px,100%);background:linear-gradient(160deg,#fffdf8,#fff5ed);border:1px solid #f2ddcc;
+  border-radius:26px;padding:28px 30px 24px;box-shadow:0 30px 80px rgba(105,62,50,.28);text-align:center;
+  transform:translateY(12px) scale(.98);transition:.22s ease;
+}
+.egg-mask.show .egg-card{transform:none}
+.egg-ico{
+  width:58px;height:58px;margin:0 auto 12px;border-radius:18px;display:grid;place-items:center;
+  background:linear-gradient(145deg,#ffe6bd,#ffd1c1);font-size:29px;box-shadow:0 10px 22px rgba(210,150,110,.22);
+}
+.egg-kicker{font-size:10.5px;letter-spacing:2px;color:#c5896b;font-weight:800;margin-bottom:12px}
+.egg-text{font-size:17px;line-height:1.75;color:#5b403b;font-weight:800;white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere}
+.egg-actions{display:flex;justify-content:center;gap:10px;margin-top:20px}
+.egg-card.edit{text-align:left}
+.egg-card.edit .egg-kicker{text-align:center}
+.egg-card.edit textarea{
+  width:100%;min-height:124px;resize:vertical;border:1.5px solid #efd8c8;background:#fffdfa;
+  border-radius:14px;padding:12px 14px;font-family:inherit;font-size:13.5px;line-height:1.7;color:#5d4a48;
+  outline:none;transition:.18s;
+}
+.egg-card.edit textarea:focus{border-color:#ffb692;box-shadow:0 0 0 4px rgba(255,175,140,.13)}
+.egg-edit-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:8px}
+.egg-edit-foot span{font-size:10.5px;color:#b4a5aa;font-weight:700}
+@media (max-width:600px){
+  .egg-mask{padding:14px}
+  .egg-card{padding:22px 18px 18px;border-radius:20px}
+  .egg-text{font-size:15px}
+}
+
 .toast{
   position:fixed;left:50%;bottom:34px;transform:translate(-50%,20px);z-index:99;
   background:rgba(70,52,48,.94);color:#fff;font-size:13px;font-weight:700;padding:11px 22px;border-radius:14px;
@@ -648,7 +683,7 @@ table.lv-table tr:last-child td{border-bottom:none}
   <div class="topbar" data-page-node-id="McqdhUuXNBB4MgmCm3APn0">
     <div class="topbar-in" data-page-node-id="tFN672k1S1EwBPipiMIhgl">
       <a class="brand" href="#/home" data-page-node-id="gIJfEP4gssSoJjhEBdImOh">
-        <div class="badge-logo" id="brandBadge" data-page-node-id="f7hLKK0Z0qx2XoWiQimz6G">3</div>
+        <div class="badge-logo" id="brandBadge" data-egg-logo="1" data-page-node-id="f7hLKK0Z0qx2XoWiQimz6G">3</div>
         <div data-page-node-id="tP1zMBPvVoLAeaoJVldPQx">
           <div class="nm" id="brandName" data-page-node-id="SJiuJ5SSrEU1LeaFWx7WQl">高二(3)班</div>
           <div class="tm" data-page-node-id="8HdouE1IQ6Mr1l2htHB9Wg">CLASS HOME</div>
@@ -713,6 +748,28 @@ table.lv-table tr:last-child td{border-bottom:none}
   </div>
 </div>
 
+<div class="egg-mask" id="eggMask" aria-hidden="true">
+  <div class="egg-card">
+    <div class="egg-ico">🥚</div>
+    <div class="egg-kicker">EASTER EGG</div>
+    <div class="egg-text" id="eggText"></div>
+    <div class="egg-actions"><button class="btn tiny" type="button" id="eggClose">收起</button></div>
+  </div>
+</div>
+
+<div class="egg-mask" id="eggEditMask" aria-hidden="true">
+  <div class="egg-card edit">
+    <div class="egg-kicker">修改彩蛋内容</div>
+    <label class="fl" for="eggEditText">彩蛋文字</label>
+    <textarea id="eggEditText" maxlength="200" placeholder="写点想说的话…"></textarea>
+    <div class="egg-edit-foot"><span>最多 200 字，仅管理员可修改</span></div>
+    <div class="egg-actions">
+      <button class="btn ghost tiny" type="button" id="eggEditCancel">取消</button>
+      <button class="btn tiny" type="button" id="eggEditSave">保存</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast" data-page-node-id="dYfa3rKZuFTRjgOhUGKtbR"></div>
 <div class="confetti" id="confettiBox" data-page-node-id="mrg3W16uQhhBUiq03cEchv"></div>
 
@@ -728,6 +785,7 @@ var SUBJECTS = [
 ];
 var AVATAR_COLORS = ["#ff9a8b","#ffb36b","#7fd8c4","#8fc9ff","#c3b4f5","#f2a2c0","#a8d88a","#f5c96b"];
 var WEEK = ["星期日","星期一","星期二","星期三","星期四","星期五","星期六"];
+var DEFAULT_EGG_TEXT = "你找到了开发者的彩蛋，DeepSeekHarness暴力炸Coding行业";
 
 var QUOTES = [
   {t:"你现在的努力，是为了以后有底气选择想要的生活。", tag:"励志"},
@@ -897,7 +955,7 @@ var store = null;
 
 function defaultStore(){
   return {
-    settings: { className:"高二(3)班", classShort:"3", examDate:"2027-06-07", classSize:45, adminPassword:"123" },
+    settings: { className:"高二(3)班", classShort:"3", examDate:"2027-06-07", classSize:45, adminPassword:"123", eggText:DEFAULT_EGG_TEXT },
     homeworks: [], birthdays: [], leaves: [], reminders: [], messages: [],
     favorites: [], archive: {}, quotes: defaultQuotes(),
     quoteState: { date:"", index:0, manual:-1 }
@@ -1050,6 +1108,115 @@ function adminOnly(msg){
   if(isAdmin()) return true;
   toast(msg || "访客模式：没有修改权限", "🔒");
   return false;
+}
+
+/* ================= 彩蛋 ================= */
+function currentEggText(){
+  var t = String((store.settings && store.settings.eggText) || "").trim();
+  return t || DEFAULT_EGG_TEXT;
+}
+
+function showEgg(){
+  var m = $("eggMask"), t = $("eggText");
+  if(!m || !t) return;
+  t.textContent = currentEggText();
+  m.classList.add("show");
+  m.setAttribute("aria-hidden", "false");
+}
+
+function hideEgg(){
+  var m = $("eggMask");
+  if(!m) return;
+  m.classList.remove("show");
+  m.setAttribute("aria-hidden", "true");
+}
+
+function openEggEditor(){
+  if(!adminOnly("访客模式：不能修改彩蛋")) return;
+  var m = $("eggEditMask"), t = $("eggEditText");
+  if(!m || !t) return;
+  t.value = currentEggText();
+  m.classList.add("show");
+  m.setAttribute("aria-hidden", "false");
+  setTimeout(function(){ try { t.focus(); t.select(); } catch(e){} }, 30);
+}
+
+function closeEggEditor(){
+  var m = $("eggEditMask");
+  if(!m) return;
+  m.classList.remove("show");
+  m.setAttribute("aria-hidden", "true");
+}
+
+function saveEgg(){
+  if(!adminOnly("访客模式：不能修改彩蛋")) return;
+  var t = $("eggEditText");
+  var v = t ? String(t.value || "").trim() : "";
+  if(!v){
+    toast("彩蛋内容不能为空", "🥚");
+    if(t) t.focus();
+    return;
+  }
+  store.settings.eggText = v;
+  commit();
+  closeEggEditor();
+  toast("彩蛋内容已更新", "🥚");
+}
+
+function openDoubao(){
+  var url = "https://www.doubao.com/chat/";
+  var w = window.open(url, "_blank");
+  if(!w) toast("浏览器拦截了新窗口，请允许弹窗", "🫘");
+}
+
+function bindEgg(){
+  var badge = $("brandBadge"), badgeTimer = null;
+  if(badge){
+    badge.addEventListener("click", function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      if(badgeTimer) clearTimeout(badgeTimer);
+      badgeTimer = setTimeout(function(){ badgeTimer = null; go("home"); }, 240);
+    });
+    badge.addEventListener("dblclick", function(e){
+      e.preventDefault();
+      if(badgeTimer){ clearTimeout(badgeTimer); badgeTimer = null; }
+    });
+    document.addEventListener("click", function(e){
+      if(!badgeTimer) return;
+      var t = e.target;
+      if(t && t.closest && t.closest("[data-egg-logo]")) return;
+      clearTimeout(badgeTimer);
+      badgeTimer = null;
+    }, true);
+  }
+
+  document.addEventListener("dblclick", function(e){
+    var el = e.target;
+    if(!el || !el.closest) return;
+    if(el.closest("[data-egg-logo]")){ e.preventDefault(); showEgg(); return; }
+    if(el.closest("[data-egg-edit]")){ e.preventDefault(); openEggEditor(); return; }
+    if(el.closest("[data-egg-doubao]")){ e.preventDefault(); openDoubao(); return; }
+  });
+
+  var close = $("eggClose");
+  if(close) close.addEventListener("click", hideEgg);
+  var mask = $("eggMask");
+  if(mask) mask.addEventListener("click", function(e){ if(e.target === mask) hideEgg(); });
+
+  var cancel = $("eggEditCancel");
+  if(cancel) cancel.addEventListener("click", closeEggEditor);
+  var save = $("eggEditSave");
+  if(save) save.addEventListener("click", saveEgg);
+  var emask = $("eggEditMask");
+  if(emask) emask.addEventListener("click", function(e){ if(e.target === emask) closeEggEditor(); });
+
+  document.addEventListener("keydown", function(e){
+    if(e.key !== "Escape") return;
+    var em = $("eggEditMask"), m = $("eggMask");
+    if(em && em.classList.contains("show")) closeEggEditor();
+    else if(m && m.classList.contains("show")) hideEgg();
+  });
 }
 
 /* ================= 归档 ================= */
@@ -1910,7 +2077,7 @@ function renderTools(){
     : '<div class="perm-note" style="margin-bottom:0">👀 访客模式：回声洞只读，管理员登录后可添加或删除句子。</div>';
 
   return '<div class="page-hd">'
-    + '<div class="ico purple">🧰</div><div><h1>工具箱</h1>'
+    + '<div class="ico purple" data-egg-doubao="1">🧰</div><div><h1>工具箱</h1>'
     + '<p>课堂随手用：随机抽学生、随机数、回声洞</p></div>'
     + '</div>'
     + '<div class="tools-grid">'
@@ -2070,7 +2237,7 @@ function renderSettings(){
       + '</section>'
     : '';
 
-  return '<div class="page-hd"><div class="ico orange">⚙️</div><div><h1>设置</h1><p>'+(admin?"班级信息与数据管理":"访客模式 · 设置只读")+'</p></div></div>'
+  return '<div class="page-hd"><div class="ico orange" data-egg-edit="1">⚙️</div><div><h1>设置</h1><p>'+(admin?"班级信息与数据管理":"访客模式 · 设置只读")+'</p></div></div>'
     + note
     + '<div class="settings-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:16px">'
     + '<section class="card">'
@@ -2836,6 +3003,7 @@ function init(){
   try { if(!window.location.hash) window.location.hash = "#/home"; } catch(e){}
   bindGlobal();
   bindLogin();
+  bindEgg();
   applyRoleUI();
   renderPage();
   showLogin();
