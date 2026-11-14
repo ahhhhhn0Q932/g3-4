@@ -530,6 +530,21 @@ table.lv-table tr:last-child td{border-bottom:none}
   display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:9px 13px;border-radius:12px;
   background:#fff8ec;border:1px dashed #efd2b2;color:#a8794f;font-size:11.8px;font-weight:700;
 }
+.sync-foot{
+  margin-top:22px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  padding:12px 16px;border:1px dashed #eadfd5;border-radius:14px;
+  background:rgba(255,255,255,.55);font-size:11.5px;color:#9a8a90;font-weight:600;
+}
+.sync-foot b{color:#6b5a52;font-weight:800;font-variant-numeric:tabular-nums}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:#c9bcb4;box-shadow:0 0 0 3px rgba(201,188,180,.16);flex:none}
+.sync-dot.ok{background:#59c3a4;box-shadow:0 0 0 3px rgba(89,195,164,.16)}
+.sync-dot.err{background:#e58a95;box-shadow:0 0 0 3px rgba(229,138,149,.16)}
+.sync-sep{color:#d2c4bc}
+.sync-err{color:#c56b7a;font-weight:800}
+.sync-card .sync-desc{margin:0 0 12px;font-size:11.8px;line-height:1.75;color:#a3949a;font-weight:600}
+.sync-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.sync-state{font-size:11.5px;color:#a3949a;font-weight:600}
+.btn:disabled{opacity:.55;cursor:not-allowed;box-shadow:none}
 
 /* ============ 登录 ============ */
 .login-gate{
@@ -969,6 +984,46 @@ function toast(msg, icon){
 /* ================= 数据 ================= */
 var store = null;
 
+/* 同步时间属于本机状态，不写进云端 payload，避免多设备互相覆盖 */
+var SYNC_META_KEY = "gaoer3_sync_meta_v1";
+var syncMeta = { localAt: 0, cloudAt: 0 };
+try {
+  var rawSyncMeta = window.localStorage.getItem(SYNC_META_KEY);
+  if(rawSyncMeta){
+    var parsedSyncMeta = JSON.parse(rawSyncMeta);
+    if(parsedSyncMeta && typeof parsedSyncMeta === "object"){
+      syncMeta.localAt = Number(parsedSyncMeta.localAt) || 0;
+      syncMeta.cloudAt = Number(parsedSyncMeta.cloudAt) || 0;
+    }
+  }
+} catch(e){}
+
+function saveSyncMeta(){
+  try { window.localStorage.setItem(SYNC_META_KEY, JSON.stringify(syncMeta)); } catch(e){}
+}
+
+function fmtSyncTime(ts){
+  if(!ts) return "";
+  var d = new Date(ts);
+  if(isNaN(d.getTime())) return "";
+  var now = new Date();
+  if(todayStr(d) === todayStr(now)) return pad(d.getHours())+":"+pad(d.getMinutes())+":"+pad(d.getSeconds());
+  return (d.getMonth()+1)+"-"+pad(d.getDate())+" "+pad(d.getHours())+":"+pad(d.getMinutes());
+}
+
+function markLocalSync(){
+  syncMeta.localAt = Date.now();
+  saveSyncMeta();
+  updateSyncFoot();
+}
+
+function markCloudSync(){
+  syncMeta.cloudAt = Date.now();
+  saveSyncMeta();
+  updateSyncFoot();
+}
+
+
 function defaultStore(){
   return {
     settings: { className:"高二(3)班", classShort:"3", examDate:"2027-06-07", classSize:45, adminPassword:"123", eggText:DEFAULT_EGG_TEXT },
@@ -1037,6 +1092,7 @@ function loadStore(){
 function saveStore(){
   try {
     window.localStorage.setItem(KEY, JSON.stringify(store));
+    markLocalSync();
     if(!cloudSuppress) scheduleCloudPush();
     return true;
   }
@@ -1099,6 +1155,7 @@ function cloudPull(force){
   }).then(function(rows){
     cloudPulling = false;
     cloudLastError = "";
+    markCloudSync();
     if(!Array.isArray(rows) || !rows.length) return null;
     var rev = Number(rows[0].rev || 0);
     var payload = rows[0].payload;
@@ -1147,6 +1204,7 @@ function cloudPush(showError){
   }).then(function(res){
     cloudBusy = false;
     cloudLastError = "";
+    markCloudSync();
     if(res && res.rev) cloudRev = Math.max(cloudRev, Number(res.rev) || 0);
     var applied = false;
     if(res && res.payload && !cloudDirty) applied = cloudApplyPayload(res.payload, res.rev);
@@ -1193,6 +1251,61 @@ function cloudStart(){
   window.addEventListener("pagehide", function(){
     if(currentRole && cloudDirty) cloudPush(false);
   });
+}
+
+function syncFootHtml(){
+  var localText = syncMeta.localAt ? fmtSyncTime(syncMeta.localAt) : "尚未保存";
+  var cloudText = "";
+  var dot = "off";
+  if(!CLOUD_ON){
+    cloudText = "未启用";
+  } else if(syncMeta.cloudAt){
+    cloudText = fmtSyncTime(syncMeta.cloudAt);
+    dot = cloudLastError ? "err" : "ok";
+  } else {
+    cloudText = currentRole ? "尚未同步" : "登录后开始";
+  }
+  var err = cloudLastError
+    ? '<span class="sync-err" title="'+esc(cloudLastError)+'">云端异常</span>'
+    : '';
+  return '<span class="sync-dot '+dot+'"></span>'
+    + '<span>本地保存 <b>'+esc(localText)+'</b></span>'
+    + '<span class="sync-sep">·</span>'
+    + '<span>云端同步 <b>'+esc(cloudText)+'</b></span>'
+    + err;
+}
+
+function updateSyncFoot(){
+  var el = $("syncFoot");
+  if(el) el.innerHTML = syncFootHtml();
+}
+
+function syncStateText(){
+  var local = syncMeta.localAt ? fmtSyncTime(syncMeta.localAt) : "尚未保存";
+  var cloud = syncMeta.cloudAt ? fmtSyncTime(syncMeta.cloudAt) : "尚未同步";
+  return "本地 " + local + " · 云端 " + cloud;
+}
+
+function cloudSyncNow(){
+  if(!CLOUD_ON){ toast("云同步未配置", "☁️"); return; }
+  if(!currentRole){ toast("请先选择身份进入", "🔐"); return; }
+  if(cloudBusy){ toast("正在同步，请稍候", "☁️"); return; }
+  var btn = $("cloudSyncBtn");
+  if(btn){ btn.disabled = true; btn.textContent = "同步中…"; }
+  var done = function(msg, ok){
+    var b = $("cloudSyncBtn");
+    if(b){ b.disabled = false; b.textContent = "手动云同步"; }
+    var st = document.querySelector(".sync-state");
+    if(st) st.textContent = syncStateText();
+    updateSyncFoot();
+    if(msg) toast(msg, ok ? "☁️" : "⚠️");
+  };
+  cloudPush(true).then(function(ok){
+    if(!ok){ done("云端上传失败，请稍后再试", false); return null; }
+    return cloudPull(true).then(function(r){
+      done(r === null ? "已上传，拉取失败" : "云同步完成", r !== null);
+    });
+  }).catch(function(){ done("云同步失败，请稍后再试", false); });
 }
 
 
@@ -1666,7 +1779,8 @@ function viewHome(){
     + '</div>'
     + '<div class="home-pair">' + examHtml + remindHtml + '</div>'
     + '<div class="toc-hd"><h2>目录</h2><span>想去哪儿，点一下</span></div>'
-    + '<div class="toc">'+tocHtml+'</div>';
+    + '<div class="toc">'+tocHtml+'</div>'
+    + '<div class="sync-foot" id="syncFoot">'+syncFootHtml()+'</div>';
 }
 
 /* ================= 总览 ================= */
@@ -2482,6 +2596,16 @@ function renderSettings(){
     +   '已归档 <b style="color:#c06a4a">'+Object.keys(store.archive).length+' 天</b>　·　'
     +   '作业 '+store.homeworks.length+' 条　·　请假 '+store.leaves.length+' 条　·　提醒 '+store.reminders.length+' 条　·　留言 '+store.messages.length+' 条'
     +   '</p>'
+    + '</section>'
+    + '<section class="card sync-card" style="margin-top:16px">'
+    +   '<div class="card-hd"><div class="ico blue">☁️</div><h2>云同步</h2><span class="sub">手动上传 / 拉取</span></div>'
+    +   '<p class="sync-desc">'+(CLOUD_ON
+          ? '管理员同步会以本机数据为准上传；访客同步只合并请假与留言，不会覆盖作业和设置。'
+          : '云同步未配置，当前数据只保存在本机浏览器。')+'</p>'
+    +   '<div class="sync-row">'
+    +     '<button class="btn" id="cloudSyncBtn" data-act="cloudSyncNow"'+(CLOUD_ON?'':' disabled')+'>手动云同步</button>'
+    +     '<span class="sync-state">'+esc(syncStateText())+'</span>'
+    +   '</div>'
     + '</section>';
 }
 
@@ -3150,6 +3274,10 @@ function handleAction(act, el){
       savePwd();
       break;
 
+    case "cloudSyncNow":
+      cloudSyncNow();
+      break;
+
     case "switchRole":
       if(CLOUD_ON && cloudDirty) cloudPush(true);
       currentRole = null;
@@ -3237,6 +3365,10 @@ function bindGlobal(){
 /* ================= 启动 ================= */
 function init(){
   store = loadStore();
+  if(!syncMeta.localAt){
+    syncMeta.localAt = Date.now();
+    saveSyncMeta();
+  }
   if(!store.settings.classShort){
     store.settings.classShort = String(store.settings.className||"").replace(/[^0-9]/g,"").slice(0,2) || "3";
   }
