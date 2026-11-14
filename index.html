@@ -787,6 +787,22 @@ var AVATAR_COLORS = ["#ff9a8b","#ffb36b","#7fd8c4","#8fc9ff","#c3b4f5","#f2a2c0"
 var WEEK = ["星期日","星期一","星期二","星期三","星期四","星期五","星期六"];
 var DEFAULT_EGG_TEXT = "你找到了开发者的彩蛋，DeepSeekHarness暴力炸Coding行业";
 
+/* ================= 云端同步配置 ================= */
+/* publishable key 本来就是公开的；管理员密码只以哈希形式保存在 Supabase。 */
+var CLOUD_URL = "https://frovhrrtpkyhhnsozcfk.supabase.co";
+var CLOUD_KEY = "sb_publishable_9waNGr-2MmexH4AJdGzP9A_jhUKMjCO";
+var CLOUD_ON = /^https?:\/\//.test(CLOUD_URL) && CLOUD_KEY.indexOf("sb_publishable_") === 0;
+var cloudRev = 0;
+var cloudPwd = "";
+var cloudTimer = null;
+var cloudBusy = false;
+var cloudPulling = false;
+var cloudDirty = false;
+var cloudSuppress = false;
+var cloudSnapLeaves = null;
+var cloudSnapMessages = null;
+var cloudLastError = "";
+
 var QUOTES = [
   {t:"你现在的努力，是为了以后有底气选择想要的生活。", tag:"励志"},
   {t:"不必每分钟都学习，但求每分钟都有收获。", tag:"学习"},
@@ -1019,9 +1035,166 @@ function loadStore(){
 }
 
 function saveStore(){
-  try { window.localStorage.setItem(KEY, JSON.stringify(store)); return true; }
+  try {
+    window.localStorage.setItem(KEY, JSON.stringify(store));
+    if(!cloudSuppress) scheduleCloudPush();
+    return true;
+  }
   catch(e){ return false; }
 }
+
+/* ================= 云端同步 ================= */
+function cloudHeaders(){
+  return { "apikey": CLOUD_KEY, "Content-Type": "application/json" };
+}
+
+function cloudRpc(name, body){
+  return fetch(CLOUD_URL + "/rest/v1/rpc/" + name, {
+    method: "POST",
+    headers: cloudHeaders(),
+    cache: "no-store",
+    keepalive: true,
+    body: JSON.stringify(body || {})
+  }).then(function(res){
+    return res.text().then(function(text){
+      var data = null;
+      try { data = text ? JSON.parse(text) : null; } catch(e){ data = text; }
+      if(!res.ok){
+        var msg = (data && (data.message || data.hint || data.details)) || ("HTTP " + res.status);
+        throw new Error(msg);
+      }
+      return data;
+    });
+  });
+}
+
+function cloudApplyPayload(payload, rev){
+  if(!payload || typeof payload !== "object" || Array.isArray(payload)) return false;
+  cloudSuppress = true;
+  store = normalize(payload);
+  if(store.settings) delete store.settings.adminPassword;
+  saveStore();
+  cloudSuppress = false;
+  cloudRev = Math.max(cloudRev, Number(rev) || 0);
+  cloudSnapLeaves = JSON.stringify(store.leaves || []);
+  cloudSnapMessages = JSON.stringify(store.messages || []);
+  renderPage();
+  return true;
+}
+
+function cloudPull(force){
+  if(!CLOUD_ON) return Promise.resolve(null);
+  if(cloudPulling) return Promise.resolve(null);
+  if(cloudBusy && !force) return Promise.resolve(null);
+  if(cloudDirty && !force) return Promise.resolve(null);
+  var ae = document.activeElement;
+  if(!force && ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)) return Promise.resolve(null);
+  cloudPulling = true;
+  return fetch(CLOUD_URL + "/rest/v1/class_state?id=eq.main&select=payload,rev", {
+    headers: cloudHeaders(),
+    cache: "no-store"
+  }).then(function(res){
+    if(!res.ok) throw new Error("HTTP " + res.status);
+    return res.json();
+  }).then(function(rows){
+    cloudPulling = false;
+    cloudLastError = "";
+    if(!Array.isArray(rows) || !rows.length) return null;
+    var rev = Number(rows[0].rev || 0);
+    var payload = rows[0].payload;
+    if(!payload || typeof payload !== "object" || !Object.keys(payload).length){
+      cloudRev = Math.max(cloudRev, rev);
+      return { rev: rev, empty: true };
+    }
+    if(rev <= cloudRev) return { rev: rev, empty: false, skipped: true };
+    cloudApplyPayload(payload, rev);
+    return { rev: rev, empty: false };
+  }).catch(function(e){
+    cloudPulling = false;
+    cloudLastError = String(e && e.message || e);
+    return null;
+  });
+}
+
+function cloudPush(showError){
+  if(!CLOUD_ON || !currentRole) return Promise.resolve(false);
+  if(cloudBusy){ cloudDirty = true; return Promise.resolve(false); }
+  if(currentRole === "admin" && !cloudPwd){
+    if(showError) toast("请重新输入管理员密码", "🔐");
+    return Promise.resolve(false);
+  }
+
+  var role = currentRole;
+  var pwd = cloudPwd;
+  var data;
+  try { data = JSON.parse(JSON.stringify(store)); } catch(e){ return Promise.resolve(false); }
+  if(data.settings) delete data.settings.adminPassword;
+
+  var leavesNow = JSON.stringify(store.leaves || []);
+  var messagesNow = JSON.stringify(store.messages || []);
+  var touchGuest = role !== "admin" ||
+    cloudSnapLeaves === null || cloudSnapMessages === null ||
+    leavesNow !== cloudSnapLeaves || messagesNow !== cloudSnapMessages;
+
+  cloudBusy = true;
+  cloudDirty = false;
+
+  return cloudRpc("save_state", {
+    pwd: role === "admin" ? pwd : null,
+    role: role,
+    data: data,
+    touch_guest: touchGuest
+  }).then(function(res){
+    cloudBusy = false;
+    cloudLastError = "";
+    if(res && res.rev) cloudRev = Math.max(cloudRev, Number(res.rev) || 0);
+    var applied = false;
+    if(res && res.payload && !cloudDirty) applied = cloudApplyPayload(res.payload, res.rev);
+    if(!applied){
+      cloudSnapLeaves = leavesNow;
+      cloudSnapMessages = messagesNow;
+    }
+    if(cloudDirty) scheduleCloudPush();
+    return true;
+  }).catch(function(e){
+    cloudBusy = false;
+    cloudDirty = true;
+    cloudLastError = String(e && e.message || e);
+    if(showError){
+      var hint = cloudLastError.indexOf("admin password") >= 0 ? "管理员密码校验失败" : "数据已保存在本机";
+      toast("云端保存失败：" + hint, "☁️");
+    }
+    setTimeout(function(){ if(cloudDirty && !cloudBusy) cloudPush(false); }, 6000);
+    return false;
+  });
+}
+
+function scheduleCloudPush(){
+  if(!CLOUD_ON) return;
+  cloudDirty = true;
+  if(cloudTimer) clearTimeout(cloudTimer);
+  cloudTimer = setTimeout(function(){
+    cloudTimer = null;
+    cloudPush(false);
+  }, 800);
+}
+
+function cloudStart(){
+  if(!CLOUD_ON) return;
+  setInterval(function(){
+    if(!document.hidden && currentRole) cloudPull(false);
+  }, 10000);
+  document.addEventListener("visibilitychange", function(){
+    if(!document.hidden && currentRole) cloudPull(false);
+  });
+  window.addEventListener("online", function(){
+    if(currentRole && cloudDirty) cloudPush(false);
+  });
+  window.addEventListener("pagehide", function(){
+    if(currentRole && cloudDirty) cloudPush(false);
+  });
+}
+
 
 /* ================= 身份与权限 ================= */
 var currentRole = null;
@@ -1041,6 +1214,7 @@ function applyRoleUI(){
 function showLogin(){
   var g = $("loginGate");
   if(!g) return;
+  cloudPwd = "";
   g.classList.remove("hide");
   g.classList.remove("admin-step");
   var p = $("loginPwd");
@@ -1064,18 +1238,58 @@ function loginAs(role){
   renderPage();
   toast(currentRole === "admin" ? "已进入管理员模式" : "已进入访客模式",
         currentRole === "admin" ? "🔓" : "👀");
+  if(CLOUD_ON){
+    cloudPull(true).then(function(r){
+      if(currentRole === "admin" && r && r.empty){
+        cloudSnapLeaves = "";
+        cloudSnapMessages = "";
+        cloudPush(true);
+      }
+    });
+  }
 }
 
 function tryAdminLogin(){
   var p = $("loginPwd"), er = $("loginErr");
   var v = p ? String(p.value || "") : "";
-  var real = String((store && store.settings && store.settings.adminPassword) || "123");
-  if(v !== real){
-    if(er) er.textContent = "密码不对，再试一次";
-    if(p){ p.select(); p.focus(); }
+  if(!CLOUD_ON){
+    var real = String((store && store.settings && store.settings.adminPassword) || "123");
+    if(v !== real){
+      if(er) er.textContent = "密码不对，再试一次";
+      if(p){ p.select(); p.focus(); }
+      return;
+    }
+    loginAs("admin");
     return;
   }
-  loginAs("admin");
+  if(!v){
+    if(er) er.textContent = "请输入管理员密码";
+    if(p) p.focus();
+    return;
+  }
+  var go = $("loginGo");
+  var oldLabel = go ? go.textContent : "";
+  if(go){ go.disabled = true; go.textContent = "验证中…"; }
+  if(er) er.textContent = "";
+  function restore(){
+    if(go){ go.disabled = false; go.textContent = oldLabel || "进入管理"; }
+  }
+  cloudRpc("check_admin", { pwd: v }).then(function(ok){
+    restore();
+    if(ok === true){
+      cloudPwd = v;
+      loginAs("admin");
+    } else {
+      if(er) er.textContent = "密码不对，再试一次";
+      if(p){ p.select(); p.focus(); }
+    }
+  }, function(e){
+    restore();
+    var msg = String(e && e.message || "");
+    if(er) er.textContent = msg.indexOf("Could not find") >= 0 || msg.indexOf("PGRST202") >= 0
+      ? "数据库还没初始化，请先运行 supabase-schema.sql"
+      : "云端连接失败，请检查网络或数据库配置";
+  });
 }
 
 function bindLogin(){
@@ -2706,12 +2920,6 @@ function savePwd(){
   var oldV = String(oldEl.value || "");
   var newV = String(newEl.value || "").trim();
   var new2 = String(new2El.value || "").trim();
-  var real = String((store.settings && store.settings.adminPassword) || "123");
-  if(oldV !== real){
-    toast("当前密码不正确", "🔒");
-    oldEl.select(); oldEl.focus();
-    return;
-  }
   if(!newV || newV.length > 20){
     toast("新密码需为 1-20 个字符", "🔒");
     newEl.focus();
@@ -2720,6 +2928,27 @@ function savePwd(){
   if(newV !== new2){
     toast("两次输入的新密码不一致", "🔒");
     new2El.focus();
+    return;
+  }
+  if(CLOUD_ON){
+    cloudRpc("change_admin_pwd", { old_pwd: oldV, new_pwd: newV }).then(function(ok){
+      if(ok !== true) throw new Error("change failed");
+      cloudPwd = newV;
+      store.settings.adminPassword = newV;
+      saveStore();
+      renderPage();
+      toast("管理员密码已修改", "🔐");
+    }, function(e){
+      var msg = String(e && e.message || "");
+      toast(msg.indexOf("invalid old password") >= 0 ? "当前密码不正确" : "云端修改失败，密码未修改", "🔒");
+      oldEl.select(); oldEl.focus();
+    });
+    return;
+  }
+  var real = String((store.settings && store.settings.adminPassword) || "123");
+  if(oldV !== real){
+    toast("当前密码不正确", "🔒");
+    oldEl.select(); oldEl.focus();
     return;
   }
   store.settings.adminPassword = newV;
@@ -2922,6 +3151,7 @@ function handleAction(act, el){
       break;
 
     case "switchRole":
+      if(CLOUD_ON && cloudDirty) cloudPush(true);
       currentRole = null;
       applyRoleUI();
       showLogin();
@@ -3019,6 +3249,7 @@ function init(){
   applyRoleUI();
   renderPage();
   showLogin();
+  cloudStart();
 
   var todayBd = store.birthdays.some(function(b){ return daysToBirthday(b.md, new Date()) === 0; });
   var flagKey = "gaoer3_celebrated_" + todayStr();
@@ -3047,7 +3278,12 @@ if(typeof window !== "undefined"){
     daysToBirthday: daysToBirthday,
     buildSnapshot: buildSnapshot,
     role: function(){ return currentRole; },
-    isAdmin: isAdmin
+    isAdmin: isAdmin,
+    cloudOn: function(){ return CLOUD_ON; },
+    cloudPull: cloudPull,
+    cloudPush: cloudPush,
+    cloudRev: function(){ return cloudRev; },
+    saveStore: saveStore
   };
 }
 
