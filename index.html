@@ -125,6 +125,8 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
 }
 .hero-quote::before{content:"“";color:rgba(255,150,120,.5);margin-right:2px}
 .hero-quote::after{content:"”";color:rgba(255,150,120,.5);margin-left:2px}
+.hero-quote.empty::before,.hero-quote.empty::after{display:none}
+.hero-quote.empty{font-size:20px;color:#8d6a58;font-weight:700}
 .hero-meta{display:flex;align-items:center;gap:12px;margin-top:20px;flex-wrap:wrap}
 .quote-tag{
   font-size:11.5px;font-weight:800;color:#b4703f;background:rgba(255,255,255,.8);
@@ -166,6 +168,29 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
 .bday-date{font-size:10.8px;color:#a3949a;font-weight:600}
 .bday-days{font-size:11.5px;font-weight:800;color:#e0863f;white-space:nowrap}
 .bday-days.today{color:#dc4b7e}
+
+.hero-by{font-size:12.5px;font-weight:700;color:#a2603a;margin-top:8px;letter-spacing:.5px}
+
+/* 高考倒计时 + 今日提醒：生日栏与目录栏之间左右各一块 */
+.home-pair{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}
+.home-pair .card{padding:20px 22px;overflow:hidden;min-height:158px}
+.daily-card.exam{background:linear-gradient(135deg,#eef4ff,#fbfdff);border-color:#dce8fb}
+.daily-card.remind{background:linear-gradient(135deg,#fff9ec,#fffdf8);border-color:#f6e7c8}
+.daily-hd{display:flex;align-items:center;gap:8px;font-size:11.5px;font-weight:800;color:#96a2b5;letter-spacing:1px}
+.daily-hd .spacer{flex:1}
+.daily-hd a{color:#6f8fc7;font-weight:800;text-decoration:none;font-size:11.5px}
+.daily-hd a:hover{text-decoration:underline}
+.exam-body{display:flex;align-items:flex-end;gap:12px;margin-top:15px}
+.exam-num{font-size:56px;line-height:.95;font-weight:800;color:#4a6fb5;font-variant-numeric:tabular-nums;letter-spacing:-1px}
+.exam-num small{font-size:15px;font-weight:800;color:#7b8fb5;margin-left:5px;letter-spacing:0}
+.exam-sub{font-size:12px;color:#8797b3;font-weight:700;padding-bottom:6px;line-height:1.5}
+.exam-note{font-size:11.5px;color:#9aa8bd;font-weight:600;margin-top:9px}
+.remind-list{display:flex;flex-direction:column;gap:6px;margin-top:12px;max-height:118px;overflow:auto;padding-right:2px}
+.remind-line{display:flex;align-items:flex-start;gap:8px;font-size:12px;font-weight:600;color:#6b5a4e;line-height:1.5}
+.remind-line .rdot{width:6px;height:6px;border-radius:50%;background:#f0b34a;flex:none;margin-top:6px}
+.remind-line.done{opacity:.5;text-decoration:line-through}
+.remind-line.done .rdot{background:#9cd8c4}
+.remind-empty{font-size:12px;color:#b3a49f;font-weight:600;padding:18px 0 8px}
 
 .toc-hd{margin:26px 0 13px;display:flex;align-items:baseline;gap:10px}
 .toc-hd h2{margin:0;font-size:17px;font-weight:800;color:#5a4038}
@@ -402,6 +427,38 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
 .tool-pop{animation:toolPop .35s cubic-bezier(.2,.9,.3,1.4)}
 @keyframes toolPop{0%{transform:scale(.82);opacity:.35}60%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
 
+/* 回声洞：管理首页每日一句 */
+.echo-card{grid-column:1/-1}
+.echo-grid{display:grid;grid-template-columns:1fr 1.15fr;gap:18px;align-items:start}
+.echo-form{background:#fffdfa;border:1px solid #f3e7dc;border-radius:16px;padding:14px}
+.echo-form .echo-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.echo-form .btn{margin-top:10px}
+.echo-tip{font-size:11px;color:#b4a5aa;font-weight:600;line-height:1.6;margin:8px 0 0}
+.echo-list-hd{display:flex;align-items:center;gap:8px;font-size:11.5px;font-weight:800;color:#a3949a;letter-spacing:.6px;margin-bottom:8px}
+.echo-list-hd .spacer{flex:1}
+.echo-list{display:flex;flex-direction:column;gap:6px;max-height:298px;overflow:auto;padding-right:3px}
+.echo-item{display:flex;align-items:flex-start;gap:9px;background:#fffdfa;border:1px solid #f3e7dc;border-radius:12px;padding:8px 10px}
+.echo-item .q{flex:1;min-width:0;font-size:12.5px;font-weight:600;color:#5d4c52;line-height:1.55;word-break:break-word}
+.echo-item .meta{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
+.echo-item .tag{font-size:10px;font-weight:800;color:#b4703f;background:#fff3e7;border-radius:6px;padding:1px 6px}
+.echo-item .by{font-size:10.5px;font-weight:700;color:#a3949a}
+.echo-empty{font-size:12px;color:#b3a49f;font-weight:600;padding:20px 4px;text-align:center}
+
+/* 请假节次：多选、全选、Shift 连续选 */
+.period-block{margin-top:11px}
+.period-picker{display:flex;flex-wrap:wrap;gap:7px;margin-top:7px}
+.period-chip{position:relative;cursor:pointer;user-select:none}
+.period-chip input{position:absolute;opacity:0;width:0;height:0}
+.period-chip span{
+  display:inline-flex;align-items:center;padding:6px 11px;border-radius:9px;
+  border:1.5px solid #f0e0d4;background:#fffdfa;color:#8d7f84;font-size:11.5px;font-weight:700;transition:.15s;
+}
+.period-chip:hover span{border-color:#ffcdb2;background:#fff7f1;color:#c46a37}
+.period-chip input:checked + span{background:#e4f7ef;border-color:#8fd6bc;color:#1f8a6d;box-shadow:0 3px 8px rgba(63,163,131,.12)}
+.period-chip input:focus-visible + span{outline:2px solid #8fd6bc;outline-offset:2px}
+.period-bar{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap}
+.period-sum{font-size:11.5px;color:#8d7f84;font-weight:700}
+
 /* 请假页 */
 .leave-today-grid{display:flex;flex-wrap:wrap;gap:8px}
 .leave-card{
@@ -486,6 +543,8 @@ table.lv-table tr:last-child td{border-bottom:none}
 }
 @media(max-width:860px){
   .bday-row{grid-template-columns:1fr}
+  .home-pair{grid-template-columns:1fr}
+  .echo-grid{grid-template-columns:1fr}
   .nav a{padding:6px 10px;font-size:12.5px}
   .hero{padding:26px 22px}
   .hero-quote{font-size:22px}
@@ -519,6 +578,8 @@ table.lv-table tr:last-child td{border-bottom:none}
   .hw-add-panel{padding:8px}
   .hw-add-fields{gap:7px}
   .hw-title-input{font-size:15px}
+  .echo-form .echo-row{grid-template-columns:1fr}
+  .exam-num{font-size:44px}
 }
 </style>
 </head>
@@ -651,6 +712,40 @@ var DEFAULT_WISHES = [
   "生日快乐！今天的蜡烛许愿一定会实现。"
 ];
 
+var QUOTE_TAGS = ["励志","学习","坚持","心态","班级","自省","其他"];
+
+function defaultQuotes(){
+  return QUOTES.map(function(q, i){
+    return { id:"q"+i, t:q.t, tag:q.tag || "其他", by:"" };
+  });
+}
+
+/* 请假节次按一天的时间顺序排列；连续选择时只显示头尾 */
+var LEAVE_PERIODS = [
+  "早读","第一节课","第二节课","大课间","第三节课","第四节课",
+  "午练","午休","第五节课","第六节课","第七节课","第八九节课",
+  "第一节晚自习","第二节晚自习"
+];
+
+function periodRangeText(values){
+  var idx = [];
+  (values || []).forEach(function(v){
+    var i = LEAVE_PERIODS.indexOf(v);
+    if(i >= 0 && idx.indexOf(i) < 0) idx.push(i);
+  });
+  idx.sort(function(a,b){ return a-b; });
+  if(!idx.length) return "";
+  var out = [], start = idx[0], prev = idx[0];
+  for(var n=1;n<idx.length;n++){
+    if(idx[n] === prev + 1){ prev = idx[n]; continue; }
+    out.push(start === prev ? LEAVE_PERIODS[start] : LEAVE_PERIODS[start] + "~" + LEAVE_PERIODS[prev]);
+    start = prev = idx[n];
+  }
+  out.push(start === prev ? LEAVE_PERIODS[start] : LEAVE_PERIODS[start] + "~" + LEAVE_PERIODS[prev]);
+  return out.join("、");
+}
+
+
 var ROUTES = { home:1, board:1, leave:1, remind:1, journal:1, tools:1, settings:1 };
 var KEY = "gaoer3_classroom_v2";
 var OLD_KEY = "gaoer3_classroom_v1";
@@ -714,7 +809,7 @@ function defaultStore(){
   return {
     settings: { className:"高二(3)班", classShort:"3", examDate:"2027-06-07", classSize:45 },
     homeworks: [], birthdays: [], leaves: [], reminders: [], messages: [],
-    favorites: [], archive: {},
+    favorites: [], archive: {}, quotes: defaultQuotes(),
     quoteState: { date:"", index:0, manual:-1 }
   };
 }
@@ -725,6 +820,14 @@ function normalize(obj){
   obj.settings = Object.assign({}, base.settings, obj.settings || {});
   ["homeworks","birthdays","leaves","reminders","messages","favorites"].forEach(function(k){
     obj[k] = Array.isArray(obj[k]) ? obj[k] : [];
+  });
+  if(!Array.isArray(obj.quotes)) obj.quotes = defaultQuotes();
+  obj.quotes = obj.quotes.filter(function(q){ return q && String(q.t || "").trim(); });
+  obj.quotes.forEach(function(q, i){
+    if(!q.id) q.id = "q" + i + "_" + uid();
+    q.t = String(q.t || "").trim();
+    q.tag = q.tag || "其他";
+    q.by = String(q.by || "").trim();
   });
   obj.archive = (obj.archive && typeof obj.archive === "object") ? obj.archive : {};
   obj.quoteState = Object.assign({}, base.quoteState, obj.quoteState || {});
@@ -834,16 +937,18 @@ function setActiveNav(route){
 /* ================= 句子 ================= */
 function currentQuote(){
   var qs = store.quoteState;
+  var list = store.quotes || [];
+  if(!list.length) return { q:null, idx:0 };
   var today = todayStr();
   if(qs.date !== today){
     qs.date = today;
     qs.manual = -1;
-    qs.index = Math.floor(Math.random()*QUOTES.length);
+    qs.index = Math.floor(Math.random()*list.length);
     saveStore();
   }
   var idx = (typeof qs.manual === "number" && qs.manual >= 0) ? qs.manual : qs.index;
-  if(typeof idx !== "number" || isNaN(idx) || idx < 0 || idx >= QUOTES.length) idx = 0;
-  return { q:QUOTES[idx], idx:idx };
+  if(typeof idx !== "number" || isNaN(idx) || idx < 0 || idx >= list.length) idx = 0;
+  return { q:list[idx], idx:idx };
 }
 
 function daysToBirthday(md, today){
@@ -876,7 +981,8 @@ function viewHome(){
   var name = store.settings.className || "高二(3)班";
 
   var cur = currentQuote();
-  var isFav = store.favorites.indexOf(cur.q.t) >= 0;
+  var hasQuote = !!(cur.q && cur.q.t);
+  var isFav = hasQuote && store.favorites.indexOf(cur.q.t) >= 0;
 
   var sorted = birthdaySorted();
   var todays = sorted.filter(function(x){ return x.days === 0; });
@@ -922,6 +1028,50 @@ function viewHome(){
   var lvToday = store.leaves.filter(function(x){ return x.date === today && !x.returned; }).length;
   var rmToday = store.reminders.filter(function(x){ return x.date === today && !x.done; }).length;
 
+  /* 高考倒计时 */
+  var exam = parseDate(store.settings.examDate);
+  var left = exam ? dayDiff(exam, new Date()) : null;
+  var examLabel = exam ? (exam.getFullYear()+" 年 "+(exam.getMonth()+1)+" 月 "+exam.getDate()+" 日") : "去设置里填写高考日期";
+  var examNum, examSub;
+  if(left === null){
+    examNum = "—";
+    examSub = "还没有设置高考日期";
+  } else if(left > 0){
+    examNum = left + '<small>天</small>';
+    examSub = "距离高考";
+  } else if(left === 0){
+    examNum = "今天";
+    examSub = "高考加油，稳住就是胜利";
+  } else {
+    examNum = "已结束";
+    examSub = "距离高考已过去 " + Math.abs(left) + " 天";
+  }
+  var examHtml = '<section class="card daily-card exam">'
+    + '<div class="daily-hd"><span>⏳ 高考倒计时</span><span class="spacer"></span><span>'+esc(examLabel)+'</span></div>'
+    + '<div class="exam-body"><div class="exam-num">'+examNum+'</div>'
+    + '<div class="exam-sub">'+esc(examSub)+'</div></div>'
+    + (left === null ? '<div class="exam-note"><a href="#/settings" style="color:#6f8fc7;font-weight:800;text-decoration:none">去设置 ›</a></div>' : '')
+    + '</section>';
+
+  /* 今日提醒 */
+  var remTodayList = store.reminders.filter(function(x){ return x.date === today; })
+    .sort(function(a,b){ return (a.done?1:0) - (b.done?1:0) || (a.created||0) - (b.created||0); });
+  var remHtml = "";
+  if(remTodayList.length){
+    remTodayList.slice(0, 6).forEach(function(r){
+      remHtml += '<div class="remind-line'+(r.done?" done":"")+'"><span class="rdot"></span><span>'+esc(r.text)+'</span></div>';
+    });
+    if(remTodayList.length > 6){
+      remHtml += '<div class="remind-empty" style="padding:3px 0 0">还有 '+(remTodayList.length-6)+' 条，去「每日提醒」查看</div>';
+    }
+  } else {
+    remHtml = '<div class="remind-empty">今天没有提醒，去「每日提醒」发布一条吧</div>';
+  }
+  var remindHtml = '<section class="card daily-card remind">'
+    + '<div class="daily-hd"><span>🔔 每日提醒</span><span class="spacer"></span><a href="#/remind">管理 ›</a></div>'
+    + '<div class="remind-list">'+remHtml+'</div>'
+    + '</section>';
+
   var toc = [
     {r:"board", icon:"📋", t:"今日总览", d:"作业录入、请假、提醒一屏看全", c:"#e2eefc", g:"#5a8fd8", n:hwToday? hwToday+" 项待完成":""},
     {r:"leave", icon:"🌿", t:"请假登记", d:"自习课请假名单与销假", c:"#ddf6ee", g:"#1f9d7d", n:lvToday? lvToday+" 人请假":""},
@@ -940,17 +1090,21 @@ function viewHome(){
 
   return '<section class="hero"><div class="hero-in">'
     + '<div class="hero-greet">'+greet+'，'+esc(name)+'</div>'
-    + '<div class="hero-quote" id="quoteText">'+esc(cur.q.t)+'</div>'
+    + '<div class="hero-quote'+(hasQuote?"":" empty")+'" id="quoteText">'+(hasQuote ? esc(cur.q.t) : "回声洞还没有句子，去工具箱写一句吧。")+'</div>'
+    + (hasQuote && cur.q.by ? '<div class="hero-by">—— '+esc(cur.q.by)+'</div>' : '')
     + '<div class="hero-meta">'
-    +   '<span class="quote-tag">'+esc(cur.q.tag)+'</span>'
-    +   '<button class="qbtn" data-act="nextQuote">换一句 ↻</button>'
-    +   '<button class="qbtn'+(isFav?" on":"")+'" data-act="favQuote">'+(isFav?"♥ 已收藏":"♡ 收藏")+'</button>'
-    +   '<span style="margin-left:auto;font-size:11px;color:#a8917f;font-weight:700" id="quoteIndex">'+(cur.idx+1)+' / '+QUOTES.length+'</span>'
+    + (hasQuote
+        ? '<span class="quote-tag">'+esc(cur.q.tag || "其他")+'</span>'
+          + '<button class="qbtn" data-act="nextQuote">换一句 ↻</button>'
+          + '<button class="qbtn'+(isFav?" on":"")+'" data-act="favQuote">'+(isFav?"♥ 已收藏":"♡ 收藏")+'</button>'
+          + '<span style="margin-left:auto;font-size:11px;color:#a8917f;font-weight:700" id="quoteIndex">'+(cur.idx+1)+' / '+store.quotes.length+'</span>'
+        : '<a class="qbtn" href="#/tools">去回声洞添加 ›</a>')
     + '</div></div></section>'
     + '<div class="bday-row">'
     +   bdayHtml
     +   '<div class="bday-up"><div class="bu-hd">近期生日 · 未来 60 天</div><div class="bu-list">'+upHtml+'</div></div>'
     + '</div>'
+    + '<div class="home-pair">' + examHtml + remindHtml + '</div>'
     + '<div class="toc-hd"><h2>目录</h2><span>想去哪儿，点一下</span></div>'
     + '<div class="toc">'+tocHtml+'</div>';
 }
@@ -1241,6 +1395,51 @@ function renderBoard(){
 /* ================= 请假 ================= */
 var leaveFilterDate = "";
 
+function leavePeriodChipsHtml(){
+  return LEAVE_PERIODS.map(function(p){
+    return '<label class="period-chip"><input type="checkbox" value="'+esc(p)+'"><span>'+esc(p)+'</span></label>';
+  }).join("");
+}
+
+function updateLeavePeriodSummary(){
+  var boxes = document.querySelectorAll("#lvPeriods input[type=checkbox]");
+  var picked = [];
+  for(var i=0;i<boxes.length;i++){ if(boxes[i].checked) picked.push(boxes[i].value); }
+  var sum = $("lvPeriodSummary");
+  if(!sum) return;
+  sum.textContent = picked.length ? (periodRangeText(picked) + "（共 " + picked.length + " 节）") : "未选择节次";
+}
+
+function initLeavePeriods(){
+  var boxes = document.querySelectorAll("#lvPeriods input[type=checkbox]");
+  if(!boxes.length) return;
+  var anchor = -1;
+  for(var i=0;i<boxes.length;i++){
+    (function(box, idx){
+      box.addEventListener("change", updateLeavePeriodSummary);
+      /* 监听整枚胶囊：点文字也能连续选择，且不会被 label 的默认点击再切换一次 */
+      box.parentNode.addEventListener("click", function(e){
+        if(e.shiftKey && anchor >= 0 && anchor !== idx){
+          e.preventDefault();
+          var on = boxes[anchor].checked;
+          var a = Math.min(anchor, idx), b = Math.max(anchor, idx);
+          for(var k=a;k<=b;k++) boxes[k].checked = on;
+          updateLeavePeriodSummary();
+        } else {
+          anchor = idx;
+        }
+      });
+    })(boxes[i], i);
+  }
+  updateLeavePeriodSummary();
+}
+
+function setLeavePeriodsAll(on){
+  var boxes = document.querySelectorAll("#lvPeriods input[type=checkbox]");
+  for(var i=0;i<boxes.length;i++) boxes[i].checked = !!on;
+  updateLeavePeriodSummary();
+}
+
 function renderLeave(){
   var today = todayStr();
   var fd = leaveFilterDate || today;
@@ -1277,7 +1476,7 @@ function renderLeave(){
 
   return '<div class="page-hd">'
     + '<div class="ico mint">🌿</div>'
-    + '<div><h1>自习课请假登记</h1><p>登记后同步到今日总览与班级日志</p></div>'
+    + '<div><h1>请假登记</h1><p>按节次登记，支持连续选择与全选</p></div>'
     + '<span class="spacer"></span>'
     + '<span style="font-size:12px;color:#a3949a;font-weight:700">'+esc(dateLabel(today))+' '+WEEK[new Date().getDay()]+'</span>'
     + '</div>'
@@ -1285,11 +1484,17 @@ function renderLeave(){
     +   '<div class="card-hd"><div class="ico mint">✍️</div><h2>新登记</h2></div>'
     +   '<div class="form-grid">'
     +     '<div><label class="fl">姓名</label><input type="text" id="lvName" placeholder="请假同学姓名"></div>'
-    +     '<div><label class="fl">节次</label><select id="lvPeriod">'
-    +       '<option>早自习</option><option selected>下午第1节</option><option>下午第2节</option><option>下午第3节</option>'
-    +       '<option>晚自习第1节</option><option>晚自习第2节</option><option>全天</option></select></div>'
     +     '<div><label class="fl">原因</label><select id="lvReason">'
     +       '<option>病假</option><option>事假</option><option>就诊</option><option>竞赛集训</option><option>体训</option><option>其他</option></select></div>'
+    +   '</div>'
+    +   '<div class="period-block">'
+    +     '<label class="fl">节次（可多选，按住 Shift 可连续选择）</label>'
+    +     '<div class="period-picker" id="lvPeriods">'+leavePeriodChipsHtml()+'</div>'
+    +     '<div class="period-bar">'
+    +       '<button type="button" class="btn ghost tiny" data-act="lvAllPeriods">全选</button>'
+    +       '<button type="button" class="btn ghost tiny" data-act="lvClearPeriods">清空</button>'
+    +       '<span class="period-sum" id="lvPeriodSummary">未选择节次</span>'
+    +     '</div>'
     +   '</div>'
     +   '<div class="btn-row" style="margin-top:12px"><button class="btn mint" data-act="addLeave">＋ 登记请假</button>'
     +     '<span style="font-size:11.5px;color:#b4a5aa;font-weight:600">点姓名卡片可切换「请假中 / 已销假」</span></div>'
@@ -1479,9 +1684,28 @@ function renderTools(){
       + '<div class="btn-row"><a class="btn ghost tiny" href="#/settings">去设置 ›</a></div>';
   }
 
+  var quoteRows = "";
+  if(store.quotes.length){
+    store.quotes.forEach(function(q){
+      quoteRows += '<div class="echo-item">'
+        + '<div class="q">'+esc(q.t)
+        +   '<div class="meta"><span class="tag">'+esc(q.tag || "其他")+'</span>'
+        +     (q.by ? '<span class="by">—— '+esc(q.by)+'</span>' : '')
+        +   '</div>'
+        + '</div>'
+        + '<button class="hw-del" data-act="delQuote" data-id="'+esc(q.id)+'" title="删除" style="opacity:1">✕</button>'
+        + '</div>';
+    });
+  } else {
+    quoteRows = '<div class="echo-empty">回声洞还是空的，从左边写第一句吧。</div>';
+  }
+  var tagOptions = QUOTE_TAGS.map(function(t){
+    return '<option value="'+esc(t)+'"'+(t === "励志" ? " selected" : "")+'>'+esc(t)+'</option>';
+  }).join("");
+
   return '<div class="page-hd">'
     + '<div class="ico purple">🧰</div><div><h1>工具箱</h1>'
-    + '<p>课堂随手用：随机抽学生、随机数</p></div>'
+    + '<p>课堂随手用：随机抽学生、随机数、回声洞</p></div>'
     + '</div>'
     + '<div class="tools-grid">'
     +   '<section class="card">'
@@ -1498,6 +1722,25 @@ function renderTools(){
     +     '<div class="tool-result"><span class="num" id="rndResult">—</span></div>'
     +     '<div class="btn-row"><button class="btn mint" data-act="pickNumber">🔢 抽一个</button>'
     +     '<span class="tool-tip">按回车也能抽</span></div>'
+    +   '</section>'
+    +   '<section class="card echo-card">'
+    +     '<div class="card-hd"><div class="ico blue">📣</div><h2>回声洞</h2><span class="sub">首页每日一句 · 共 '+store.quotes.length+' 条</span></div>'
+    +     '<div class="echo-grid">'
+    +       '<div class="echo-form">'
+    +         '<label class="fl">句子</label>'
+    +         '<input type="text" id="qText" maxlength="200" placeholder="写一句想对全班说的话">'
+    +         '<div class="echo-row">'
+    +           '<div><label class="fl">标签</label><select id="qTag">'+tagOptions+'</select></div>'
+    +           '<div><label class="fl">署名（选填）</label><input type="text" id="qBy" maxlength="20" placeholder="例如：班主任"></div>'
+    +         '</div>'
+    +         '<button class="btn" data-act="addQuote">＋ 收进回声洞</button>'
+    +         '<p class="echo-tip">每天从回声洞里随机抽一句显示在首页，署名会和句子一起出现。</p>'
+    +       '</div>'
+    +       '<div>'
+    +         '<div class="echo-list-hd"><span>全部条目</span><span class="spacer"></span><span>共 '+store.quotes.length+' 条</span></div>'
+    +         '<div class="echo-list">'+quoteRows+'</div>'
+    +       '</div>'
+    +     '</div>'
     +   '</section>'
     + '</div>';
 }
@@ -1546,6 +1789,39 @@ function pickNumber(){
   out.classList.remove("tool-pop");
   void out.offsetWidth;
   out.classList.add("tool-pop");
+}
+
+function addQuote(){
+  var txt = $("qText"), tagEl = $("qTag"), byEl = $("qBy");
+  if(!txt) return;
+  var t = String(txt.value || "").trim();
+  if(!t){ toast("先写一句想说的话", "📣"); txt.focus(); return; }
+  var tag = tagEl ? tagEl.value : "其他";
+  var by = byEl ? String(byEl.value || "").trim().slice(0, 20) : "";
+  store.quotes.push({ id:uid(), t:t, tag:tag, by:by });
+  /* 添加后首页直接显示这一句，方便确认效果 */
+  store.quoteState.date = todayStr();
+  store.quoteState.index = store.quotes.length - 1;
+  store.quoteState.manual = -1;
+  commit();
+  toast("已收进回声洞", "📣");
+  renderPage();
+}
+
+function delQuote(id){
+  var hit = null;
+  store.quotes.forEach(function(q){ if(q.id === id) hit = q; });
+  if(!hit) return;
+  store.quotes = store.quotes.filter(function(q){ return q.id !== id; });
+  var fav = store.favorites.indexOf(hit.t);
+  if(fav >= 0) store.favorites.splice(fav, 1);
+  store.quoteState.manual = -1;
+  if(store.quoteState.index >= store.quotes.length){
+    store.quoteState.index = Math.max(0, store.quotes.length - 1);
+  }
+  commit();
+  toast("已从回声洞删除", "🗑️");
+  renderPage();
 }
 
 /* ================= 设置 ================= */
@@ -1659,6 +1935,7 @@ function afterRender(r){
     if(nm) nm.addEventListener("keydown", function(e){
       if(e.key === "Enter"){ e.preventDefault(); addLeave(); }
     });
+    initLeavePeriods();
   }
   if(r === "board"){
     /* 标题是 textarea：按内容自动撑高，长作业能整段换行显示 */
@@ -1716,6 +1993,13 @@ function afterRender(r){
     };
     if(rmin) rmin.addEventListener("keydown", onRndEnter);
     if(rmax) rmax.addEventListener("keydown", onRndEnter);
+    /* 回声洞：输入句子或署名后回车直接添加 */
+    var qt = $("qText"), qb = $("qBy");
+    var onQuoteEnter = function(e){
+      if(e.key === "Enter"){ e.preventDefault(); addQuote(); }
+    };
+    if(qt) qt.addEventListener("keydown", onQuoteEnter);
+    if(qb) qb.addEventListener("keydown", onQuoteEnter);
   }
   if(r === "journal"){
     var mt = $("msgText");
@@ -1782,15 +2066,30 @@ function addLeave(){
   if(!nameEl) return;
   var name = String(nameEl.value || "").trim();
   if(!name){ toast("请填写请假同学姓名", "✏️"); nameEl.focus(); return; }
-  var period = $("lvPeriod") ? $("lvPeriod").value : "下午第1节";
+
+  var boxes = document.querySelectorAll("#lvPeriods input[type=checkbox]");
+  var periods = [];
+  for(var i=0;i<boxes.length;i++){ if(boxes[i].checked) periods.push(boxes[i].value); }
+  if(!periods.length){ toast("请选择请假节次，可多选或全选", "🕒"); return; }
+  var period = periodRangeText(periods);
   var reason = $("lvReason") ? $("lvReason").value : "事假";
   var today = todayStr();
+
   var dup = false;
   store.leaves.forEach(function(l){
-    if(l.date === today && l.name === name && l.period === period) dup = true;
+    if(l.date !== today || l.name !== name) return;
+    var old = Array.isArray(l.periods) ? l.periods : [l.period];
+    if(l.period === "全天") old = LEAVE_PERIODS;
+    for(var k=0;k<periods.length;k++){
+      if(old.indexOf(periods[k]) >= 0){ dup = true; break; }
+    }
   });
-  if(dup){ toast(name + " 今天该节次已登记", "🌿"); return; }
-  store.leaves.push({ id:uid(), name:name, period:period, reason:reason, date:today, returned:false, created:Date.now() });
+  if(dup){ toast(name + " 今天所选节次已登记", "🌿"); return; }
+
+  store.leaves.push({
+    id:uid(), name:name, period:period, periods:periods.slice(),
+    reason:reason, date:today, returned:false, created:Date.now()
+  });
   commit();
   toast("已登记：" + name + " · " + period, "🌿");
   renderPage();
@@ -1973,9 +2272,9 @@ function loadSample(){
     {id:uid(), name:"王思齐", md:pad(m===12?1:m+1)+"-04", year:2008, wish:""}
   ];
   store.leaves = [
-    {id:uid(), name:"李梓萱", period:"下午第2节", reason:"就诊", date:todayStr(), returned:false, created:now},
-    {id:uid(), name:"赵明宇", period:"晚自习第1节", reason:"竞赛集训", date:todayStr(), returned:false, created:now},
-    {id:uid(), name:"孙浩然", period:"下午第3节", reason:"事假", date:addDays(-1), returned:true, created:now-86400000}
+    {id:uid(), name:"李梓萱", period:"第三节课~第四节课", periods:["第三节课","第四节课"], reason:"就诊", date:todayStr(), returned:false, created:now},
+    {id:uid(), name:"赵明宇", period:"第一节晚自习", periods:["第一节晚自习"], reason:"竞赛集训", date:todayStr(), returned:false, created:now},
+    {id:uid(), name:"孙浩然", period:"第五节课", periods:["第五节课"], reason:"事假", date:addDays(-1), returned:true, created:now-86400000}
   ];
   store.reminders = [
     {id:uid(), text:"明天下午第三节课后，全班到操场集合拍集体照，记得穿校服", date:todayStr(), done:false, created:now},
@@ -2007,7 +2306,9 @@ function handleAction(act, el){
   switch(act){
     case "nextQuote":
       var cur = currentQuote();
-      var n = QUOTES.length, next = cur.idx, guard = 0;
+      var n = store.quotes.length;
+      if(!cur.q || n < 2){ break; }
+      var next = cur.idx, guard = 0;
       while(next === cur.idx && guard < 20){ next = Math.floor(Math.random()*n); guard++; }
       store.quoteState.index = next;
       store.quoteState.manual = next;
@@ -2018,6 +2319,7 @@ function handleAction(act, el){
 
     case "favQuote":
       var q = currentQuote().q;
+      if(!q) break;
       var pos = store.favorites.indexOf(q.t);
       if(pos >= 0){ store.favorites.splice(pos,1); toast("已取消收藏", "🤍"); }
       else { store.favorites.unshift(q.t); toast("收藏成功", "💛"); }
@@ -2054,6 +2356,22 @@ function handleAction(act, el){
 
     case "addLeave":
       addLeave();
+      break;
+
+    case "lvAllPeriods":
+      setLeavePeriodsAll(true);
+      break;
+
+    case "lvClearPeriods":
+      setLeavePeriodsAll(false);
+      break;
+
+    case "addQuote":
+      addQuote();
+      break;
+
+    case "delQuote":
+      delQuote(el.getAttribute("data-id"));
       break;
 
     case "toggleRemind":
