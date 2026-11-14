@@ -197,17 +197,49 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
   padding:2px 9px;border-radius:999px;z-index:1;
 }
 
-/* ============ 总览页 80/10/10 ============ */
+/* ============ 总览页 ============ */
 .board-grid{
   display:grid;
-  grid-template-columns:minmax(0,8fr) minmax(210px,1fr);
-  grid-template-rows:auto auto;
-  grid-template-areas:"hw leave" "hw remind";
+  grid-template-columns:minmax(0,1fr) 300px;
+  grid-template-rows:auto auto auto;
+  grid-template-areas:"hw cal" "hw leave" "hw remind";
   gap:14px;align-items:start;
 }
 .area-hw{grid-area:hw}
+.area-cal{grid-area:cal}
 .area-leave{grid-area:leave}
 .area-remind{grid-area:remind}
+
+/* 侧边月历 */
+.cal-card{padding:16px 16px 13px}
+.cal-top{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.cal-mon{font-size:13.5px;font-weight:800;color:#5a4038;letter-spacing:.3px;font-variant-numeric:tabular-nums}
+.cal-nav{margin-left:auto;display:flex;gap:5px}
+.cal-nav button{
+  width:26px;height:26px;border-radius:9px;border:1px solid #f2e3d6;background:#fffdfa;
+  color:#b08a76;font-size:14px;font-weight:800;line-height:1;cursor:pointer;
+  display:grid;place-items:center;font-family:inherit;transition:.16s;padding:0;
+}
+.cal-nav button:hover{background:#fff6ef;border-color:#ffcdb2;color:#c46a37}
+.cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px}
+.cal-wd{text-align:center;font-size:10px;font-weight:800;color:#b4a5aa;padding:1px 0 3px}
+.cal-day{
+  position:relative;aspect-ratio:1/1;border:none;border-radius:10px;background:transparent;
+  font-family:inherit;font-size:12px;font-weight:700;color:#6b5c63;cursor:pointer;padding:0;
+  display:flex;align-items:center;justify-content:center;transition:.15s;
+}
+.cal-day:hover{background:#fff1e6;color:#c46a37}
+.cal-day.blank{visibility:hidden;pointer-events:none}
+.cal-day.today{box-shadow:inset 0 0 0 1.5px #ffc3a3;color:#d3763c}
+.cal-day.sel{background:linear-gradient(135deg,#ffb08f,#ff9068);color:#fff;box-shadow:0 5px 12px rgba(255,144,104,.3)}
+.cal-dot{
+  position:absolute;bottom:4px;left:50%;transform:translateX(-50%);
+  width:4px;height:4px;border-radius:50%;background:#ff9a76;
+}
+.cal-day.sel .cal-dot{background:#fff}
+.cal-foot{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:9px;font-size:10.5px;color:#a3949a;font-weight:700}
+.cal-foot button{border:none;background:transparent;color:#c46a37;font-size:10.5px;font-weight:800;cursor:pointer;font-family:inherit;padding:2px 4px;border-radius:6px}
+.cal-foot button:hover{background:#fff1e6}
 
 .subj-group{
   display:grid;grid-template-columns:96px minmax(0,1fr);gap:14px;align-items:start;
@@ -411,7 +443,7 @@ table.lv-table tr:last-child td{border-bottom:none}
 
 @media(max-width:1080px){
   .toc{grid-template-columns:repeat(2,1fr)}
-  .board-grid{grid-template-columns:1fr 1fr;grid-template-areas:"hw hw" "leave remind";grid-template-rows:auto auto}
+  .board-grid{grid-template-columns:1fr 1fr;grid-template-areas:"hw hw" "cal leave" "cal remind";grid-template-rows:auto auto auto}
   .journal-grid{grid-template-columns:1fr}
   .date-list{flex-direction:row;overflow-x:auto;max-height:none}
   .date-item{flex:none;flex-direction:column;align-items:flex-start;gap:0;padding:7px 11px}
@@ -423,6 +455,7 @@ table.lv-table tr:last-child td{border-bottom:none}
   .hero{padding:26px 22px}
   .hero-quote{font-size:22px}
   .form-grid{grid-template-columns:1fr 1fr}
+  .area-cal{max-width:360px;width:100%;justify-self:center}
 }
 @media(max-width:600px){
   .shell{padding:0 13px 50px}
@@ -441,7 +474,7 @@ table.lv-table tr:last-child td{border-bottom:none}
   .form-grid{grid-template-columns:1fr}
   .hw-del{opacity:1}
   .bh-names{font-size:20px}
-  .board-grid{grid-template-columns:1fr;grid-template-areas:"hw" "leave" "remind"}
+  .board-grid{grid-template-columns:1fr;grid-template-areas:"hw" "cal" "leave" "remind"}
   .hd-tip{display:none}
   .hw-foot{gap:6px}
   .subj-group{grid-template-columns:66px minmax(0,1fr);gap:9px;padding:6px 0}
@@ -887,6 +920,99 @@ function viewHome(){
 
 /* ================= 总览 ================= */
 
+/* 总览页当前查看的日期：空字符串 = 今天；点月历里的日期则回看那天 */
+var boardDate = "";
+var calCursor = null;
+var CAL_WEEK = ["日","一","二","三","四","五","六"];
+
+function boardViewDate(){ return boardDate || todayStr(); }
+
+/* 某天是否有任何记录，用于月历上的小圆点 */
+function dateHasRecord(d){
+  var hit = false;
+  store.homeworks.forEach(function(h){ if(h.date === d) hit = true; });
+  if(!hit) store.leaves.forEach(function(l){ if(l.date === d) hit = true; });
+  if(!hit) store.reminders.forEach(function(r){ if(r.date === d) hit = true; });
+  if(!hit) store.messages.forEach(function(m){ if(m.date === d) hit = true; });
+  if(!hit){
+    var snap = store.archive[d];
+    if(snap){
+      hit = snap.homeworks.length || snap.leaves.length || snap.reminders.length
+         || (snap.messages || []).length || snap.birthdays.length;
+    }
+  }
+  return !!hit;
+}
+
+function shiftCal(n){
+  var d = parseDate(boardViewDate()) || new Date();
+  if(!calCursor) calCursor = { y:d.getFullYear(), m:d.getMonth() };
+  var m = calCursor.m + n, y = calCursor.y;
+  y += Math.floor(m / 12);
+  m = ((m % 12) + 12) % 12;
+  calCursor = { y:y, m:m };
+}
+
+function renderBoardCalendar(){
+  var sel = boardViewDate();
+  var sd = parseDate(sel) || new Date();
+  if(!calCursor) calCursor = { y:sd.getFullYear(), m:sd.getMonth() };
+  var y = calCursor.y, m = calCursor.m;
+  var today = todayStr();
+  var firstDow = new Date(y, m, 1).getDay();
+  var days = new Date(y, m+1, 0).getDate();
+
+  var cells = "";
+  for(var b=0;b<firstDow;b++) cells += '<span class="cal-day blank"></span>';
+  for(var d=1;d<=days;d++){
+    var ds = y + "-" + pad(m+1) + "-" + pad(d);
+    var has = dateHasRecord(ds);
+    var cls = "cal-day" + (ds === today ? " today" : "") + (ds === sel ? " sel" : "");
+    cells += '<button class="'+cls+'" data-act="pickBoardDate" data-d="'+ds+'"'
+      + ' title="'+esc(dateLabel(ds))+(has ? " · 有记录" : "")+'">'
+      + d + (has ? '<span class="cal-dot"></span>' : '') + '</button>';
+  }
+
+  return '<section class="card cal-card mini area-cal">'
+    + '<div class="cal-top"><div class="cal-mon">'+y+' 年 '+(m+1)+' 月</div>'
+    +   '<div class="cal-nav">'
+    +     '<button data-act="calPrev" title="上个月" aria-label="上个月">‹</button>'
+    +     '<button data-act="calNext" title="下个月" aria-label="下个月">›</button>'
+    +   '</div></div>'
+    + '<div class="cal-grid">'
+    +   CAL_WEEK.map(function(w){ return '<span class="cal-wd">'+w+'</span>'; }).join("")
+    +   cells
+    + '</div>'
+    + '<div class="cal-foot">'
+    +   '<span>'+(sel === today ? "今天 " + dateLabel(today) : "回看 " + dateLabel(sel))+'</span>'
+    +   (sel === today ? '<span>点日期回看</span>' : '<button data-act="boardToday">回到今天</button>')
+    + '</div>'
+    + '</section>';
+}
+
+/* 历史日期的作业：只读展示，不显示录入框 */
+function renderHwHistory(dateStr){
+  var arr = store.homeworks.filter(function(h){ return h.date === dateStr; });
+  if(!arr.length) return '<div class="empty"><span class="big">📚</span>这天没有布置作业</div>';
+  arr.sort(function(a,b){ return (a.created||0) - (b.created||0); });
+
+  var groups = {}, order = [];
+  arr.forEach(function(h){
+    if(!groups[h.subject]){ groups[h.subject] = []; order.push(h.subject); }
+    groups[h.subject].push(h);
+  });
+
+  var html = "";
+  order.forEach(function(sub){
+    html += '<div class="subj-group" style="--c:'+subjectColor(sub)+'">'
+      + '<div class="subj-chip">'+esc(sub)+'</div>'
+      + '<div class="subj-main">';
+    groups[sub].forEach(function(hw){ html += hwItemHtml(hw, { editable:false }); });
+    html += '</div></div>';
+  });
+  return html;
+}
+
 function hwItemHtml(hw, opts){
   opts = opts || {};
   var color = subjectColor(hw.subject);
@@ -899,7 +1025,7 @@ function hwItemHtml(hw, opts){
     +   titleHtml
     +   (hw.note ? '<div class="hw-note">'+esc(hw.note)+'</div>' : '')
     + '</div>'
-    + '<button class="hw-del" data-act="delHw" data-id="'+esc(hw.id)+'" title="删除">✕</button>'
+    + (opts.editable ? '<button class="hw-del" data-act="delHw" data-id="'+esc(hw.id)+'" title="删除">✕</button>' : '')
     + '</div>';
 }
 
@@ -969,16 +1095,22 @@ function leaveStatBar(st, big){
 
 function renderBoard(){
   var today = todayStr();
+  var vd = boardViewDate();
+  var isToday = vd === today;
+  var vdt = parseDate(vd) || new Date();
 
-  var lst = leaveStat(today);
+  var lst = leaveStat(vd);
   var leaveHtml = leaveStatBar(lst);
   if(lst.all.length === 0){
-    leaveHtml += '<div class="mini-empty">今天全员到齐 ✅</div>';
+    leaveHtml += '<div class="mini-empty">'+(isToday?"今天":"这天")+'全员到齐 ✅</div>';
   } else {
     leaveHtml += '<div class="leave-list">';
     lst.all.forEach(function(l){
-      leaveHtml += '<div class="leave-chip'+(l.returned?" ret":"")+'" data-act="toggleLeave" data-id="'+esc(l.id)+'" title="点击销假/撤销">'
-        + '<span class="dot"></span><span class="nm">'+esc(l.name)+'</span>'
+      leaveHtml += '<div class="leave-chip'+(l.returned?" ret":"")+'"'
+        + (isToday
+            ? ' data-act="toggleLeave" data-id="'+esc(l.id)+'" title="点击销假/撤销"'
+            : ' title="历史记录" style="cursor:default"')
+        + '><span class="dot"></span><span class="nm">'+esc(l.name)+'</span>'
         + '<span class="rs">'+esc(String(l.period))+'</span></div>';
     });
     leaveHtml += '</div>';
@@ -987,30 +1119,37 @@ function renderBoard(){
     }
   }
 
-  var remToday = store.reminders.filter(function(r){ return r.date === today; });
+  var remDay = store.reminders.filter(function(r){ return r.date === vd; });
   var remHtml;
-  if(remToday.length === 0){
-    remHtml = '<div class="mini-empty">班主任还没有发布今日提醒</div>';
+  if(remDay.length === 0){
+    remHtml = '<div class="mini-empty">'+(isToday ? "班主任还没有发布今日提醒" : "这天没有提醒")+'</div>';
   } else {
     remHtml = '<div class="remind-list">';
-    remToday.forEach(function(r){
-      remHtml += '<div class="remind-item'+(r.done?" done":"")+'" data-act="toggleRemind" data-id="'+esc(r.id)+'">'
-        + '<span class="rd"></span><span>'+esc(r.text)+'</span></div>';
+    remDay.forEach(function(r){
+      remHtml += '<div class="remind-item'+(r.done?" done":"")+'"'
+        + (isToday ? ' data-act="toggleRemind" data-id="'+esc(r.id)+'"' : ' style="cursor:default"')
+        + '><span class="rd"></span><span>'+esc(r.text)+'</span></div>';
     });
     remHtml += '</div>';
   }
 
+  var headDesc = esc(dateLabel(vd)) + ' ' + WEEK[vdt.getDay()] + ' · '
+    + (isToday ? '作业 / 请假 / 提醒一屏看全' : '正在查看这天的作业、请假与提醒');
+
   return '<div class="page-hd">'
-    + '<div class="ico blue">📋</div><div><h1>今日总览</h1>'
-    + '<p>'+esc(dateLabel(today))+' '+WEEK[new Date().getDay()]+' · 作业 / 请假 / 提醒一屏看全</p></div>'
+    + '<div class="ico blue">📋</div><div><h1>'+(isToday?"今日总览":"历史回看")+'</h1>'
+    + '<p>'+headDesc+'</p></div>'
     + '<span class="spacer"></span>'
-    + '<span class="hd-tip">点作业文字直接改 · 回车快速添加</span>'
+    + (isToday
+        ? '<span class="hd-tip">点作业文字直接改 · 回车快速添加</span>'
+        : '<button class="btn ghost tiny" data-act="boardToday">← 回到今天</button>')
     + '</div>'
     + '<div class="board-grid">'
     +   '<section class="card area-hw">'
-    +     '<div class="card-hd"><div class="ico blue">📚</div><h2>每日作业</h2><span class="sub">按科目分组</span></div>'
-    +     '<div id="hwArea">'+renderHwArea()+'</div>'
+    +     '<div class="card-hd"><div class="ico blue">📚</div><h2>每日作业</h2><span class="sub">'+(isToday?"按科目分组":"历史记录 · 只读")+'</span></div>'
+    +     '<div id="hwArea">'+(isToday ? renderHwArea() : renderHwHistory(vd))+'</div>'
     +   '</section>'
+    +   renderBoardCalendar()
     +   '<section class="card area-leave mini">'
     +     '<div class="card-hd"><div class="ico mint">🌿</div><h2>请假</h2><span class="spacer"></span>'
     +       '<a href="#/leave" style="font-size:11px;color:#1f9d7d;font-weight:800;text-decoration:none">登记 ›</a></div>'
@@ -1309,6 +1448,8 @@ function hashRoute(){
 /* 所有跳转的唯一入口：先进状态再渲染，hash 只做「尽力同步」 */
 function go(r){
   if(!ROUTES[r]) r = "home";
+  /* 从导航栏进入总览时回到今天，避免停留在上次回看的日期 */
+  if(r === "board"){ boardDate = ""; calCursor = null; }
   currentRoute = r;
   try {
     if(String(window.location.hash || "") !== "#/" + r){
@@ -1727,6 +1868,29 @@ function handleAction(act, el){
 
     case "pickDate":
       journalDate = el.getAttribute("data-d");
+      renderPage();
+      break;
+
+    case "pickBoardDate":
+      boardDate = el.getAttribute("data-d") || "";
+      var bd = parseDate(boardDate);
+      if(bd) calCursor = { y:bd.getFullYear(), m:bd.getMonth() };
+      renderPage();
+      break;
+
+    case "calPrev":
+      shiftCal(-1);
+      renderPage();
+      break;
+
+    case "calNext":
+      shiftCal(1);
+      renderPage();
+      break;
+
+    case "boardToday":
+      boardDate = "";
+      calCursor = null;
       renderPage();
       break;
 
