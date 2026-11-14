@@ -81,10 +81,11 @@ body::before{
 .ico.sun{background:#fff4d6;color:#cf9526}
 
 label.fl{font-size:11.5px;font-weight:700;color:var(--ink-2);display:block;margin-bottom:5px;letter-spacing:.4px}
-input[type=text],input[type=date],input[type=time],input[type=number],select,textarea{
+input[type=text],input[type=date],input[type=time],input[type=number],input[type=password],select,textarea{
   width:100%;font-family:inherit;font-size:13.5px;color:var(--ink);
   background:#fffdfa;border:1.5px solid #f0e0d4;border-radius:12px;padding:9px 12px;outline:none;transition:.18s;
 }
+input:disabled,select:disabled,textarea:disabled{background:#faf5ef;color:#a89aa3;cursor:not-allowed;opacity:.9}
 input::placeholder,textarea::placeholder{color:#c4b5b0}
 input:focus,select:focus,textarea:focus{border-color:#ffb692;background:#fff;box-shadow:0 0 0 4px rgba(255,182,146,.16)}
 textarea{resize:vertical;min-height:60px;line-height:1.55;font-family:inherit}
@@ -430,6 +431,7 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
 /* 回声洞：管理首页每日一句 */
 .echo-card{grid-column:1/-1}
 .echo-grid{display:grid;grid-template-columns:1fr 1.15fr;gap:18px;align-items:start}
+.echo-grid.readonly{grid-template-columns:1fr}
 .echo-form{background:#fffdfa;border:1px solid #f3e7dc;border-radius:16px;padding:14px}
 .echo-form .echo-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
 .echo-form .btn{margin-top:10px}
@@ -518,6 +520,58 @@ table.lv-table tr:last-child td{border-bottom:none}
   padding:13px 20px;background:rgba(255,255,255,.6);border:1px solid #f4e8de;border-radius:16px;
   font-size:11.5px;color:#a3949a;font-weight:600;
 }
+.role-tag{
+  display:inline-flex;align-items:center;border-radius:7px;padding:1px 7px;margin:0 3px;
+  font-size:10.5px;font-weight:800;letter-spacing:.3px;vertical-align:1px;
+}
+.role-tag.admin{background:#ddf6ee;color:#1f8f72}
+.role-tag.guest{background:#fff1dc;color:#b97745}
+.perm-note{
+  display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:9px 13px;border-radius:12px;
+  background:#fff8ec;border:1px dashed #efd2b2;color:#a8794f;font-size:11.8px;font-weight:700;
+}
+
+/* ============ 登录 ============ */
+.login-gate{
+  position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;
+  padding:22px;overflow:auto;
+  background:
+    radial-gradient(900px 520px at 12% 0%, #ffe3d1 0%, rgba(255,227,209,0) 62%),
+    radial-gradient(800px 500px at 100% 100%, #dcf6ed 0%, rgba(220,246,237,0) 60%),
+    linear-gradient(135deg,#fff8ef,#fdf0e6 50%,#eefaf5);
+}
+.login-gate.hide{display:none}
+.login-card{
+  width:min(660px,100%);background:rgba(255,253,248,.97);border:1px solid rgba(240,224,212,.95);
+  border-radius:30px;box-shadow:0 26px 70px rgba(166,116,92,.22);padding:34px 36px 30px;text-align:center;
+}
+.login-logo{
+  width:58px;height:58px;border-radius:19px;margin:0 auto 14px;display:grid;place-items:center;
+  background:linear-gradient(140deg,#ff9d7d,#ffcf6b);color:#fff;font-weight:800;font-size:23px;
+  box-shadow:0 10px 24px rgba(255,140,110,.34);
+}
+.login-card h1{margin:0;font-size:24px;letter-spacing:.2px;color:#4f3a35}
+.login-sub{margin:6px 0 0;font-size:12.5px;color:#a3949a;font-weight:600}
+.login-choices{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:24px;text-align:left}
+.login-choice{
+  border:1.5px solid #f0ded2;background:#fffdfa;border-radius:19px;padding:18px 18px 16px;
+  cursor:pointer;font-family:inherit;color:inherit;text-align:left;transition:.18s;
+}
+.login-choice:hover{transform:translateY(-2px);border-color:#ffc3a6;box-shadow:0 12px 28px rgba(200,150,125,.18)}
+.login-choice:focus{outline:none}
+.login-choice:focus-visible{outline:2px solid #ffb692;outline-offset:2px}
+.login-choice .li{font-size:24px;line-height:1;display:block;margin-bottom:9px}
+.login-choice b{display:block;font-size:15.5px;color:#4f3a35;margin-bottom:3px}
+.login-choice span{display:block;font-size:11.3px;line-height:1.65;color:#a3949a;font-weight:600}
+.login-choice.admin{background:linear-gradient(150deg,#fff8f1,#fff1e5)}
+.login-admin{display:none;margin-top:24px;text-align:left}
+.login-gate.admin-step .login-choices{display:none}
+.login-gate.admin-step .login-admin{display:block}
+.login-admin .fl{margin-bottom:7px}
+.login-err{min-height:17px;margin:7px 0 11px;color:#d9697a;font-size:11.5px;font-weight:700}
+.login-foot{margin:18px 0 0;font-size:11px;color:#b4a5aa;font-weight:600;line-height:1.7}
+.pwd-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+
 .toast{
   position:fixed;left:50%;bottom:34px;transform:translate(-50%,20px);z-index:99;
   background:rgba(70,52,48,.94);color:#fff;font-size:13px;font-weight:700;padding:11px 22px;border-radius:14px;
@@ -554,6 +608,11 @@ table.lv-table tr:last-child td{border-bottom:none}
 }
 @media(max-width:600px){
   .shell{padding:0 13px 50px}
+  .login-gate{padding:14px}
+  .login-card{padding:26px 20px 22px;border-radius:23px}
+  .login-card h1{font-size:20px}
+  .login-choices{grid-template-columns:1fr;gap:10px}
+  .pwd-grid{grid-template-columns:1fr}
   .topbar{margin:0 -13px 16px;padding:0 13px}
   .topbar-in{height:56px;gap:10px}
   .brand .tm{display:none}
@@ -614,12 +673,43 @@ table.lv-table tr:last-child td{border-bottom:none}
   <div id="page" data-page-node-id="CCCzP86KzdtyPoJKECnXGY"></div>
 
   <div class="footbar" data-page-node-id="pE8FRb6wAtlVegRUedvqWZ">
-    <span data-page-node-id="DaQVaCJsPa5h3tBrAvUP4N">💗 <span id="footClass" data-page-node-id="qr6GkCYBgewKxAqaWeDX6l">高二(3)班</span> · 数据存在本机浏览器，换设备请「导出数据」备份</span>
+    <span data-page-node-id="DaQVaCJsPa5h3tBrAvUP4N">💗 <span id="footClass" data-page-node-id="qr6GkCYBgewKxAqaWeDX6l">高二(3)班</span> · <span class="role-tag guest" id="footRole">访客</span> · 数据存在本机浏览器，换设备请「导出数据」备份</span>
     <div class="btn-row" data-page-node-id="IcJGE7mawnOZxeVmsPRIGd">
+      <button class="btn ghost tiny" data-act="switchRole">切换身份</button>
       <button class="btn ghost tiny" data-act="export" data-page-node-id="zAPW2n3Fo8zY1AqixIuw9m">导出数据</button>
-      <button class="btn ghost tiny" data-act="import" data-page-node-id="dDpzXNbuQOHBkNfgCYvnMC">导入数据</button>
+      <button class="btn ghost tiny" id="importBtn" data-act="import" data-page-node-id="dDpzXNbuQOHBkNfgCYvnMC">导入数据</button>
       <input type="file" id="importFile" accept=".json" style="display:none" data-page-node-id="8lcZRo1qA1U23Na5CgpSab">
     </div>
+  </div>
+</div>
+
+<div class="login-gate" id="loginGate">
+  <div class="login-card">
+    <div class="login-logo">3</div>
+    <h1>高二(3)班 · 我们的小屋</h1>
+    <p class="login-sub">请选择进入身份</p>
+    <div class="login-choices">
+      <button class="login-choice guest" data-login="guest" type="button">
+        <span class="li">👀</span>
+        <b>访客进入</b>
+        <span>可查看总览与日志、登记请假、使用小工具；作业、回声洞、设置和每日提醒只读。</span>
+      </button>
+      <button class="login-choice admin" data-login="admin" type="button">
+        <span class="li">🔐</span>
+        <b>管理员进入</b>
+        <span>拥有全部修改权限，需要输入管理员密码。</span>
+      </button>
+    </div>
+    <div class="login-admin">
+      <label class="fl" for="loginPwd">管理员密码</label>
+      <input type="password" id="loginPwd" maxlength="32" autocomplete="current-password" placeholder="请输入管理员密码">
+      <p class="login-err" id="loginErr"></p>
+      <div class="btn-row">
+        <button class="btn" id="loginGo" type="button">进入管理</button>
+        <button class="btn ghost" id="loginBack" type="button">返回</button>
+      </div>
+    </div>
+    <p class="login-foot">数据只保存在本机浏览器 · 管理员可随时在「设置」里修改密码</p>
   </div>
 </div>
 
@@ -807,7 +897,7 @@ var store = null;
 
 function defaultStore(){
   return {
-    settings: { className:"高二(3)班", classShort:"3", examDate:"2027-06-07", classSize:45 },
+    settings: { className:"高二(3)班", classShort:"3", examDate:"2027-06-07", classSize:45, adminPassword:"123" },
     homeworks: [], birthdays: [], leaves: [], reminders: [], messages: [],
     favorites: [], archive: {}, quotes: defaultQuotes(),
     quoteState: { date:"", index:0, manual:-1 }
@@ -873,6 +963,93 @@ function loadStore(){
 function saveStore(){
   try { window.localStorage.setItem(KEY, JSON.stringify(store)); return true; }
   catch(e){ return false; }
+}
+
+/* ================= 身份与权限 ================= */
+var currentRole = null;
+
+function isAdmin(){ return currentRole === "admin"; }
+
+function applyRoleUI(){
+  var fr = $("footRole");
+  if(fr){
+    fr.textContent = isAdmin() ? "管理员" : "访客";
+    fr.className = "role-tag " + (isAdmin() ? "admin" : "guest");
+  }
+  var ib = $("importBtn");
+  if(ib) ib.style.display = isAdmin() ? "" : "none";
+}
+
+function showLogin(){
+  var g = $("loginGate");
+  if(!g) return;
+  g.classList.remove("hide");
+  g.classList.remove("admin-step");
+  var p = $("loginPwd");
+  if(p) p.value = "";
+  var er = $("loginErr");
+  if(er) er.textContent = "";
+  var b = g.querySelector('[data-login="guest"]');
+  if(b) setTimeout(function(){ try { b.focus(); } catch(e){} }, 30);
+}
+
+function hideLogin(){
+  var g = $("loginGate");
+  if(g) g.classList.add("hide");
+}
+
+function loginAs(role){
+  currentRole = (role === "admin") ? "admin" : "guest";
+  if(currentRole === "guest") hwAddSubject = "";
+  hideLogin();
+  applyRoleUI();
+  renderPage();
+  toast(currentRole === "admin" ? "已进入管理员模式" : "已进入访客模式",
+        currentRole === "admin" ? "🔓" : "👀");
+}
+
+function tryAdminLogin(){
+  var p = $("loginPwd"), er = $("loginErr");
+  var v = p ? String(p.value || "") : "";
+  var real = String((store && store.settings && store.settings.adminPassword) || "123");
+  if(v !== real){
+    if(er) er.textContent = "密码不对，再试一次";
+    if(p){ p.select(); p.focus(); }
+    return;
+  }
+  loginAs("admin");
+}
+
+function bindLogin(){
+  var g = $("loginGate");
+  if(!g) return;
+  var guest = g.querySelector('[data-login="guest"]');
+  var admin = g.querySelector('[data-login="admin"]');
+  if(guest) guest.addEventListener("click", function(){ loginAs("guest"); });
+  if(admin) admin.addEventListener("click", function(){
+    g.classList.add("admin-step");
+    var p = $("loginPwd");
+    if(p) setTimeout(function(){ try { p.focus(); } catch(e){} }, 30);
+  });
+  var back = $("loginBack");
+  if(back) back.addEventListener("click", function(){
+    g.classList.remove("admin-step");
+    var er = $("loginErr");
+    if(er) er.textContent = "";
+  });
+  var go = $("loginGo");
+  if(go) go.addEventListener("click", tryAdminLogin);
+  var p = $("loginPwd");
+  if(p) p.addEventListener("keydown", function(e){
+    if(e.key === "Enter"){ e.preventDefault(); tryAdminLogin(); }
+  });
+}
+
+/* 管理员操作统一提示，避免访客从控制台或残留 DOM 触发修改 */
+function adminOnly(msg){
+  if(isAdmin()) return true;
+  toast(msg || "访客模式：没有修改权限", "🔒");
+  return false;
 }
 
 /* ================= 归档 ================= */
@@ -1003,7 +1180,7 @@ function viewHome(){
     var nx = upcoming[0];
     bdayHtml = '<div class="bday-none">'
       + '<div>🎈 今天没有同学生日</div>'
-      + (nx ? '<b>距离 '+esc(nx.b.name)+' 的生日还有 '+nx.days+' 天</b>' : '<b>去「设置」添加生日档案吧</b>')
+      + (nx ? '<b>距离 '+esc(nx.b.name)+' 的生日还有 '+nx.days+' 天</b>' : '<b>'+(isAdmin() ? '去「设置」添加生日档案吧' : '生日档案为空')+'</b>')
       + '</div>';
   }
 
@@ -1065,10 +1242,10 @@ function viewHome(){
       remHtml += '<div class="remind-empty" style="padding:3px 0 0">还有 '+(remTodayList.length-6)+' 条，去「每日提醒」查看</div>';
     }
   } else {
-    remHtml = '<div class="remind-empty">今天没有提醒，去「每日提醒」发布一条吧</div>';
+    remHtml = '<div class="remind-empty">'+(isAdmin() ? '今天没有提醒，去「每日提醒」发布一条吧' : '今天没有提醒')+'</div>';
   }
   var remindHtml = '<section class="card daily-card remind">'
-    + '<div class="daily-hd"><span>🔔 每日提醒</span><span class="spacer"></span><a href="#/remind">管理 ›</a></div>'
+    + '<div class="daily-hd"><span>🔔 每日提醒</span><span class="spacer"></span><a href="#/remind">'+(isAdmin() ? '管理 ›' : '查看 ›')+'</a></div>'
     + '<div class="remind-list">'+remHtml+'</div>'
     + '</section>';
 
@@ -1251,6 +1428,7 @@ function hwAddPanelHtml(sub){
 
 function renderHwArea(){
   var today = todayStr();
+  var admin = isAdmin();
   /* 有截止日期的作业从布置日起一直显示到截止日；没填截止日期就默认当天 */
   var arr = store.homeworks.filter(function(h){
     if(!h.date) return false;
@@ -1279,10 +1457,10 @@ function renderHwArea(){
     html += '<div class="subj-group" style="--c:'+color+'">'
       + '<div class="subj-chip">'+esc(sub)+'</div>'
       + '<div class="subj-main">';
-    list.forEach(function(hw){ html += hwItemHtml(hw, { editable:true }); });
-    if(hwAddSubject === sub){
+    list.forEach(function(hw){ html += hwItemHtml(hw, { editable:admin }); });
+    if(admin && hwAddSubject === sub){
       html += hwAddPanelHtml(sub);
-    } else {
+    } else if(admin){
       html += '<div class="hw-tail">'
         + '<button class="hw-add-btn" data-act="hwAddOpen" data-sub="'+esc(sub)+'" title="添加'+esc(sub)+'作业" aria-label="添加'+esc(sub)+'作业">＋</button>'
         + '</div>';
@@ -1356,7 +1534,7 @@ function renderBoard(){
     remHtml = '<div class="remind-list">';
     remDay.forEach(function(r){
       remHtml += '<div class="remind-item'+(r.done?" done":"")+'"'
-        + (isToday ? ' data-act="toggleRemind" data-id="'+esc(r.id)+'"' : ' style="cursor:default"')
+        + ((isToday && isAdmin()) ? ' data-act="toggleRemind" data-id="'+esc(r.id)+'"' : ' style="cursor:default"')
         + '><span class="rd"></span><span>'+esc(r.text)+'</span></div>';
     });
     remHtml += '</div>';
@@ -1370,12 +1548,14 @@ function renderBoard(){
     + '<p>'+headDesc+'</p></div>'
     + '<span class="spacer"></span>'
     + (isToday
-        ? '<span class="hd-tip">点作业文字直接改 · 点 ＋ 添加作业</span>'
+        ? (isAdmin()
+            ? '<span class="hd-tip">点作业文字直接改 · 点 ＋ 添加作业</span>'
+            : '<span class="hd-tip">访客模式 · 作业只读</span>')
         : '<button class="btn ghost tiny" data-act="boardToday">← 回到今天</button>')
     + '</div>'
     + '<div class="board-grid">'
     +   '<section class="card area-hw">'
-    +     '<div class="card-hd"><div class="ico blue">📚</div><h2>每日作业</h2><span class="sub">'+(isToday?"按科目分组":"历史记录 · 只读")+'</span></div>'
+    +     '<div class="card-hd"><div class="ico blue">📚</div><h2>每日作业</h2><span class="sub">'+(isToday?(isAdmin()?"按科目分组":"按科目分组 · 只读"):"历史记录 · 只读")+'</span></div>'
     +     '<div id="hwArea">'+(isToday ? renderHwArea() : renderHwHistory(vd))+'</div>'
     +   '</section>'
     +   renderBoardCalendar()
@@ -1386,7 +1566,7 @@ function renderBoard(){
     +   '</section>'
     +   '<section class="card area-remind mini">'
     +     '<div class="card-hd"><div class="ico sun">🔔</div><h2>每日提醒</h2><span class="spacer"></span>'
-    +       '<a href="#/remind" style="font-size:11px;color:#cf9526;font-weight:800;text-decoration:none">管理 ›</a></div>'
+    +       '<a href="#/remind" style="font-size:11px;color:#cf9526;font-weight:800;text-decoration:none">'+(isAdmin() ? '管理 ›' : '查看 ›')+'</a></div>'
     +     remHtml
     +   '</section>'
     + '</div>';
@@ -1516,6 +1696,7 @@ function renderLeave(){
 /* ================= 每日提醒 ================= */
 function renderRemind(){
   var today = todayStr();
+  var admin = isAdmin();
   var list = store.reminders.slice().sort(function(a,b){
     if(a.date !== b.date) return a.date < b.date ? 1 : -1;
     return (a.created||0) - (b.created||0);
@@ -1524,12 +1705,18 @@ function renderRemind(){
   var pastList = list.filter(function(r){ return r.date !== today; });
 
   function item(r){
+    var check = admin
+      ? '<button class="hw-check" data-act="toggleRemind" data-id="'+esc(r.id)+'" style="border-color:#ffd98a">✓</button>'
+      : '<span class="hw-check" style="border-color:#ffd98a;cursor:default">✓</span>';
+    var del = admin
+      ? '<button class="hw-del" data-act="delRemind" data-id="'+esc(r.id)+'" title="删除">✕</button>'
+      : '';
     return '<div class="hw-item'+(r.done?" done":"")+'" style="--c:#f0b34a;padding:10px 11px">'
-      + '<button class="hw-check" data-act="toggleRemind" data-id="'+esc(r.id)+'" style="border-color:#ffd98a">✓</button>'
+      + check
       + '<div class="hw-body"><div class="hw-title">'+esc(r.text)+'</div>'
       + '<div class="hw-foot"><span>'+esc(dateLabel(r.date))+'</span>'
       + (r.done ? '<span style="color:#3fa383">已完成</span>' : '')+'</div></div>'
-      + '<button class="hw-del" data-act="delRemind" data-id="'+esc(r.id)+'" title="删除">✕</button>'
+      + del
       + '</div>';
   }
 
@@ -1538,17 +1725,21 @@ function renderRemind(){
   var pastHtml = pastList.length ? pastList.slice(0, 40).map(item).join("")
     : '<div class="mini-empty" style="text-align:left">暂无历史提醒</div>';
 
+  var publish = admin
+    ? '<section class="card" style="margin-bottom:16px">'
+      +   '<div class="card-hd"><div class="ico sun">✍️</div><h2>发布提醒</h2><span class="sub">'+esc(dateLabel(today))+'</span></div>'
+      +   '<label class="fl">提醒内容</label>'
+      +   '<textarea id="rmText" placeholder="例如：明天交物理实验报告；周五下午体检记得空腹；今天值日组留下扫地…"></textarea>'
+      +   '<div class="btn-row" style="margin-top:11px">'
+      +     '<button class="btn" data-act="addRemind" style="background:linear-gradient(135deg,#ffc95e,#f0a93a)">＋ 发布给全班</button>'
+      +     '<span style="font-size:11.5px;color:#b4a5aa;font-weight:600">支持多行，一行一条</span>'
+      +   '</div>'
+      + '</section>'
+    : '<div class="perm-note">👀 访客模式：每日提醒只读，管理员登录后可发布、勾选和删除。</div>';
+
   return '<div class="page-hd"><div class="ico sun">🔔</div>'
-    + '<div><h1>每日提醒</h1><p>班主任发布 · 今日提醒会显示在总览页</p></div></div>'
-    + '<section class="card" style="margin-bottom:16px">'
-    +   '<div class="card-hd"><div class="ico sun">✍️</div><h2>发布提醒</h2><span class="sub">'+esc(dateLabel(today))+'</span></div>'
-    +   '<label class="fl">提醒内容</label>'
-    +   '<textarea id="rmText" placeholder="例如：明天交物理实验报告；周五下午体检记得空腹；今天值日组留下扫地…"></textarea>'
-    +   '<div class="btn-row" style="margin-top:11px">'
-    +     '<button class="btn" data-act="addRemind" style="background:linear-gradient(135deg,#ffc95e,#f0a93a)">＋ 发布给全班</button>'
-    +     '<span style="font-size:11.5px;color:#b4a5aa;font-weight:600">支持多行，一行一条</span>'
-    +   '</div>'
-    + '</section>'
+    + '<div><h1>每日提醒</h1><p>'+(admin?"班主任发布 · 今日提醒会显示在总览页":"访客模式 · 今日提醒与历史提醒只读")+'</p></div></div>'
+    + publish
     + '<section class="card" style="margin-bottom:16px">'
     +   '<div class="card-hd"><div class="ico sun">📌</div><h2>今日提醒</h2><span class="sub">'+todayList.length+' 条</span></div>'
     +   todayHtml
@@ -1673,6 +1864,7 @@ function studentNames(){
 }
 
 function renderTools(){
+  var admin = isAdmin();
   var names = studentNames();
   var studentBody;
   if(names.length){
@@ -1680,8 +1872,9 @@ function renderTools(){
       + '<div class="btn-row"><button class="btn" data-act="pickStudent">🎲 抽一位</button>'
       + '<span class="tool-tip">名单来自生日档案 · 共 '+names.length+' 人</span></div>';
   } else {
-    studentBody = '<div class="tool-empty">生日档案里还没有学生名单。<br>先去「设置」里添加同学的姓名和生日吧。</div>'
-      + '<div class="btn-row"><a class="btn ghost tiny" href="#/settings">去设置 ›</a></div>';
+    studentBody = '<div class="tool-empty">生日档案里还没有学生名单。'
+      + (admin ? '<br>先去「设置」里添加同学的姓名和生日吧。' : '') + '</div>'
+      + (admin ? '<div class="btn-row"><a class="btn ghost tiny" href="#/settings">去设置 ›</a></div>' : '');
   }
 
   var quoteRows = "";
@@ -1693,15 +1886,28 @@ function renderTools(){
         +     (q.by ? '<span class="by">—— '+esc(q.by)+'</span>' : '')
         +   '</div>'
         + '</div>'
-        + '<button class="hw-del" data-act="delQuote" data-id="'+esc(q.id)+'" title="删除" style="opacity:1">✕</button>'
+        + (admin ? '<button class="hw-del" data-act="delQuote" data-id="'+esc(q.id)+'" title="删除" style="opacity:1">✕</button>' : '')
         + '</div>';
     });
   } else {
-    quoteRows = '<div class="echo-empty">回声洞还是空的，从左边写第一句吧。</div>';
+    quoteRows = '<div class="echo-empty">'+(admin ? "回声洞还是空的，从左边写第一句吧。" : "回声洞里还没有句子。")+'</div>';
   }
   var tagOptions = QUOTE_TAGS.map(function(t){
     return '<option value="'+esc(t)+'"'+(t === "励志" ? " selected" : "")+'>'+esc(t)+'</option>';
   }).join("");
+
+  var echoForm = admin
+    ? '<div class="echo-form">'
+      +   '<label class="fl">句子</label>'
+      +   '<input type="text" id="qText" maxlength="200" placeholder="写一句想对全班说的话">'
+      +   '<div class="echo-row">'
+      +     '<div><label class="fl">标签</label><select id="qTag">'+tagOptions+'</select></div>'
+      +     '<div><label class="fl">署名（选填）</label><input type="text" id="qBy" maxlength="20" placeholder="例如：班主任"></div>'
+      +   '</div>'
+      +   '<button class="btn" data-act="addQuote">＋ 收进回声洞</button>'
+      +   '<p class="echo-tip">每天从回声洞里随机抽一句显示在首页，署名会和句子一起出现。</p>'
+      + '</div>'
+    : '<div class="perm-note" style="margin-bottom:0">👀 访客模式：回声洞只读，管理员登录后可添加或删除句子。</div>';
 
   return '<div class="page-hd">'
     + '<div class="ico purple">🧰</div><div><h1>工具箱</h1>'
@@ -1724,18 +1930,9 @@ function renderTools(){
     +     '<span class="tool-tip">按回车也能抽</span></div>'
     +   '</section>'
     +   '<section class="card echo-card">'
-    +     '<div class="card-hd"><div class="ico blue">📣</div><h2>回声洞</h2><span class="sub">首页每日一句 · 共 '+store.quotes.length+' 条</span></div>'
-    +     '<div class="echo-grid">'
-    +       '<div class="echo-form">'
-    +         '<label class="fl">句子</label>'
-    +         '<input type="text" id="qText" maxlength="200" placeholder="写一句想对全班说的话">'
-    +         '<div class="echo-row">'
-    +           '<div><label class="fl">标签</label><select id="qTag">'+tagOptions+'</select></div>'
-    +           '<div><label class="fl">署名（选填）</label><input type="text" id="qBy" maxlength="20" placeholder="例如：班主任"></div>'
-    +         '</div>'
-    +         '<button class="btn" data-act="addQuote">＋ 收进回声洞</button>'
-    +         '<p class="echo-tip">每天从回声洞里随机抽一句显示在首页，署名会和句子一起出现。</p>'
-    +       '</div>'
+    +     '<div class="card-hd"><div class="ico blue">📣</div><h2>回声洞</h2><span class="sub">首页每日一句 · 共 '+store.quotes.length+' 条'+(admin?"":" · 只读")+'</span></div>'
+    +     '<div class="echo-grid'+(admin?"":" readonly")+'">'
+    +       echoForm
     +       '<div>'
     +         '<div class="echo-list-hd"><span>全部条目</span><span class="spacer"></span><span>共 '+store.quotes.length+' 条</span></div>'
     +         '<div class="echo-list">'+quoteRows+'</div>'
@@ -1826,6 +2023,8 @@ function delQuote(id){
 
 /* ================= 设置 ================= */
 function renderSettings(){
+  var admin = isAdmin();
+  var dis = admin ? "" : " disabled";
   var bdList = store.birthdays.length
     ? birthdaySorted().map(function(x, i){
         var col = AVATAR_COLORS[i % AVATAR_COLORS.length];
@@ -1834,42 +2033,67 @@ function renderSettings(){
           + '<div class="bday-info"><div class="bday-name">'+esc(x.b.name)+'</div>'
           + '<div class="bday-date">'+esc(String(x.b.md).replace("-","月"))+'日</div></div>'
           + '<span class="bday-days">'+(x.days===0?"今天":x.days+" 天后")+'</span>'
-          + '<button class="hw-del" data-act="delBday" data-id="'+esc(x.b.id)+'" style="opacity:1">✕</button></div>';
+          + (admin ? '<button class="hw-del" data-act="delBday" data-id="'+esc(x.b.id)+'" style="opacity:1">✕</button>' : '')
+          + '</div>';
       }).join("")
     : '<div class="j-empty">还没有生日档案</div>';
 
-  return '<div class="page-hd"><div class="ico orange">⚙️</div><div><h1>设置</h1><p>班级信息与数据管理</p></div></div>'
+  var note = admin ? ''
+    : '<div class="perm-note">👀 访客模式：设置只读。班级信息、生日档案和管理员密码仅管理员可修改。</div>';
+
+  var bdForm = admin
+    ? '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'
+      +   '<input type="text" id="bdName" placeholder="姓名">'
+      +   '<input type="date" id="bdDate">'
+      + '</div>'
+      + '<input type="text" id="bdWish" placeholder="专属祝福语（选填）" style="margin-top:8px">'
+      + '<button class="btn tiny" data-act="addBday" style="margin-top:10px">＋ 添加生日</button>'
+    : '';
+
+  var dataBtns = '<button class="btn ghost tiny" data-act="export">导出全部数据</button>'
+    + (admin
+        ? '<button class="btn ghost tiny" data-act="import">导入数据</button>'
+          + '<button class="btn ghost tiny" data-act="sample">载入示例数据</button>'
+          + '<button class="btn ghost tiny" data-act="reset" style="color:#d9697a;border-color:#f6d6da">清空全部</button>'
+        : '');
+
+  var pwdCard = admin
+    ? '<section class="card" style="margin-top:16px">'
+      +   '<div class="card-hd"><div class="ico orange">🔐</div><h2>管理员密码</h2><span class="sub">进入管理员模式时使用</span></div>'
+      +   '<div class="pwd-grid">'
+      +     '<div><label class="fl">当前密码</label><input type="password" id="pwdOld" maxlength="20" autocomplete="current-password"></div>'
+      +     '<div><label class="fl">新密码</label><input type="password" id="pwdNew" maxlength="20" autocomplete="new-password"></div>'
+      +     '<div><label class="fl">确认新密码</label><input type="password" id="pwdNew2" maxlength="20" autocomplete="new-password"></div>'
+      +   '</div>'
+      +   '<button class="btn" data-act="savePwd" style="margin-top:12px">修改密码</button>'
+      +   '<p class="echo-tip">默认密码为 123，建议改成只有管理员知道的内容。</p>'
+      + '</section>'
+    : '';
+
+  return '<div class="page-hd"><div class="ico orange">⚙️</div><div><h1>设置</h1><p>'+(admin?"班级信息与数据管理":"访客模式 · 设置只读")+'</p></div></div>'
+    + note
     + '<div class="settings-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:16px">'
     + '<section class="card">'
     +   '<div class="card-hd"><div class="ico orange">🏫</div><h2>班级信息</h2></div>'
     +   '<div style="display:grid;gap:10px">'
-    +     '<div><label class="fl">班级名称</label><input type="text" id="setClass" value="'+esc(store.settings.className||"")+'" placeholder="高二(3)班"></div>'
+    +     '<div><label class="fl">班级名称</label><input type="text" id="setClass" value="'+esc(store.settings.className||"")+'" placeholder="高二(3)班"'+dis+'></div>'
     +     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
-    +       '<div><label class="fl">高考日期</label><input type="date" id="setExam" value="'+esc(store.settings.examDate||"")+'"></div>'
-    +       '<div><label class="fl">班级人数（应到）</label><input type="number" id="setSize" min="1" max="99" step="1" value="'+esc(String(store.settings.classSize||45))+'"></div>'
+    +       '<div><label class="fl">高考日期</label><input type="date" id="setExam" value="'+esc(store.settings.examDate||"")+'"'+dis+'></div>'
+    +       '<div><label class="fl">班级人数（应到）</label><input type="number" id="setSize" min="1" max="99" step="1" value="'+esc(String(store.settings.classSize||45))+'"'+dis+'></div>'
     +     '</div>'
     +   '</div>'
-    +   '<button class="btn" data-act="saveSet" style="margin-top:12px">保存设置</button>'
+    +   (admin ? '<button class="btn" data-act="saveSet" style="margin-top:12px">保存设置</button>' : '')
     + '</section>'
     + '<section class="card">'
     +   '<div class="card-hd"><div class="ico blue">🎂</div><h2>生日档案</h2><span class="sub">'+store.birthdays.length+' 人</span></div>'
-    +   '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'
-    +     '<input type="text" id="bdName" placeholder="姓名">'
-    +     '<input type="date" id="bdDate">'
-    +   '</div>'
-    +   '<input type="text" id="bdWish" placeholder="专属祝福语（选填）" style="margin-top:8px">'
-    +   '<button class="btn tiny" data-act="addBday" style="margin-top:10px">＋ 添加生日</button>'
+    +   bdForm
     +   '<div style="margin-top:12px;max-height:210px;overflow:auto">'+bdList+'</div>'
     + '</section>'
     + '</div>'
+    + pwdCard
     + '<section class="card" style="margin-top:16px">'
     +   '<div class="card-hd"><div class="ico purple">💾</div><h2>数据管理</h2></div>'
-    +   '<div class="btn-row">'
-    +     '<button class="btn ghost tiny" data-act="export">导出全部数据</button>'
-    +     '<button class="btn ghost tiny" data-act="import">导入数据</button>'
-    +     '<button class="btn ghost tiny" data-act="sample">载入示例数据</button>'
-    +     '<button class="btn ghost tiny" data-act="reset" style="color:#d9697a;border-color:#f6d6da">清空全部</button>'
-    +   '</div>'
+    +   '<div class="btn-row">'+dataBtns+'</div>'
     +   '<p style="font-size:11.5px;color:#a3949a;font-weight:600;margin:12px 0 0;line-height:1.8">'
     +   '数据保存在当前浏览器中，换设备或清缓存会丢失，建议定期导出备份。<br>'
     +   '已归档 <b style="color:#c06a4a">'+Object.keys(store.archive).length+' 天</b>　·　'
@@ -2233,11 +2457,15 @@ function exportData(){
 
 function importData(file){
   if(!file) return;
+  if(!isAdmin()){ toast("访客不能导入数据", "🔒"); return; }
+  var keepPwd = String((store.settings && store.settings.adminPassword) || "123");
   var reader = new FileReader();
   reader.onload = function(ev){
     try {
       var obj = JSON.parse(ev.target.result);
       store = normalize(obj);
+      /* 导入备份不覆盖当前管理员密码，避免导入后把自己锁在外面 */
+      store.settings.adminPassword = keepPwd;
       archiveAll();
       saveStore();
       renderPage();
@@ -2294,10 +2522,41 @@ function loadSample(){
 
 function resetAll(){
   if(!window.confirm("确定要清空所有数据吗？作业、请假、提醒、留言、日志都会删除。\n建议先「导出数据」备份。")) return;
+  var keepPwd = String((store.settings && store.settings.adminPassword) || "123");
   store = defaultStore();
+  store.settings.adminPassword = keepPwd;
   saveStore();
   renderPage();
   toast("已清空全部数据", "🧹");
+}
+
+function savePwd(){
+  if(!adminOnly("访客不能修改管理员密码")) return;
+  var oldEl = $("pwdOld"), newEl = $("pwdNew"), new2El = $("pwdNew2");
+  if(!oldEl || !newEl || !new2El) return;
+  var oldV = String(oldEl.value || "");
+  var newV = String(newEl.value || "").trim();
+  var new2 = String(new2El.value || "").trim();
+  var real = String((store.settings && store.settings.adminPassword) || "123");
+  if(oldV !== real){
+    toast("当前密码不正确", "🔒");
+    oldEl.select(); oldEl.focus();
+    return;
+  }
+  if(!newV || newV.length > 20){
+    toast("新密码需为 1-20 个字符", "🔒");
+    newEl.focus();
+    return;
+  }
+  if(newV !== new2){
+    toast("两次输入的新密码不一致", "🔒");
+    new2El.focus();
+    return;
+  }
+  store.settings.adminPassword = newV;
+  saveStore();
+  renderPage();
+  toast("管理员密码已修改", "🔐");
 }
 
 /* ================= 事件 ================= */
@@ -2332,6 +2591,7 @@ function handleAction(act, el){
       break;
 
     case "delHw":
+      if(!adminOnly("访客不能修改作业")) break;
       id = el.getAttribute("data-id");
       store.homeworks = store.homeworks.filter(function(h){ return h.id !== id; });
       commit();
@@ -2367,14 +2627,17 @@ function handleAction(act, el){
       break;
 
     case "addQuote":
+      if(!adminOnly("访客不能修改回声洞")) break;
       addQuote();
       break;
 
     case "delQuote":
+      if(!adminOnly("访客不能修改回声洞")) break;
       delQuote(el.getAttribute("data-id"));
       break;
 
     case "toggleRemind":
+      if(!adminOnly("访客不能修改每日提醒")) break;
       id = el.getAttribute("data-id");
       store.reminders.forEach(function(r){ if(r.id === id) r.done = !r.done; });
       commit();
@@ -2382,6 +2645,7 @@ function handleAction(act, el){
       break;
 
     case "delRemind":
+      if(!adminOnly("访客不能修改每日提醒")) break;
       id = el.getAttribute("data-id");
       store.reminders = store.reminders.filter(function(r){ return r.id !== id; });
       commit();
@@ -2390,6 +2654,7 @@ function handleAction(act, el){
       break;
 
     case "addRemind":
+      if(!adminOnly("访客不能修改每日提醒")) break;
       addRemind();
       break;
 
@@ -2424,16 +2689,19 @@ function handleAction(act, el){
       break;
 
     case "hwAddOpen":
+      if(!adminOnly("访客不能修改作业")) break;
       hwAddSubject = el.getAttribute("data-sub") || "";
       renderPage();
       break;
 
     case "hwAddCancel":
+      if(!adminOnly("访客不能修改作业")) break;
       hwAddSubject = "";
       renderPage();
       break;
 
     case "hwAddSave":
+      if(!adminOnly("访客不能修改作业")) break;
       saveHwAdd();
       break;
 
@@ -2450,10 +2718,12 @@ function handleAction(act, el){
       break;
 
     case "addBday":
+      if(!adminOnly("访客不能修改设置")) break;
       addBirthday();
       break;
 
     case "delBday":
+      if(!adminOnly("访客不能修改设置")) break;
       id = el.getAttribute("data-id");
       store.birthdays = store.birthdays.filter(function(b){ return b.id !== id; });
       commit();
@@ -2462,6 +2732,7 @@ function handleAction(act, el){
       break;
 
     case "saveSet":
+      if(!adminOnly("访客不能修改设置")) break;
       var cn = $("setClass"), ex = $("setExam"), sz = $("setSize");
       if(cn && String(cn.value||"").trim()) store.settings.className = String(cn.value).trim();
       store.settings.classShort = String(store.settings.className||"").replace(/[^0-9]/g,"").slice(0,2) || "3";
@@ -2477,6 +2748,16 @@ function handleAction(act, el){
       toast("设置已保存", "⚙️");
       break;
 
+    case "savePwd":
+      savePwd();
+      break;
+
+    case "switchRole":
+      currentRole = null;
+      applyRoleUI();
+      showLogin();
+      break;
+
     case "export":
       exportData();
       break;
@@ -2486,15 +2767,18 @@ function handleAction(act, el){
       break;
 
     case "import":
+      if(!adminOnly("访客不能导入数据")) break;
       var fi = $("importFile");
       if(fi) fi.click();
       break;
 
     case "sample":
+      if(!adminOnly("访客不能修改设置")) break;
       loadSample();
       break;
 
     case "reset":
+      if(!adminOnly("访客不能修改设置")) break;
       resetAll();
       break;
   }
@@ -2551,7 +2835,10 @@ function init(){
   currentRoute = hashRoute() || "home";
   try { if(!window.location.hash) window.location.hash = "#/home"; } catch(e){}
   bindGlobal();
+  bindLogin();
+  applyRoleUI();
   renderPage();
+  showLogin();
 
   var todayBd = store.birthdays.some(function(b){ return daysToBirthday(b.md, new Date()) === 0; });
   var flagKey = "gaoer3_celebrated_" + todayStr();
@@ -2578,7 +2865,9 @@ if(typeof window !== "undefined"){
     go: go,
     route: function(){ return currentRoute; },
     daysToBirthday: daysToBirthday,
-    buildSnapshot: buildSnapshot
+    buildSnapshot: buildSnapshot,
+    role: function(){ return currentRole; },
+    isAdmin: isAdmin
   };
 }
 
