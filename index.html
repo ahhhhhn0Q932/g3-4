@@ -81,7 +81,7 @@ body::before{
 .ico.sun{background:#fff4d6;color:#cf9526}
 
 label.fl{font-size:11.5px;font-weight:700;color:var(--ink-2);display:block;margin-bottom:5px;letter-spacing:.4px}
-input[type=text],input[type=date],input[type=time],select,textarea{
+input[type=text],input[type=date],input[type=time],input[type=number],select,textarea{
   width:100%;font-family:inherit;font-size:13.5px;color:var(--ink);
   background:#fffdfa;border:1.5px solid #f0e0d4;border-radius:12px;padding:9px 12px;outline:none;transition:.18s;
 }
@@ -367,6 +367,22 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
 .form-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
 .form-grid .full{grid-column:1/-1}
 
+/* ============ 工具箱 ============ */
+.tools-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.tool-result{
+  min-height:132px;display:flex;align-items:center;justify-content:center;text-align:center;
+  border-radius:20px;border:1px dashed #f0ddcf;background:linear-gradient(135deg,#fff8f2,#f4fbf7);
+  margin-bottom:13px;position:relative;overflow:hidden;padding:14px;
+}
+.tool-result .num{font-size:52px;font-weight:800;color:#5a4038;letter-spacing:1px;font-variant-numeric:tabular-nums;line-height:1}
+#pickStudentName{font-size:34px;font-weight:800;color:#5a4038;letter-spacing:2px;line-height:1.3;word-break:break-word}
+.tool-tip{font-size:11.5px;color:#b4a5aa;font-weight:700}
+.tool-empty{font-size:12px;color:#b3a49f;font-weight:600;line-height:1.7;text-align:center;padding:8px 4px}
+.rnd-form{display:grid;grid-template-columns:1fr auto 1fr;gap:9px;align-items:end;margin-bottom:12px}
+.rnd-form .tilde{font-weight:800;color:#c4b5b0;padding-bottom:9px}
+.tool-pop{animation:toolPop .35s cubic-bezier(.2,.9,.3,1.4)}
+@keyframes toolPop{0%{transform:scale(.82);opacity:.35}60%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
+
 /* 请假页 */
 .leave-today-grid{display:flex;flex-wrap:wrap;gap:8px}
 .leave-card{
@@ -455,6 +471,7 @@ table.lv-table tr:last-child td{border-bottom:none}
   .hero{padding:26px 22px}
   .hero-quote{font-size:22px}
   .form-grid{grid-template-columns:1fr 1fr}
+  .tools-grid{grid-template-columns:1fr}
   .area-cal{max-width:360px;width:100%;justify-self:center}
 }
 @media(max-width:600px){
@@ -504,6 +521,7 @@ table.lv-table tr:last-child td{border-bottom:none}
         <a href="#/leave" data-r="leave" data-page-node-id="d1gHhU1xJXGKRG91MVDjQj">请假登记</a>
         <a href="#/remind" data-r="remind" data-page-node-id="I9CeV9QD7l7P7OJ6BfjjcL">每日提醒</a>
         <a href="#/journal" data-r="journal" data-page-node-id="K7rjimDPlFV8ZYH3HiZkjO">班级日志</a>
+        <a href="#/tools" data-r="tools">工具箱</a>
         <a href="#/settings" data-r="settings" data-page-node-id="wiHImlsdt3SrHHmXjvVPtK">设置</a>
       </nav>
       <div class="top-clock" data-page-node-id="bHBPfnbfdvKim2KWv16gyn">
@@ -614,7 +632,7 @@ var DEFAULT_WISHES = [
   "生日快乐！今天的蜡烛许愿一定会实现。"
 ];
 
-var ROUTES = { home:1, board:1, leave:1, remind:1, journal:1, settings:1 };
+var ROUTES = { home:1, board:1, leave:1, remind:1, journal:1, tools:1, settings:1 };
 var KEY = "gaoer3_classroom_v2";
 var OLD_KEY = "gaoer3_classroom_v1";
 
@@ -1378,6 +1396,101 @@ function renderJournal(){
     + '</div>';
 }
 
+/* ================= 工具箱 ================= */
+var lastStudent = "";
+var pickedStudent = "";
+
+/* 学生名单从生日档案里读取，同一个名字只保留一次 */
+function studentNames(){
+  var seen = {}, out = [];
+  store.birthdays.forEach(function(b){
+    var n = String(b.name || "").trim();
+    if(n && !seen[n]){ seen[n] = 1; out.push(n); }
+  });
+  return out;
+}
+
+function renderTools(){
+  var names = studentNames();
+  var studentBody;
+  if(names.length){
+    studentBody = '<div class="tool-result"><span id="pickStudentName">'+esc(pickedStudent || "—")+'</span></div>'
+      + '<div class="btn-row"><button class="btn" data-act="pickStudent">🎲 抽一位</button>'
+      + '<span class="tool-tip">名单来自生日档案 · 共 '+names.length+' 人</span></div>';
+  } else {
+    studentBody = '<div class="tool-empty">生日档案里还没有学生名单。<br>先去「设置」里添加同学的姓名和生日吧。</div>'
+      + '<div class="btn-row"><a class="btn ghost tiny" href="#/settings">去设置 ›</a></div>';
+  }
+
+  return '<div class="page-hd">'
+    + '<div class="ico purple">🧰</div><div><h1>工具箱</h1>'
+    + '<p>课堂随手用：随机抽学生、随机数</p></div>'
+    + '</div>'
+    + '<div class="tools-grid">'
+    +   '<section class="card">'
+    +     '<div class="card-hd"><div class="ico pink">🎲</div><h2>随机抽学生</h2><span class="sub">从生日档案读取</span></div>'
+    +     studentBody
+    +   '</section>'
+    +   '<section class="card">'
+    +     '<div class="card-hd"><div class="ico sun">🔢</div><h2>随机数</h2><span class="sub">可设置范围</span></div>'
+    +     '<div class="rnd-form">'
+    +       '<div><label class="fl">最小值</label><input type="number" id="rndMin" value="1" step="1"></div>'
+    +       '<div class="tilde">~</div>'
+    +       '<div><label class="fl">最大值</label><input type="number" id="rndMax" value="100" step="1"></div>'
+    +     '</div>'
+    +     '<div class="tool-result"><span class="num" id="rndResult">—</span></div>'
+    +     '<div class="btn-row"><button class="btn mint" data-act="pickNumber">🔢 抽一个</button>'
+    +     '<span class="tool-tip">按回车也能抽</span></div>'
+    +   '</section>'
+    + '</div>';
+}
+
+function pickStudent(){
+  var names = studentNames();
+  if(!names.length){ toast("生日档案里还没有学生名单", "🎂"); return; }
+  var el = $("pickStudentName");
+  if(!el) return;
+
+  var fin = names[Math.floor(Math.random() * names.length)];
+  if(names.length > 1){
+    var guard = 0;
+    while(fin === lastStudent && guard < 30){
+      fin = names[Math.floor(Math.random() * names.length)];
+      guard++;
+    }
+  }
+  lastStudent = fin;
+  pickedStudent = fin;
+
+  clearInterval(pickStudent._tm);
+  var ticks = 0;
+  el.classList.remove("tool-pop");
+  /* 快速滚动几轮再定格，课堂上有抽取的感觉 */
+  pickStudent._tm = setInterval(function(){
+    if(!document.body.contains(el)){ clearInterval(pickStudent._tm); return; }
+    if(ticks >= 9){
+      clearInterval(pickStudent._tm);
+      el.textContent = fin;
+      el.classList.add("tool-pop");
+      return;
+    }
+    el.textContent = names[Math.floor(Math.random() * names.length)];
+    ticks++;
+  }, 55);
+}
+
+function pickNumber(){
+  var aEl = $("rndMin"), bEl = $("rndMax"), out = $("rndResult");
+  if(!aEl || !bEl || !out) return;
+  var a = parseInt(aEl.value, 10), b = parseInt(bEl.value, 10);
+  if(isNaN(a) || isNaN(b)){ toast("请把最小值和最大值都填上", "🔢"); return; }
+  if(a > b){ var t = a; a = b; b = t; aEl.value = a; bEl.value = b; }
+  out.textContent = Math.floor(Math.random() * (b - a + 1)) + a;
+  out.classList.remove("tool-pop");
+  void out.offsetWidth;
+  out.classList.add("tool-pop");
+}
+
 /* ================= 设置 ================= */
 function renderSettings(){
   var bdList = store.birthdays.length
@@ -1470,6 +1583,7 @@ function renderPage(){
   else if(r === "leave") html = renderLeave();
   else if(r === "remind") html = renderRemind();
   else if(r === "journal") html = renderJournal();
+  else if(r === "tools") html = renderTools();
   else if(r === "settings") html = renderSettings();
   box.innerHTML = html;
   setActiveNav(r);
@@ -1524,6 +1638,15 @@ function afterRender(r){
         });
       })(tits[j]);
     }
+  }
+  if(r === "tools"){
+    /* 随机数：在最小值/最大值里按回车直接抽 */
+    var rmin = $("rndMin"), rmax = $("rndMax");
+    var onRndEnter = function(e){
+      if(e.key === "Enter"){ e.preventDefault(); pickNumber(); }
+    };
+    if(rmin) rmin.addEventListener("keydown", onRndEnter);
+    if(rmax) rmax.addEventListener("keydown", onRndEnter);
   }
   if(r === "journal"){
     var mt = $("msgText");
@@ -1892,6 +2015,14 @@ function handleAction(act, el){
       boardDate = "";
       calCursor = null;
       renderPage();
+      break;
+
+    case "pickStudent":
+      pickStudent();
+      break;
+
+    case "pickNumber":
+      pickNumber();
       break;
 
     case "addMsg":
