@@ -859,6 +859,10 @@ var GUEST_PERM_LABELS = [
 ];
 /* 每次发布更新：在 CHANGELOG 顶部追加一条，并同步 README「更新日志」 */
 var CHANGELOG = [
+  { date:"2026-11-15", ver:"v1.6.1", title:"班级日志回看修复", items:[
+    "修复点击没有存档的日期后自动回到今天、看起来“无效果”的问题。",
+    "历史回看增加页面标题、说明和“回到今天”入口，交互与今日总览一致。"
+  ]},
   { date:"2026-11-15", ver:"v1.6", title:"维护面板与更新日志", items:[
     "设置页新增维护面板，展示版本更新日志与 GitHub 仓库入口。",
     "README 同步新增更新日志，并与应用内记录保持一致。"
@@ -2474,11 +2478,12 @@ function renderJournalCalendar(){
 function renderJournal(){
   var canJournal = canEdit("journal");
   var dates = allJournalDates();
-  var sel = (journalDate && dates.indexOf(journalDate) >= 0) ? journalDate : dates[0];
+  var sel = journalDate || dates[0];
   journalDate = sel;
 
   var snap = store.archive[sel] || buildSnapshot(sel);
   var dt = parseDate(sel);
+  var isToday = sel === todayStr();
 
   var hwHtml = snap.homeworks.length
     ? snap.homeworks.map(function(h){
@@ -2513,8 +2518,9 @@ function renderJournal(){
 
   return '<div class="page-hd">'
     + '<div class="ico purple">📔</div>'
-    + '<div><h1>班级日志</h1><p>每天的作业、请假、提醒自动存档，还能写点心里话</p></div>'
+    + '<div><h1>'+(isToday?"班级日志":"班级日志 · 历史回看")+'</h1><p>'+(isToday?"每天的作业、请假、提醒自动存档，还能写点心里话":"正在查看 "+esc(dateLabel(sel))+" 的作业、请假、提醒与留言")+'</p></div>'
     + '<span class="spacer"></span>'
+    + (isToday ? '' : '<button class="btn ghost tiny" data-act="journalToday">← 回到今天</button>')
     + '<button class="btn ghost tiny" data-act="exportJournal">导出日志</button>'
     + '</div>'
     + '<div class="journal-grid">'
