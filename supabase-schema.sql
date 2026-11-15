@@ -60,7 +60,7 @@ $$;
 
 -- 5) 保存数据
 --    role = admin：整份数据覆盖；只有确实改了请假/留言时才覆盖这两个数组
---    role = guest：只允许改 leaves / messages，其余字段原样保留
+--    role = guest：只允许改 leaves / messages / issues，其余字段原样保留
 create or replace function public.save_state(
   pwd text,
   role text,
@@ -79,6 +79,7 @@ declare
   safe_role text := case when role = 'admin' then 'admin' else 'guest' end;
   leaves_val jsonb;
   messages_val jsonb;
+  issues_val jsonb;
 begin
   if data is null or jsonb_typeof(data) <> 'object' then
     raise exception 'data must be a json object';
@@ -121,9 +122,18 @@ begin
       messages_val := coalesce(cur -> 'messages', '[]'::jsonb);
     end if;
 
+    -- Issue 看板是共享待办：访客也可以新增和删除，因此直接采用客户端数组；
+    -- 旧客户端没有 issues 字段时保留云端现状。
+    if jsonb_typeof(data -> 'issues') = 'array' then
+      issues_val := data -> 'issues';
+    else
+      issues_val := coalesce(cur -> 'issues', '[]'::jsonb);
+    end if;
+
     merged := cur
       || jsonb_build_object('leaves', leaves_val)
-      || jsonb_build_object('messages', messages_val);
+      || jsonb_build_object('messages', messages_val)
+      || jsonb_build_object('issues', issues_val);
   end if;
 
   update public.class_state

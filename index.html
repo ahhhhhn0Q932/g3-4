@@ -476,6 +476,46 @@ body.board-display .hw-chip{font-size:11px}
 .echo-item .by{font-size:10.5px;font-weight:700;color:#a3949a}
 .echo-empty{font-size:12px;color:#b3a49f;font-weight:600;padding:20px 4px;text-align:center}
 
+/* 工具箱：Issue 提交 / 待办看板 */
+.issue-card{grid-column:1/-1}
+.issue-layout{display:grid;grid-template-columns:340px minmax(0,1fr);gap:18px;align-items:start}
+.issue-form{background:#fffdfa;border:1px solid #f3e7dc;border-radius:16px;padding:14px}
+.issue-form textarea{min-height:92px;resize:vertical}
+.issue-form .btn{margin-top:10px}
+.issue-tip{font-size:11px;color:#b4a5aa;font-weight:600;line-height:1.6;margin:8px 0 0}
+.issue-board-hd{display:flex;align-items:center;gap:8px;font-size:11.5px;font-weight:800;color:#a3949a;letter-spacing:.6px;margin-bottom:8px;flex-wrap:wrap}
+.issue-board-hd .spacer{flex:1}
+.issue-list{display:flex;flex-direction:column;gap:8px;max-height:560px;overflow:auto;padding-right:3px}
+.issue-item{background:#fffdfa;border:1px solid #f3e7dc;border-radius:14px;padding:11px 12px 10px}
+.issue-item.resolved{background:#fbfbf7;border-color:#ece7da;opacity:.82}
+.issue-top{display:flex;align-items:flex-start;gap:9px}
+.issue-check{
+  flex:none;width:21px;height:21px;border-radius:7px;border:1.5px solid #e7d6c8;background:#fff;
+  color:#fff;font-size:13px;font-weight:900;line-height:18px;padding:0;display:grid;place-items:center;cursor:pointer;
+}
+.issue-check.on{background:#49a98a;border-color:#49a98a}
+.issue-check:disabled{cursor:default}
+span.issue-check{cursor:default}
+button.issue-check:hover{border-color:#8fd6bc;background:#f2fbf7}
+.issue-head{flex:1;min-width:0}
+.issue-title{font-size:13.5px;font-weight:800;color:#5a4038;line-height:1.45;word-break:break-word}
+.issue-title.done{text-decoration:line-through;color:#9d9095}
+.issue-sub{font-size:10.5px;color:#b0a1a6;font-weight:700;margin-top:3px;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.issue-status{font-size:10px;font-weight:800;padding:1px 6px;border-radius:6px;background:#fff3e7;color:#b4703f}
+.issue-status.done{background:#e7f7ef;color:#218a6c}
+.issue-del{opacity:.75;flex:none}
+.issue-detail{font-size:12px;color:#7c6b70;font-weight:600;line-height:1.6;margin:7px 0 0;white-space:pre-wrap;word-break:break-word}
+.issue-replies{margin-top:8px;display:flex;flex-direction:column;gap:5px}
+.issue-reply{font-size:11.5px;color:#6f5f64;line-height:1.55;background:#f8f4ed;border-radius:9px;padding:6px 9px;word-break:break-word}
+.issue-reply .who{font-weight:800;color:#a3775d;margin-right:4px}
+.issue-reply .when{color:#b6a7ab;font-size:10px;margin-left:5px}
+.issue-reply-box{display:flex;gap:6px;margin-top:8px}
+.issue-reply-box input{flex:1;min-width:0}
+.issue-reply-box .btn{padding:7px 12px;font-size:12px}
+.issue-divider{display:flex;align-items:center;gap:8px;font-size:10.5px;font-weight:800;color:#b0a1a6;letter-spacing:.5px;margin:4px 0}
+.issue-divider:before,.issue-divider:after{content:"";height:1px;background:#eee3d8;flex:1}
+.issue-empty{font-size:12px;color:#b3a49f;font-weight:600;padding:24px 4px;text-align:center}
+
 /* 请假节次：多选、全选、Shift 连续选 */
 .period-block{margin-top:11px}
 .period-picker{display:flex;flex-wrap:wrap;gap:7px;margin-top:7px}
@@ -798,6 +838,7 @@ table.lv-table tr:last-child td{border-bottom:none}
   .settings-grid{grid-template-columns:1fr !important}
   .home-pair{grid-template-columns:1fr}
   .echo-grid{grid-template-columns:1fr}
+  .issue-layout{grid-template-columns:1fr}
   .nav a{padding:6px 10px;font-size:12.5px}
   .hero{padding:26px 22px}
   .hero-quote{font-size:22px}
@@ -1079,6 +1120,11 @@ function applyRoster(s){
 }
 
 var CHANGELOG = [
+  { date:"2026-11-15", ver:"v1.10", title:"工具箱 Issue 提交", items:[
+    "工具箱新增 Issue 待办看板：所有人可提交和删除，管理员可回复并勾选解决。",
+    "Issue 显示提交身份、时间、状态和历史回复；已解决条目集中显示。",
+    "云同步扩展 issues 字段，访客提交的 Issue 也会写入云端；旧部署需重新运行 supabase-schema.sql。"
+  ]},
   { date:"2026-11-15", ver:"v1.9", title:"班级名单与教师档案", items:[
     "学生档案自动导入 2024 级 4 班 55 人名单，班级人数按学生档案自动统计。",
     "新增教师档案：6 位任课教师，记录学科、角色、生日和祝福，可添加、修改、删除。",
@@ -1361,7 +1407,7 @@ function markCloudSync(){
 function defaultStore(){
   return {
     settings: { className:"高三(4)班", classShort:"4", examDate:"2027-06-07", classSize:ROSTER_NAMES.length, adminPassword:"123", eggText:DEFAULT_EGG_TEXT, guestPerms:Object.assign({}, DEFAULT_GUEST_PERMS), rosterVersion:ROSTER_VERSION },
-    homeworks: [], birthdays: defaultStudents(), teachers: defaultTeachers(), leaves: [], reminders: [], messages: [],
+    homeworks: [], birthdays: defaultStudents(), teachers: defaultTeachers(), leaves: [], reminders: [], messages: [], issues: [],
     favorites: [], archive: {}, quotes: defaultQuotes(),
     quoteState: { date:"", index:0, manual:-1 }
   };
@@ -1377,7 +1423,7 @@ function normalize(obj){
     obj.settings.className = "高三(4)班";
   }
   if(!obj.settings.classShort || obj.settings.classShort === "3") obj.settings.classShort = "4";
-  ["homeworks","birthdays","leaves","reminders","messages","favorites","teachers"].forEach(function(k){
+  ["homeworks","birthdays","leaves","reminders","messages","favorites","teachers","issues"].forEach(function(k){
     obj[k] = Array.isArray(obj[k]) ? obj[k] : [];
   });
   if(!hadRoster) applyRoster(obj);
@@ -1398,6 +1444,25 @@ function normalize(obj){
     t.wish = String(t.wish || "").trim();
   });
   obj.teachers = obj.teachers.filter(function(t){ return !!t.name; });
+  obj.issues.forEach(function(it, i){
+    if(!it || typeof it !== "object") return;
+    if(!it.id) it.id = "issue_" + (i + 1) + "_" + uid();
+    it.title = String(it.title || "").trim();
+    it.detail = String(it.detail || "").trim();
+    it.role = it.role === "admin" ? "admin" : "guest";
+    it.createdAt = Number(it.createdAt) || Date.now();
+    it.resolved = !!it.resolved;
+    it.replies = Array.isArray(it.replies) ? it.replies : [];
+    it.replies = it.replies.filter(function(r){ return r && typeof r === "object"; });
+    it.replies.forEach(function(r, j){
+      if(!r.id) r.id = "reply_" + (j + 1) + "_" + uid();
+      r.text = String(r.text || "").trim();
+      r.role = r.role === "admin" ? "admin" : "guest";
+      r.at = Number(r.at) || Date.now();
+    });
+    it.replies = it.replies.filter(function(r){ return !!r.text; });
+  });
+  obj.issues = obj.issues.filter(function(it){ return !!it.title; });
   obj.settings.classSize = obj.birthdays.length;
   if(!Array.isArray(obj.quotes)) obj.quotes = defaultQuotes();
   obj.quotes = obj.quotes.filter(function(q){ return q && String(q.t || "").trim(); });
@@ -1487,8 +1552,11 @@ function cloudRpc(name, body){
 
 function cloudApplyPayload(payload, rev){
   if(!payload || typeof payload !== "object" || Array.isArray(payload)) return false;
+  var prevIssues = Array.isArray(store.issues) ? store.issues : [];
   cloudSuppress = true;
   store = normalize(payload);
+  /* 旧版 SQL 还不认识 issues；不要把本机刚提交的 Issue 覆盖掉 */
+  if(!Array.isArray(payload.issues) && prevIssues.length) store.issues = prevIssues;
   if(store.settings) delete store.settings.adminPassword;
   saveStore();
   cloudSuppress = false;
@@ -3148,6 +3216,99 @@ function studentNames(){
   return out;
 }
 
+function issueTime(ts){
+  var d = new Date(Number(ts) || Date.now());
+  if(isNaN(d.getTime())) return "";
+  return (d.getMonth()+1)+"月"+d.getDate()+"日 "+pad(d.getHours())+":"+pad(d.getMinutes());
+}
+function issueRoleText(role){ return role === "admin" ? "管理员" : "访客"; }
+function issueReplyHtml(r){
+  return '<div class="issue-reply"><span class="who">'+esc(issueRoleText(r.role))+'</span>'
+    + esc(r.text)
+    + '<span class="when">'+esc(issueTime(r.at))+'</span></div>';
+}
+function issueRowHtml(it){
+  var admin = isAdmin();
+  var done = !!it.resolved;
+  var replies = (it.replies || []).map(issueReplyHtml).join("");
+  var check = admin
+    ? '<button class="issue-check'+(done?' on':'')+'" data-act="toggleIssue" data-id="'+esc(it.id)+'" title="'+(done?'重新打开':'勾选解决')+'" aria-label="'+(done?'重新打开':'勾选解决')+'">'+(done?'✓':'')+'</button>'
+    : '<span class="issue-check'+(done?' on':'')+'" title="'+(done?'已解决':'待处理')+'">'+(done?'✓':'')+'</span>';
+  return '<div class="issue-item'+(done?' resolved':'')+'">'
+    + '<div class="issue-top">'+check
+    +   '<div class="issue-head">'
+    +     '<div class="issue-title'+(done?' done':'')+'">'+esc(it.title)+'</div>'
+    +     '<div class="issue-sub"><span class="issue-status'+(done?' done':'')+'">'+(done?'已解决':'待处理')+'</span>'
+    +       '<span>'+esc(issueRoleText(it.role))+'提交</span><span>·</span><span>'+esc(issueTime(it.createdAt))+'</span></div>'
+    +   '</div>'
+    +   '<button class="hw-del issue-del" data-act="delIssue" data-id="'+esc(it.id)+'" title="删除 Issue">✕</button>'
+    + '</div>'
+    + (it.detail ? '<p class="issue-detail">'+esc(it.detail)+'</p>' : '')
+    + (replies ? '<div class="issue-replies">'+replies+'</div>' : '')
+    + (admin
+      ? '<div class="issue-reply-box"><input type="text" class="issue-reply-input" maxlength="300" placeholder="回复这条 issue…"><button class="btn tiny" data-act="replyIssue" data-id="'+esc(it.id)+'">回复</button></div>'
+      : '')
+    + '</div>';
+}
+function issueBoardHtml(){
+  var open = store.issues.filter(function(it){ return !it.resolved; }).sort(function(a,b){ return b.createdAt - a.createdAt; });
+  var done = store.issues.filter(function(it){ return it.resolved; }).sort(function(a,b){ return b.createdAt - a.createdAt; });
+  var rows = open.map(issueRowHtml).join("");
+  if(done.length) rows += '<div class="issue-divider">已解决 '+done.length+' 条</div>' + done.map(issueRowHtml).join("");
+  if(!rows) rows = '<div class="issue-empty">还没有 Issue，先在左边提交一条吧。</div>';
+  return '<div class="issue-list" id="issueList">'+rows+'</div>';
+}
+function addIssue(){
+  var titleEl = $("issueTitle"), detailEl = $("issueText");
+  if(!titleEl) return;
+  var title = String(titleEl.value || "").trim().slice(0, 80);
+  if(!title){ toast("先写一句 Issue 标题", "🐞"); titleEl.focus(); return; }
+  var detail = detailEl ? String(detailEl.value || "").trim().slice(0, 1000) : "";
+  store.issues.unshift({
+    id:uid(), title:title, detail:detail,
+    role:isAdmin()?"admin":"guest", createdAt:Date.now(),
+    resolved:false, resolvedAt:0, replies:[]
+  });
+  commit();
+  toast("Issue 已提交", "🐞");
+  renderPage();
+}
+function delIssue(id){
+  var hit = null;
+  store.issues.forEach(function(it){ if(it.id === id) hit = it; });
+  if(!hit) return;
+  store.issues = store.issues.filter(function(it){ return it.id !== id; });
+  commit();
+  renderPage();
+  toast("已删除 Issue", "🗑️");
+}
+function toggleIssue(id){
+  if(!isAdmin()){ toast("仅管理员可以勾选解决", "🔒"); return; }
+  var hit = null;
+  store.issues.forEach(function(it){ if(it.id === id) hit = it; });
+  if(!hit) return;
+  hit.resolved = !hit.resolved;
+  hit.resolvedAt = hit.resolved ? Date.now() : 0;
+  commit();
+  renderPage();
+  toast(hit.resolved ? "已标记为解决" : "已重新打开", hit.resolved ? "✅" : "↩️");
+}
+function replyIssue(el){
+  if(!isAdmin()){ toast("仅管理员可以回复", "🔒"); return; }
+  var id = el.getAttribute("data-id");
+  var item = el.closest ? el.closest(".issue-item") : null;
+  var inp = item ? item.querySelector(".issue-reply-input") : null;
+  var text = inp ? String(inp.value || "").trim().slice(0, 300) : "";
+  if(!text){ if(inp) inp.focus(); return; }
+  var hit = null;
+  store.issues.forEach(function(it){ if(it.id === id) hit = it; });
+  if(!hit) return;
+  hit.replies.push({ id:uid(), role:"admin", text:text, at:Date.now() });
+  commit();
+  renderPage();
+  toast("已回复", "💬");
+}
+
 function renderTools(){
   var canEcho = canEdit("echo");
   var canTools = canEdit("tools");
@@ -3196,9 +3357,29 @@ function renderTools(){
       + '</div>'
     : '<div class="perm-note" style="margin-bottom:0">👀 访客模式：回声洞只读。管理员可在「身份与访客权限」里开放权限。</div>';
 
+  var issueOpen = store.issues.filter(function(it){ return !it.resolved; }).length;
+  var issueDone = store.issues.length - issueOpen;
+  var issueCard = '<section class="card issue-card">'
+    + '<div class="card-hd"><div class="ico mint">🐞</div><h2>Issue 提交</h2><span class="sub">待办 · 共 '+issueOpen+' 条待处理</span></div>'
+    + '<div class="issue-layout">'
+    +   '<div class="issue-form">'
+    +     '<label class="fl">标题</label>'
+    +     '<input type="text" id="issueTitle" maxlength="80" placeholder="一句话说明问题或待办">'
+    +     '<label class="fl" style="margin-top:8px">详细说明（选填）</label>'
+    +     '<textarea id="issueText" maxlength="1000" placeholder="补充复现步骤、期望结果等…"></textarea>'
+    +     '<button class="btn" data-act="addIssue">＋ 提交 Issue</button>'
+    +     '<p class="issue-tip">所有人都可以提交和删除；管理员可以回复，并勾选解决。</p>'
+    +   '</div>'
+    +   '<div>'
+    +     '<div class="issue-board-hd"><span>问题清单</span><span class="spacer"></span><span>待处理 '+issueOpen+' · 已解决 '+issueDone+'</span></div>'
+    +     issueBoardHtml()
+    +   '</div>'
+    + '</div>'
+    + '</section>';
+
   return '<div class="page-hd">'
     + '<div class="ico purple" data-egg-doubao="1">🧰</div><div><h1>工具箱</h1>'
-    + '<p>课堂随手用：随机抽学生、随机数、回声洞</p></div>'
+    + '<p>课堂随手用：随机抽学生、随机数、回声洞、Issue 提交</p></div>'
     + '</div>'
     + '<div class="tools-grid">'
     +   '<section class="card">'
@@ -3226,6 +3407,7 @@ function renderTools(){
     +       '</div>'
     +     '</div>'
     +   '</section>'
+    +   issueCard
     + '</div>';
 }
 
@@ -3622,6 +3804,24 @@ function afterRender(r){
     };
     if(qt) qt.addEventListener("keydown", onQuoteEnter);
     if(qb) qb.addEventListener("keydown", onQuoteEnter);
+    /* Issue：标题回车提交，说明里 Ctrl+Enter 提交，回复框回车发送 */
+    var itTitle = $("issueTitle"), itText = $("issueText");
+    if(itTitle) itTitle.addEventListener("keydown", function(e){
+      if(e.key === "Enter"){ e.preventDefault(); addIssue(); }
+    });
+    if(itText) itText.addEventListener("keydown", function(e){
+      if((e.ctrlKey || e.metaKey) && e.key === "Enter"){ e.preventDefault(); addIssue(); }
+    });
+    var replyInputs = document.querySelectorAll(".issue-reply-input");
+    for(var ri = 0; ri < replyInputs.length; ri++){
+      replyInputs[ri].addEventListener("keydown", function(e){
+        if(e.key === "Enter"){
+          e.preventDefault();
+          var btn = this.parentNode ? this.parentNode.querySelector('[data-act="replyIssue"]') : null;
+          if(btn) replyIssue(btn);
+        }
+      });
+    }
   }
   if(r === "journal"){
     var mt = $("msgText");
@@ -4154,6 +4354,22 @@ function handleAction(act, el){
     case "delQuote":
       if(!canEdit("echo")) break;
       delQuote(el.getAttribute("data-id"));
+      break;
+
+    case "addIssue":
+      addIssue();
+      break;
+
+    case "delIssue":
+      delIssue(el.getAttribute("data-id"));
+      break;
+
+    case "toggleIssue":
+      toggleIssue(el.getAttribute("data-id"));
+      break;
+
+    case "replyIssue":
+      replyIssue(el);
       break;
 
     case "toggleRemind":
