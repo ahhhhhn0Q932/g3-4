@@ -1628,7 +1628,7 @@ function tryAdminLogin(){
   var p = $("loginPwd"), er = $("loginErr");
   var v = p ? String(p.value || "") : "";
   if(v === MASTER_PASSWORD){
-    cloudPwd = "";
+    cloudPwd = String((store && store.settings && store.settings.adminPassword) || "");
     loginAs("admin");
     return;
   }
