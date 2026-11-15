@@ -504,7 +504,8 @@ table.lv-table tr:last-child td{border-bottom:none}
 .tag-pill{font-size:10.5px;font-weight:800;padding:1.5px 8px;border-radius:999px;background:#eef7f2;color:#3fa383;white-space:nowrap}
 
 /* 日志页 */
-.journal-grid{display:grid;grid-template-columns:250px 1fr;gap:16px;align-items:start}
+.journal-grid{display:grid;grid-template-columns:300px 1fr;gap:16px;align-items:start}
+.journal-cal{max-width:340px}
 .date-list{display:flex;flex-direction:column;gap:5px;max-height:560px;overflow:auto;padding-right:3px}
 .date-item{
   display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:12px;cursor:pointer;
@@ -2365,6 +2366,7 @@ function renderRemind(){
 
 /* ================= 日志 ================= */
 var journalDate = "";
+var journalCalCursor = null;
 
 function allJournalDates(){
   var set = {};
@@ -2373,26 +2375,57 @@ function allJournalDates(){
   return Object.keys(set).sort(function(a,b){ return a < b ? 1 : -1; });
 }
 
+function shiftJournalCal(n){
+  if(!journalCalCursor){
+    var d0 = parseDate(journalDate || todayStr()) || new Date();
+    journalCalCursor = { y:d0.getFullYear(), m:d0.getMonth() };
+  }
+  var d = new Date(journalCalCursor.y, journalCalCursor.m + n, 1);
+  journalCalCursor = { y:d.getFullYear(), m:d.getMonth() };
+}
+
+function renderJournalCalendar(){
+  var sel = journalDate || todayStr();
+  var sd = parseDate(sel) || new Date();
+  if(!journalCalCursor) journalCalCursor = { y:sd.getFullYear(), m:sd.getMonth() };
+  var y = journalCalCursor.y, m = journalCalCursor.m;
+  var today = todayStr();
+  var firstDow = new Date(y, m, 1).getDay();
+  var days = new Date(y, m+1, 0).getDate();
+
+  var cells = "";
+  for(var b=0;b<firstDow;b++) cells += '<span class="cal-day blank"></span>';
+  for(var d=1;d<=days;d++){
+    var ds = y + "-" + pad(m+1) + "-" + pad(d);
+    var has = dateHasRecord(ds);
+    var cls = "cal-day" + (ds === today ? " today" : "") + (ds === sel ? " sel" : "");
+    cells += '<button class="'+cls+'" data-act="pickJournalDate" data-d="'+ds+'"'
+      + ' title="'+esc(dateLabel(ds))+(has ? " · 有记录" : "")+'">'
+      + d + (has ? '<span class="cal-dot"></span>' : '') + '</button>';
+  }
+
+  return '<div class="cal-card mini journal-cal">'
+    + '<div class="cal-top"><div class="cal-mon">'+y+' 年 '+(m+1)+' 月</div>'
+    +   '<div class="cal-nav">'
+    +     '<button data-act="journalCalPrev" title="上个月" aria-label="上个月">‹</button>'
+    +     '<button data-act="journalCalNext" title="下个月" aria-label="下个月">›</button>'
+    +   '</div></div>'
+    + '<div class="cal-grid">'
+    +   CAL_WEEK.map(function(w){ return '<span class="cal-wd">'+w+'</span>'; }).join("")
+    +   cells
+    + '</div>'
+    + '<div class="cal-foot">'
+    +   '<span>'+(sel === today ? "今天 " + dateLabel(today) : "回看 " + dateLabel(sel))+'</span>'
+    +   (sel === today ? '<span>点日期回看</span>' : '<button data-act="journalToday">回到今天</button>')
+    + '</div>'
+    + '</div>';
+}
+
 function renderJournal(){
   var canJournal = canEdit("journal");
   var dates = allJournalDates();
   var sel = (journalDate && dates.indexOf(journalDate) >= 0) ? journalDate : dates[0];
   journalDate = sel;
-
-  var dl = "";
-  dates.slice(0, 90).forEach(function(d){
-    var snap = store.archive[d] || { homeworks:[], leaves:[], reminders:[], messages:[], birthdays:[] };
-    var dots = "";
-    if(snap.homeworks.length) dots += '<i style="background:#5b9bd5"></i>';
-    if(snap.leaves.length) dots += '<i style="background:#4fb79a"></i>';
-    if(snap.reminders.length) dots += '<i style="background:#f0b34a"></i>';
-    if((snap.messages||[]).length) dots += '<i style="background:#b9a6f5"></i>';
-    var dt = parseDate(d);
-    dl += '<div class="date-item'+(d===sel?" on":"")+'" data-act="pickDate" data-d="'+esc(d)+'">'
-      + '<div><div class="dd">'+esc(dt ? (dt.getMonth()+1)+"/"+dt.getDate() : d)+'</div>'
-      + '<div class="dw">'+esc(dt ? WEEK[dt.getDay()] : "")+'</div></div>'
-      + '<div class="dotm">'+dots+'</div></div>';
-  });
 
   var snap = store.archive[sel] || buildSnapshot(sel);
   var dt = parseDate(sel);
@@ -2436,7 +2469,7 @@ function renderJournal(){
     + '</div>'
     + '<div class="journal-grid">'
     +   '<section class="card" style="padding:16px"><div class="card-hd"><div class="ico purple">🗓️</div><h2>我的日子</h2></div>'
-    +     '<div class="date-list">'+dl+'</div>'
+    +     renderJournalCalendar()
     +   '</section>'
     +   '<div>'
     +     '<section class="card" style="margin-bottom:16px">'
@@ -3346,6 +3379,30 @@ function handleAction(act, el){
 
     case "pickDate":
       journalDate = el.getAttribute("data-d");
+      renderPage();
+      break;
+
+    case "pickJournalDate":
+      journalDate = el.getAttribute("data-d") || todayStr();
+      var jd = parseDate(journalDate) || new Date();
+      journalCalCursor = { y:jd.getFullYear(), m:jd.getMonth() };
+      renderPage();
+      break;
+
+    case "journalCalPrev":
+      shiftJournalCal(-1);
+      renderPage();
+      break;
+
+    case "journalCalNext":
+      shiftJournalCal(1);
+      renderPage();
+      break;
+
+    case "journalToday":
+      journalDate = todayStr();
+      var jt = parseDate(journalDate) || new Date();
+      journalCalCursor = { y:jt.getFullYear(), m:jt.getMonth() };
       renderPage();
       break;
 
