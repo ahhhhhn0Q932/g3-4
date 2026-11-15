@@ -400,6 +400,9 @@ body.board-display .hw-chip{font-size:11px}
   background:#fbf8f4;border:1px solid #f0e7dd;border-radius:12px;
   padding:7px 4px;text-align:center;line-height:1.1;
 }
+.lv-stat .stat-click{cursor:pointer;transition:background .15s,border-color .15s}
+.lv-stat .stat-click:hover{background:#fff3e8;border-color:#ffc8a6}
+.lv-stat .stat-click:focus-visible{outline:2px solid #ffb08d;outline-offset:2px}
 .lv-stat b{display:block;font-size:18px;font-weight:800;color:#4a3d44;letter-spacing:-.5px}
 .lv-stat span{display:block;font-size:10px;font-weight:700;color:#a3949a;margin-top:3px}
 .lv-stat .warn{background:#fff4ec;border-color:#fadfcd}
@@ -670,6 +673,46 @@ table.lv-table tr:last-child td{border-bottom:none}
 .egg-card.edit textarea:focus{border-color:#ffb692;box-shadow:0 0 0 4px rgba(255,175,140,.13)}
 .egg-edit-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:8px}
 .egg-edit-foot span{font-size:10.5px;color:#b4a5aa;font-weight:700}
+.stu-total-box{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 10px;border:1.5px solid #f3e3d5;border-radius:11px;background:#fffaf5;font-size:12.5px;font-weight:700;color:#7d6b70}
+.stu-total-box b{font-size:19px;color:#c06a4a}
+.stu-form-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:8px}
+.stu-list{display:flex;flex-direction:column;gap:6px;padding-right:2px}
+.stu-row{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:12px;background:#fffdfa;border:1px solid #f6ede3}
+.stu-row .avatar{width:30px;height:30px;font-size:12px}
+.stu-row .stu-main{flex:1;min-width:0}
+.stu-row .stu-name{font-size:13px;font-weight:800;color:#4a3d44;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stu-row .stu-bd{font-size:10.5px;color:#a3949a;font-weight:600}
+.stu-row .stu-actions{display:flex;gap:3px;flex:none}
+.stu-edit,.stu-del{border:none;background:transparent;cursor:pointer;color:#b9a7a0;font-size:15px;padding:3px 5px;border-radius:7px;line-height:1}
+.stu-edit:hover{background:#eef8f4;color:#1f9d7d}
+.stu-del:hover{background:#ffeceb;color:#e06a72}
+.stu-more,.leave-more{display:block;margin:7px auto 0;border:none;background:transparent;color:#c06a4a;font-family:inherit;font-size:11.5px;font-weight:800;cursor:pointer;padding:4px 10px;border-radius:8px}
+.stu-more:hover,.leave-more:hover{background:#fff1e6}
+.stu-picker{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:6px;max-height:210px;overflow:auto;padding:2px;border:1px dashed #f0dfd2;border-radius:12px;margin-top:6px}
+.stu-pick{position:relative;display:flex;align-items:center;gap:5px;cursor:pointer}
+.stu-pick input{position:absolute;opacity:0;pointer-events:none}
+.stu-pick span{display:flex;align-items:center;width:100%;box-sizing:border-box;padding:6px 8px;border-radius:9px;border:1px solid #f1e2d6;background:#fffdfa;font-size:11.5px;font-weight:700;color:#6f5d58;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:.14s}
+.stu-pick span::before{content:"";width:11px;height:11px;flex:none;margin-right:5px;border:1.5px solid #d9c8bc;border-radius:4px;background:#fff;transition:.14s}
+.stu-pick input:checked+span{background:#e8f8f1;border-color:#8fd6bf;color:#167c62;box-shadow:inset 0 0 0 1px #b7e7d8}
+.stu-pick input:checked+span::before{content:"✓";display:flex;align-items:center;justify-content:center;background:#5bc0a1;border-color:#5bc0a1;color:#fff;font-size:9px;line-height:1}
+.stu-pick:hover span{border-color:#f2c7ad}
+.stu-pick-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:7px;font-size:11px;color:#a3949a;font-weight:700}
+.stu-pick-count{color:#c06a4a;font-weight:800}
+.roster-card{width:min(620px,100%);max-height:88vh;display:flex;flex-direction:column;text-align:left;padding:22px 22px 18px}
+.roster-title{margin:0;font-size:19px;font-weight:800;color:#4a3d44;text-align:center}
+.roster-desc{margin:5px 0 12px;font-size:11.5px;line-height:1.65;color:#a3949a;font-weight:600;text-align:center}
+.roster-search{width:100%;box-sizing:border-box;margin-bottom:10px}
+.roster-list{display:grid;grid-template-columns:1fr 1fr;gap:6px;max-height:340px;overflow:auto;padding-right:2px}
+.roster-item{display:flex;align-items:center;gap:7px;padding:6px 8px;border:1px solid #f2e5d9;border-radius:10px;background:#fffdfa;cursor:pointer;min-width:0}
+.roster-item input{accent-color:#ff9a76;width:14px;height:14px;flex:none;margin:0}
+.roster-av{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font-size:11px;font-weight:800;color:#fff;background:#ffb49a;flex:none}
+.roster-nm{font-size:12px;font-weight:700;color:#5d4c52;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+.roster-st{font-size:9.5px;font-weight:800;color:#b4a5aa;flex:none}
+.roster-tools{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:10px}
+.roster-count{margin-left:auto;font-size:11px;font-weight:800;color:#c06a4a}
+.roster-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+@media (max-width:600px){.roster-list{grid-template-columns:1fr}.roster-card{max-height:92vh}.stu-form-grid{grid-template-columns:1fr}}
+
 @media (max-width:600px){
   .egg-mask{padding:14px}
   .egg-card{padding:22px 18px 18px;border-radius:20px}
@@ -842,6 +885,24 @@ table.lv-table tr:last-child td{border-bottom:none}
   </div>
 </div>
 
+<div class="egg-mask" id="rosterMask" aria-hidden="true">
+  <div class="egg-card roster-card">
+    <h2 class="roster-title" id="rosterTitle">快速点名</h2>
+    <p class="roster-desc" id="rosterDesc">勾选应到同学，未勾选的同学会登记为全天请假。</p>
+    <input class="roster-search" type="text" id="rosterSearch" placeholder="搜索姓名…" autocomplete="off">
+    <div class="roster-list" id="rosterList"></div>
+    <div class="roster-tools">
+      <button class="btn ghost tiny" type="button" data-act="rosterAll">全选</button>
+      <button class="btn ghost tiny" type="button" data-act="rosterInvert">反选</button>
+      <span class="roster-count" id="rosterCount">已选 0 人</span>
+    </div>
+    <div class="roster-actions">
+      <button class="btn ghost tiny" type="button" data-act="rosterClose">取消</button>
+      <button class="btn tiny" type="button" data-act="rosterSave">保存</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast" data-page-node-id="dYfa3rKZuFTRjgOhUGKtbR"></div>
 <div class="confetti" id="confettiBox" data-page-node-id="mrg3W16uQhhBUiq03cEchv"></div>
 
@@ -863,13 +924,19 @@ var GUEST_PERM_LABELS = [
   { k:"homework", t:"作业管理", d:"添加、编辑、删除作业" },
   { k:"echo", t:"回声洞", d:"添加、删除激励语句" },
   { k:"remind", t:"每日提醒", d:"发布、勾选、删除提醒" },
-  { k:"settings", t:"设置与数据", d:"班级信息、生日档案、导入导出" },
+  { k:"settings", t:"设置与数据", d:"班级信息、学生档案、导入导出" },
   { k:"leave", t:"请假登记", d:"登记、销假、删除记录" },
   { k:"journal", t:"班级日志", d:"写留言" },
   { k:"tools", t:"工具箱", d:"随机抽学生、随机数" }
 ];
 /* 每次发布更新：在 CHANGELOG 顶部追加一条，并同步 README「更新日志」 */
 var CHANGELOG = [
+  { date:"2026-11-15", ver:"v1.7", title:"学生档案与快速点名", items:[
+    "生日档案升级为学生档案：生日可选、可修改，班级人数自动取学生总数。",
+    "请假登记改为从学生档案多选，支持搜索、全选、反选和清空。",
+    "学生档案与请假名单超过 10 人自动折叠，可展开查看全部。",
+    "今日总览的应到/请假数字可点击，弹出快速点名与批量请假，支持全选、反选。"
+  ]},
   { date:"2026-11-15", ver:"v1.6.2", title:"作业行布局优化", items:[
     "作业建议时长与截止日期移到每行末尾，压缩作业行高度。",
     "显示模式下作业标题字号增大，远看更清楚。",
@@ -1177,6 +1244,7 @@ function migrateFromV1(){
     s.settings = Object.assign({}, s.settings, old.settings || {});
     s.homeworks = Array.isArray(old.homeworks) ? old.homeworks : [];
     s.birthdays = Array.isArray(old.birthdays) ? old.birthdays : [];
+  s.settings.classSize = s.birthdays.length;
     s.leaves = Array.isArray(old.leaves) ? old.leaves : [];
     s.favorites = Array.isArray(old.favorites) ? old.favorites : [];
     s.quoteState = Object.assign({}, s.quoteState, old.quoteState || {});
@@ -1752,6 +1820,7 @@ function currentQuote(){
 }
 
 function daysToBirthday(md, today){
+  if(!md) return 9999;
   var p = String(md).split("-");
   var m = parseInt(p[0],10), d = parseInt(p[1],10);
   if(isNaN(m)||isNaN(d)) return 9999;
@@ -1766,10 +1835,30 @@ function daysToBirthday(md, today){
   return diff;
 }
 
+var STUDENT_COLLATOR = null;
+try { STUDENT_COLLATOR = new Intl.Collator("zh-Hans-CN", { sensitivity:"base" }); } catch(e){ STUDENT_COLLATOR = null; }
+function studentNameCompare(a, b){
+  var an = String((a && a.name) || ""), bn = String((b && b.name) || "");
+  if(STUDENT_COLLATOR) return STUDENT_COLLATOR.compare(an, bn);
+  return an.localeCompare(bn, "zh-Hans-CN");
+}
+function studentSorted(){
+  return store.birthdays.slice().sort(studentNameCompare);
+}
+function studentById(id){
+  for(var i=0;i<store.birthdays.length;i++) if(store.birthdays[i].id === id) return store.birthdays[i];
+  return null;
+}
+function birthdayText(md){
+  if(!md) return "生日未填";
+  var p = String(md).split("-");
+  return parseInt(p[0],10) + "月" + parseInt(p[1],10) + "日";
+}
+
 function birthdaySorted(){
   var today = new Date();
-  return store.birthdays.map(function(b){ return { b:b, days:daysToBirthday(b.md, today) }; })
-    .sort(function(x,y){ return x.days - y.days; });
+  return store.birthdays.filter(function(b){ return !!b.md; }).map(function(b){ return { b:b, days:daysToBirthday(b.md, today) }; })
+    .sort(function(x,y){ return (x.days - y.days) || studentNameCompare(x.b, y.b); });
 }
 
 /* ================= 首页 ================= */
@@ -1843,7 +1932,7 @@ function viewHome(){
     var nx = upcoming[0];
     bdayHtml = '<div class="bday-none">'
       + '<div>🎈 今天没有同学生日</div>'
-      + (nx ? '<b>距离 '+esc(nx.b.name)+' 的生日还有 '+nx.days+' 天</b>' : '<b>'+(canSet ? '去「设置」添加生日档案吧' : '生日档案为空')+'</b>')
+      + (nx ? '<b>距离 '+esc(nx.b.name)+' 的生日还有 '+nx.days+' 天</b>' : '<b>'+(canSet ? '去「设置」添加学生档案吧' : '学生档案为空')+'</b>')
       + '</div>';
   }
 
@@ -2155,8 +2244,7 @@ function renderHwArea(){
 /* 应到人数取设置里的班级人数；请假按「人」去重，同一人请多节只算 1 人 */
 function leaveStat(dateStr){
   var list = store.leaves.filter(function(l){ return l.date === dateStr; });
-  var total = parseInt(store.settings.classSize, 10);
-  if(!(total > 0)) total = 45;
+  var total = store.birthdays.length;
   var seen = {}, names = [];
   list.forEach(function(l){
     if(l.returned) return;
@@ -2173,11 +2261,13 @@ function leaveStat(dateStr){
 }
 
 /* 三格数字条：应到 / 实到 / 请假 */
-function leaveStatBar(st, big){
+function leaveStatBar(st, big, clickable){
+  var cp = clickable ? ' data-act="openRoster" data-mode="present" title="点击快速勾选应到" role="button" tabindex="0"' : '';
+  var cl = clickable ? ' data-act="openRoster" data-mode="leave" title="点击批量请假" role="button" tabindex="0"' : '';
   return '<div class="lv-stat'+(big ? ' big' : '')+'">'
-    + '<div><b>'+st.total+'</b><span>应到</span></div>'
+    + '<div class="stat-click"'+cp+'><b>'+st.total+'</b><span>应到</span></div>'
     + '<div><b>'+st.present+'</b><span>实到</span></div>'
-    + '<div class="'+(st.out ? 'warn' : 'ok')+'"><b>'+st.out+'</b><span>请假</span></div>'
+    + '<div class="stat-click '+(st.out ? 'warn' : 'ok')+'"'+cl+'><b>'+st.out+'</b><span>请假</span></div>'
     + '</div>';
 }
 
@@ -2190,12 +2280,13 @@ function renderBoard(){
   var vdt = parseDate(vd) || new Date();
 
   var lst = leaveStat(vd);
-  var leaveHtml = leaveStatBar(lst);
+  var leaveHtml = leaveStatBar(lst, false, true);
   if(lst.all.length === 0){
     leaveHtml += '<div class="mini-empty">'+(isToday?"今天":"这天")+'全员到齐 ✅</div>';
   } else {
+    var leaveShown = leaveListExpanded ? lst.all : lst.all.slice(0, 10);
     leaveHtml += '<div class="leave-list">';
-    lst.all.forEach(function(l){
+    leaveShown.forEach(function(l){
       leaveHtml += '<div class="leave-chip'+(l.returned?" ret":"")+'"'
         + (isToday
             ? ' data-act="toggleLeave" data-id="'+esc(l.id)+'" title="点击销假/撤销"'
@@ -2204,6 +2295,10 @@ function renderBoard(){
         + '<span class="rs">'+esc(String(l.period))+'</span></div>';
     });
     leaveHtml += '</div>';
+    if(lst.all.length > 10){
+      leaveHtml += '<button type="button" class="leave-more" data-act="toggleLeaveList">'
+        + (leaveListExpanded ? '收起' : '展开全部 '+lst.all.length+' 人') + '</button>';
+    }
     if(lst.out === 0){
       leaveHtml += '<div class="mini-note">已全部销假 ✅</div>';
     }
@@ -2260,6 +2355,10 @@ function renderBoard(){
 
 /* ================= 请假 ================= */
 var leaveFilterDate = "";
+var leaveListExpanded = false;
+var studentListExpanded = false;
+var studentEditId = "";
+var rosterMode = "leave";
 
 function leavePeriodChipsHtml(){
   return LEAVE_PERIODS.map(function(p){
@@ -2306,6 +2405,168 @@ function setLeavePeriodsAll(on){
   updateLeavePeriodSummary();
 }
 
+function studentPickerHtml(){
+  var students = studentSorted();
+  if(!students.length){
+    return '<div class="perm-note">👥 学生档案还是空的，请先在「设置 · 学生档案」里添加学生。</div>';
+  }
+  var items = students.map(function(b){
+    return '<label class="stu-pick"><input type="checkbox" value="'+esc(b.id)+'"><span>'+esc(b.name)+'</span></label>';
+  }).join("");
+  return '<div class="period-block" style="margin-top:0">'
+    + '<label class="fl">请假学生（可多选）</label>'
+    + '<input type="text" id="lvStuSearch" placeholder="输入姓名快速筛选…" autocomplete="off">'
+    + '<div class="stu-picker" id="lvStudents">'+items+'</div>'
+    + '<div class="stu-pick-tools">'
+    +   '<button type="button" class="btn ghost tiny" data-act="lvPickAll">全选</button>'
+    +   '<button type="button" class="btn ghost tiny" data-act="lvPickInvert">反选</button>'
+    +   '<button type="button" class="btn ghost tiny" data-act="lvPickClear">清空</button>'
+    +   '<span class="stu-pick-count" id="lvPickCount">已选 0 人</span>'
+    + '</div>'
+    + '</div>';
+}
+
+function updateStuPickCount(){
+  var boxes = document.querySelectorAll("#lvStudents input[type=checkbox]");
+  var n = 0;
+  for(var i=0;i<boxes.length;i++) if(boxes[i].checked) n++;
+  var el = $("lvPickCount");
+  if(el) el.textContent = "已选 " + n + " 人";
+}
+
+function setStuPicks(mode){
+  var boxes = document.querySelectorAll("#lvStudents input[type=checkbox]");
+  for(var i=0;i<boxes.length;i++){
+    if(mode === "all") boxes[i].checked = true;
+    else if(mode === "clear") boxes[i].checked = false;
+    else boxes[i].checked = !boxes[i].checked;
+  }
+  updateStuPickCount();
+}
+
+function initLeaveStudents(){
+  var search = $("lvStuSearch");
+  if(search){
+    search.addEventListener("input", function(){
+      var q = String(search.value || "").trim().toLowerCase();
+      var items = document.querySelectorAll("#lvStudents .stu-pick");
+      for(var i=0;i<items.length;i++){
+        items[i].style.display = (!q || items[i].textContent.toLowerCase().indexOf(q) >= 0) ? "" : "none";
+      }
+    });
+  }
+  var boxes = document.querySelectorAll("#lvStudents input[type=checkbox]");
+  for(var i=0;i<boxes.length;i++) boxes[i].addEventListener("change", updateStuPickCount);
+  updateStuPickCount();
+}
+
+function updateRosterCount(){
+  var boxes = document.querySelectorAll("#rosterList input[type=checkbox]");
+  var n = 0;
+  for(var i=0;i<boxes.length;i++) if(boxes[i].checked) n++;
+  var el = $("rosterCount");
+  if(el) el.textContent = "已选 " + n + " / " + boxes.length + " 人";
+}
+
+function setRosterAll(mode){
+  var boxes = document.querySelectorAll("#rosterList input[type=checkbox]");
+  for(var i=0;i<boxes.length;i++){
+    if(mode === "all") boxes[i].checked = true;
+    else if(mode === "none") boxes[i].checked = false;
+    else boxes[i].checked = !boxes[i].checked;
+  }
+  updateRosterCount();
+}
+
+function rosterListHtml(){
+  var today = todayStr();
+  var active = {};
+  store.leaves.forEach(function(l){
+    if(l.date === today && !l.returned) active[l.name] = true;
+  });
+  return studentSorted().map(function(b){
+    var onLeave = !!active[b.name];
+    var checked = rosterMode === "leave" ? onLeave : !onLeave;
+    var color = AVATAR_COLORS[Math.abs(b.name.charCodeAt(0)) % AVATAR_COLORS.length];
+    return '<label class="roster-item"><input type="checkbox" value="'+esc(b.id)+'"'+(checked?' checked':'')+'>'
+      + '<span class="roster-av" style="background:'+color+'">'+esc(b.name.slice(-1))+'</span>'
+      + '<span class="roster-nm">'+esc(b.name)+'</span>'
+      + '<span class="roster-st">'+(onLeave?'请假中':'应到')+'</span></label>';
+  }).join("");
+}
+
+function openRoster(mode){
+  if(!canEdit("leave")){ editGuard("leave"); return; }
+  if(!store.birthdays.length){ toast("学生档案为空，请先去设置添加学生", "👥"); return; }
+  rosterMode = mode === "present" ? "present" : "leave";
+  var isPresent = rosterMode === "present";
+  $("rosterTitle").textContent = isPresent ? "快速点名 · 应到" : "批量请假";
+  $("rosterDesc").textContent = isPresent
+    ? "勾选今天应到的同学；未勾选的同学会登记为全天请假。已请假同学默认不勾选。"
+    : "勾选今天需要请假/缺勤的同学；保存后统一登记为全天请假。";
+  $("rosterSearch").value = "";
+  $("rosterList").innerHTML = rosterListHtml();
+  updateRosterCount();
+  $("rosterMask").classList.add("show");
+  setTimeout(function(){ if($("rosterSearch")) $("rosterSearch").focus(); }, 60);
+}
+
+function closeRoster(){
+  var mask = $("rosterMask");
+  if(mask) mask.classList.remove("show");
+}
+
+function rosterSave(){
+  if(!canEdit("leave")){ editGuard("leave"); return; }
+  var boxes = document.querySelectorAll("#rosterList input[type=checkbox]");
+  var today = todayStr();
+  var active = {};
+  store.leaves.forEach(function(l){
+    if(l.date === today && !l.returned) active[l.name] = true;
+  });
+  var added = 0, base = Date.now();
+  for(var i=0;i<boxes.length;i++){
+    var b = boxes[i];
+    var need = rosterMode === "present" ? !b.checked : b.checked;
+    if(!need) continue;
+    var stu = studentById(b.value);
+    if(!stu || active[stu.name]) continue;
+    store.leaves.push({
+      id:uid(), name:stu.name, period:"全天", periods:[], reason:rosterMode === "present" ? "快速点名" : "批量请假",
+      date:today, returned:false, created:base + added
+    });
+    active[stu.name] = true;
+    added++;
+  }
+  if(!added){ toast("没有需要新增的请假记录", "🌿"); closeRoster(); return; }
+  commit();
+  closeRoster();
+  toast("已登记 " + added + " 人 · 全天", "🌿");
+  renderPage();
+}
+
+function bindRoster(){
+  var mask = $("rosterMask");
+  if(mask){
+    mask.addEventListener("click", function(e){ if(e.target === mask) closeRoster(); });
+  }
+  var search = $("rosterSearch");
+  if(search){
+    search.addEventListener("input", function(){
+      var q = String(search.value || "").trim().toLowerCase();
+      var items = document.querySelectorAll("#rosterList .roster-item");
+      for(var i=0;i<items.length;i++){
+        items[i].style.display = (!q || items[i].textContent.toLowerCase().indexOf(q) >= 0) ? "" : "none";
+      }
+    });
+  }
+  var list = $("rosterList");
+  if(list) list.addEventListener("change", updateRosterCount);
+  document.addEventListener("keydown", function(e){
+    if(e.key === "Escape" && mask && mask.classList.contains("show")) closeRoster();
+  });
+}
+
 function renderLeave(){
   var today = todayStr();
   var fd = leaveFilterDate || today;
@@ -2317,8 +2578,9 @@ function renderLeave(){
   if(dayList.length === 0){
     chips = '<div class="mini-empty" style="text-align:left">这一天没有请假记录 ✅</div>';
   } else {
+    var dayShown = leaveListExpanded ? dayList : dayList.slice(0, 10);
     chips = '<div class="leave-today-grid">';
-    dayList.forEach(function(l){
+    dayShown.forEach(function(l){
       chips += '<div class="leave-card'+(l.returned?" ret":"")+'"'
         + (canLeave ? ' data-act="toggleLeave" data-id="'+esc(l.id)+'" style="cursor:pointer" title="点击切换销假状态"' : ' title="访客只读"')
         + '><span class="dot"></span><span>'+esc(l.name)+'</span>'
@@ -2328,6 +2590,10 @@ function renderLeave(){
         + '</div>';
     });
     chips += '</div>';
+    if(dayList.length > 10){
+      chips += '<button type="button" class="leave-more" data-act="toggleLeaveList">'
+        + (leaveListExpanded ? '收起' : '展开全部 '+dayList.length+' 人') + '</button>';
+    }
   }
 
   var hist = store.leaves.slice().sort(function(a,b){
@@ -2352,9 +2618,9 @@ function renderLeave(){
     + (canLeave
         ? '<section class="card" style="margin-bottom:16px">'
           +   '<div class="card-hd"><div class="ico mint">✍️</div><h2>新登记</h2></div>'
-          +   '<div class="form-grid">'
-          +     '<div><label class="fl">姓名</label><input type="text" id="lvName" placeholder="请假同学姓名"></div>'
-          +     '<div><label class="fl">原因</label><select id="lvReason">'
+          +   studentPickerHtml()
+          +   '<div class="form-grid" style="margin-top:10px">'
+          +     '<div class="full"><label class="fl">原因</label><select id="lvReason">'
           +       '<option>病假</option><option>事假</option><option>就诊</option><option>竞赛集训</option><option>体训</option><option>其他</option></select></div>'
           +   '</div>'
           +   '<div class="period-block">'
@@ -2373,7 +2639,7 @@ function renderLeave(){
     + '<section class="card" style="margin-bottom:16px">'
     +   '<div class="card-hd"><div class="ico orange">📅</div><h2>'+esc(dateLabel(fd))+' 出勤与请假</h2>'
     +     '<span class="spacer"></span><input type="date" id="lvFilter" value="'+esc(fd)+'" style="width:150px;font-size:12px;padding:6px 10px"></div>'
-    +   leaveStatBar(lst, true)
+    +   leaveStatBar(lst, true, fd === todayStr())
     +   chips
     + '</section>'
     + '<section class="card">'
@@ -2581,7 +2847,7 @@ function renderJournal(){
 var lastStudent = "";
 var pickedStudent = "";
 
-/* 学生名单从生日档案里读取，同一个名字只保留一次 */
+/* 学生名单从学生档案里读取，同一个名字只保留一次 */
 function studentNames(){
   var seen = {}, out = [];
   store.birthdays.forEach(function(b){
@@ -2600,9 +2866,9 @@ function renderTools(){
   if(names.length){
     studentBody = '<div class="tool-result"><span id="pickStudentName">'+esc(pickedStudent || "—")+'</span></div>'
       + '<div class="btn-row"><button class="btn" data-act="pickStudent"'+(canTools?'':' disabled')+'>🎲 抽一位</button>'
-      + '<span class="tool-tip">名单来自生日档案 · 共 '+names.length+' 人'+(canTools?'':' · 无权限')+'</span></div>';
+      + '<span class="tool-tip">名单来自学生档案 · 共 '+names.length+' 人'+(canTools?'':' · 无权限')+'</span></div>';
   } else {
-    studentBody = '<div class="tool-empty">生日档案里还没有学生名单。'
+    studentBody = '<div class="tool-empty">学生档案里还没有学生名单。'
       + (canSet ? '<br>先去「设置」里添加同学的姓名和生日吧。' : '') + '</div>'
       + (canSet ? '<div class="btn-row"><a class="btn ghost tiny" href="#/settings">去设置 ›</a></div>' : '');
   }
@@ -2645,7 +2911,7 @@ function renderTools(){
     + '</div>'
     + '<div class="tools-grid">'
     +   '<section class="card">'
-    +     '<div class="card-hd"><div class="ico pink">🎲</div><h2>随机抽学生</h2><span class="sub">从生日档案读取</span></div>'
+    +     '<div class="card-hd"><div class="ico pink">🎲</div><h2>随机抽学生</h2><span class="sub">从学生档案读取</span></div>'
     +     studentBody
     +   '</section>'
     +   '<section class="card">'
@@ -2675,7 +2941,7 @@ function renderTools(){
 function pickStudent(){
   if(!canEdit("tools")){ editGuard("tools"); return; }
   var names = studentNames();
-  if(!names.length){ toast("生日档案里还没有学生名单", "🎂"); return; }
+  if(!names.length){ toast("学生档案里还没有学生名单", "👥"); return; }
   var el = $("pickStudentName");
   if(!el) return;
 
@@ -2760,29 +3026,43 @@ function renderSettings(){
   var admin = isAdmin();
   var canSet = canEdit("settings");
   var dis = canSet ? "" : " disabled";
-  var bdList = store.birthdays.length
-    ? birthdaySorted().map(function(x, i){
+  var students = studentSorted();
+  var shownStudents = studentListExpanded ? students : students.slice(0, 10);
+  var bdList = students.length
+    ? shownStudents.map(function(b, i){
         var col = AVATAR_COLORS[i % AVATAR_COLORS.length];
-        return '<div class="bday-item" style="margin-bottom:6px">'
-          + '<div class="avatar" style="background:linear-gradient(135deg,'+col+','+col+'cc)">'+esc(String(x.b.name||"?").slice(-1))+'</div>'
-          + '<div class="bday-info"><div class="bday-name">'+esc(x.b.name)+'</div>'
-          + '<div class="bday-date">'+esc(String(x.b.md).replace("-","月"))+'日</div></div>'
-          + '<span class="bday-days">'+(x.days===0?"今天":x.days+" 天后")+'</span>'
-          + (canSet ? '<button class="hw-del" data-act="delBday" data-id="'+esc(x.b.id)+'" style="opacity:1">✕</button>' : '')
+        var days = b.md ? daysToBirthday(b.md, new Date()) : 9999;
+        return '<div class="stu-row">'
+          + '<div class="avatar" style="background:linear-gradient(135deg,'+col+','+col+'cc)">'+esc(String(b.name||"?").slice(-1))+'</div>'
+          + '<div class="stu-main"><div class="stu-name">'+esc(b.name)+'</div>'
+          + '<div class="stu-bd">'+esc(birthdayText(b.md))+(b.md ? ' · '+(days===0?"今天生日":days+" 天后") : '')+'</div></div>'
+          + (canSet ? '<div class="stu-actions">'
+              + '<button class="stu-edit" data-act="editStudent" data-id="'+esc(b.id)+'" title="修改">✎</button>'
+              + '<button class="stu-del" data-act="delBday" data-id="'+esc(b.id)+'" title="删除">✕</button>'
+            + '</div>' : '')
           + '</div>';
       }).join("")
-    : '<div class="j-empty">还没有生日档案</div>';
+      + (students.length > 10
+          ? '<button class="stu-more" data-act="toggleStudentList">'+(studentListExpanded?'收起':'展开全部 '+students.length+' 人')+'</button>'
+          : '')
+    : '<div class="j-empty">还没有学生档案</div>';
 
   var note = canSet ? ''
     : '<div class="perm-note">👀 访客模式：设置只读。管理员可在「身份与访客权限」里开放设置权限。</div>';
 
+  var bdEdit = studentEditId ? studentById(studentEditId) : null;
+  var bdDateVal = bdEdit && bdEdit.md ? ((bdEdit.year && bdEdit.year > 1900 ? bdEdit.year : 2000) + "-" + bdEdit.md) : "";
   var bdForm = canSet
-    ? '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'
-      +   '<input type="text" id="bdName" placeholder="姓名">'
-      +   '<input type="date" id="bdDate">'
+    ? '<div class="stu-form-grid">'
+      +   '<div><label class="fl">姓名</label><input type="text" id="bdName" maxlength="20" placeholder="学生姓名" value="'+(bdEdit?esc(bdEdit.name):"")+'"></div>'
+      +   '<div><label class="fl">生日（可选）</label><input type="date" id="bdDate" value="'+esc(bdDateVal)+'"></div>'
       + '</div>'
-      + '<input type="text" id="bdWish" placeholder="专属祝福语（选填）" style="margin-top:8px">'
-      + '<button class="btn tiny" data-act="addBday" style="margin-top:10px">＋ 添加生日</button>'
+      + '<input type="text" id="bdWish" maxlength="60" placeholder="专属祝福语（选填）" style="margin-top:8px" value="'+(bdEdit?esc(bdEdit.wish||""):"")+'">'
+      + '<div class="btn-row" style="margin-top:10px">'
+      +   '<button class="btn tiny" data-act="saveStudent">'+(bdEdit?"保存修改":"＋ 添加学生")+'</button>'
+      +   (bdEdit ? '<button class="btn ghost tiny" data-act="cancelStudentEdit">取消</button>' : '')
+      + '</div>'
+      + '<p class="echo-tip">生日可留空，之后随时点 ✎ 修改；名单按姓名排序。</p>'
     : '';
 
   var dataBtns = '<button class="btn ghost tiny" data-act="export">导出全部数据</button>'
@@ -2861,15 +3141,15 @@ function renderSettings(){
     +     '<div><label class="fl">班级名称</label><input type="text" id="setClass" value="'+esc(store.settings.className||"")+'" placeholder="高三(4)班"'+dis+'></div>'
     +     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
     +       '<div><label class="fl">高考日期</label><input type="date" id="setExam" value="'+esc(store.settings.examDate||"")+'"'+dis+'></div>'
-    +       '<div><label class="fl">班级人数（应到）</label><input type="number" id="setSize" min="1" max="99" step="1" value="'+esc(String(store.settings.classSize||45))+'"'+dis+'></div>'
+    +       '<div><label class="fl">班级人数（学生档案）</label><div class="stu-total-box"><b>'+students.length+'</b><span>人 · 自动统计</span></div></div>'
     +     '</div>'
     +   '</div>'
     +   (canSet ? '<button class="btn" data-act="saveSet" style="margin-top:12px">保存设置</button>' : '')
     + '</section>'
     + '<section class="card">'
-    +   '<div class="card-hd"><div class="ico blue">🎂</div><h2>生日档案</h2><span class="sub">'+store.birthdays.length+' 人</span></div>'
+    +   '<div class="card-hd"><div class="ico blue">👥</div><h2>学生档案</h2><span class="sub">'+students.length+' 人</span></div>'
     +   bdForm
-    +   '<div style="margin-top:12px;max-height:210px;overflow:auto">'+bdList+'</div>'
+    +   '<div class="stu-list" style="margin-top:12px">'+bdList+'</div>'
     + '</section>'
     + '</div>'
     + pwdCard
@@ -2938,6 +3218,7 @@ function afterRender(r){
     if(nm) nm.addEventListener("keydown", function(e){
       if(e.key === "Enter"){ e.preventDefault(); addLeave(); }
     });
+    initLeaveStudents();
     initLeavePeriods();
   }
   if(r === "board"){
@@ -3067,10 +3348,15 @@ function saveHwTitle(id, val){
 
 function addLeave(){
   if(!canEdit("leave")){ editGuard("leave"); return; }
-  var nameEl = $("lvName");
-  if(!nameEl) return;
-  var name = String(nameEl.value || "").trim();
-  if(!name){ toast("请填写请假同学姓名", "✏️"); nameEl.focus(); return; }
+  var pickedBoxes = document.querySelectorAll("#lvStudents input[type=checkbox]");
+  var picked = [];
+  for(var i=0;i<pickedBoxes.length;i++){
+    if(pickedBoxes[i].checked){
+      var stu = studentById(pickedBoxes[i].value);
+      if(stu) picked.push(stu);
+    }
+  }
+  if(!picked.length){ toast("请选择请假学生，可多选", "👥"); return; }
 
   var boxes = document.querySelectorAll("#lvPeriods input[type=checkbox]");
   var periods = [];
@@ -3079,24 +3365,29 @@ function addLeave(){
   var period = periodRangeText(periods);
   var reason = $("lvReason") ? $("lvReason").value : "事假";
   var today = todayStr();
+  var added = 0, base = Date.now();
 
-  var dup = false;
-  store.leaves.forEach(function(l){
-    if(l.date !== today || l.name !== name) return;
-    var old = Array.isArray(l.periods) ? l.periods : [l.period];
-    if(l.period === "全天") old = LEAVE_PERIODS;
-    for(var k=0;k<periods.length;k++){
-      if(old.indexOf(periods[k]) >= 0){ dup = true; break; }
-    }
+  picked.forEach(function(stu){
+    var dup = false;
+    store.leaves.forEach(function(l){
+      if(l.date !== today || l.name !== stu.name) return;
+      var old = Array.isArray(l.periods) ? l.periods : [l.period];
+      if(l.period === "全天") old = LEAVE_PERIODS;
+      for(var k=0;k<periods.length;k++){
+        if(old.indexOf(periods[k]) >= 0){ dup = true; break; }
+      }
+    });
+    if(dup) return;
+    store.leaves.push({
+      id:uid(), name:stu.name, period:period, periods:periods.slice(),
+      reason:reason, date:today, returned:false, created:base + added
+    });
+    added++;
   });
-  if(dup){ toast(name + " 今天所选节次已登记", "🌿"); return; }
 
-  store.leaves.push({
-    id:uid(), name:name, period:period, periods:periods.slice(),
-    reason:reason, date:today, returned:false, created:Date.now()
-  });
+  if(!added){ toast("所选同学今天这些节次已经登记过了", "🌿"); return; }
   commit();
-  toast("已登记：" + name + " · " + period, "🌿");
+  toast("已登记 " + added + " 人：" + period, "🌿");
   renderPage();
 }
 
@@ -3131,27 +3422,50 @@ function addMessage(){
   renderPage();
 }
 
-function addBirthday(){
+function saveStudent(){
   if(!canEdit("settings")){ editGuard("settings"); return; }
   var n = $("bdName"), d = $("bdDate"), w = $("bdWish");
   if(!n) return;
   var name = String(n.value || "").trim();
-  if(!name){ toast("请填写同学姓名", "✏️"); n.focus(); return; }
+  if(!name){ toast("请填写学生姓名", "✏️"); n.focus(); return; }
+  var editing = studentEditId ? studentById(studentEditId) : null;
+  var dup = store.birthdays.some(function(b){ return b.name === name && (!editing || b.id !== editing.id); });
+  if(dup){ toast("学生档案里已经有「"+name+"」了", "👥"); n.focus(); return; }
   var dv = d ? d.value : "";
-  if(!dv){ toast("请选择生日日期", "📅"); if(d) d.focus(); return; }
-  var pd = parseDate(dv);
-  if(!pd){ toast("日期格式不对", "📅"); return; }
-  var md = pad(pd.getMonth()+1)+"-"+pad(pd.getDate());
-  var dup = false;
-  store.birthdays.forEach(function(b){ if(b.name === name && b.md === md) dup = true; });
-  if(dup){ toast(name + " 的生日已经在名单里啦", "🎈"); return; }
-  store.birthdays.push({
-    id:uid(), name:name, md:md,
-    year: pd.getFullYear() > 1900 ? pd.getFullYear() : 0,
-    wish: w ? String(w.value || "").trim() : ""
-  });
+  var md = "", year = 0;
+  if(dv){
+    var pd = parseDate(dv);
+    if(!pd){ toast("生日日期格式不对", "📅"); return; }
+    md = pad(pd.getMonth()+1)+"-"+pad(pd.getDate());
+    year = pd.getFullYear() === 2000 ? 0 : pd.getFullYear();
+  }
+  var wish = w ? String(w.value || "").trim() : "";
+  if(editing){
+    var oldName = editing.name;
+    editing.name = name; editing.md = md; editing.year = year; editing.wish = wish;
+    if(oldName !== name){
+      store.leaves.forEach(function(l){ if(l.name === oldName) l.name = name; });
+    }
+    toast("学生档案已更新", "👥");
+  } else {
+    store.birthdays.push({ id:uid(), name:name, md:md, year:year, wish:wish });
+    toast(md ? "学生档案已添加" : "学生已添加，生日可稍后补充", "👥");
+  }
+  store.settings.classSize = store.birthdays.length;
+  studentEditId = "";
   commit();
-  toast("生日档案已添加", "🎂");
+  renderPage();
+}
+
+function editStudent(id){
+  if(!canEdit("settings")){ editGuard("settings"); return; }
+  if(!studentById(id)) return;
+  studentEditId = id;
+  renderPage();
+}
+
+function cancelStudentEdit(){
+  studentEditId = "";
   renderPage();
 }
 
@@ -3563,29 +3877,67 @@ function handleAction(act, el){
 
     case "addBday":
       if(!canEdit("settings")) break;
-      addBirthday();
+      saveStudent();
       break;
 
     case "delBday":
       if(!canEdit("settings")) break;
       id = el.getAttribute("data-id");
       store.birthdays = store.birthdays.filter(function(b){ return b.id !== id; });
+      if(studentEditId === id) studentEditId = "";
+      store.settings.classSize = store.birthdays.length;
       commit();
       renderPage();
-      toast("已删除生日档案", "🗑️");
+      toast("已从学生档案移除", "🗑️");
       break;
 
+    case "saveStudent":
+      saveStudent();
+      break;
+    case "editStudent":
+      editStudent(el.getAttribute("data-id"));
+      break;
+    case "cancelStudentEdit":
+      cancelStudentEdit();
+      break;
+    case "toggleStudentList":
+      studentListExpanded = !studentListExpanded;
+      renderPage();
+      break;
+    case "toggleLeaveList":
+      leaveListExpanded = !leaveListExpanded;
+      renderPage();
+      break;
+    case "lvPickAll":
+      setStuPicks("all");
+      break;
+    case "lvPickInvert":
+      setStuPicks("invert");
+      break;
+    case "lvPickClear":
+      setStuPicks("clear");
+      break;
+    case "openRoster":
+      openRoster(el.getAttribute("data-mode"));
+      break;
+    case "rosterAll":
+      setRosterAll("all");
+      break;
+    case "rosterInvert":
+      setRosterAll("invert");
+      break;
+    case "rosterClose":
+      closeRoster();
+      break;
+    case "rosterSave":
+      rosterSave();
+      break;
     case "saveSet":
       if(!canEdit("settings")) break;
-      var cn = $("setClass"), ex = $("setExam"), sz = $("setSize");
+      var cn = $("setClass"), ex = $("setExam");
       if(cn && String(cn.value||"").trim()) store.settings.className = String(cn.value).trim();
       store.settings.classShort = String(store.settings.className||"").replace(/[^0-9]/g,"").slice(0,2) || "4";
       if(ex && ex.value) store.settings.examDate = ex.value;
-      if(sz){
-        var n = parseInt(sz.value, 10);
-        if(n > 0 && n <= 99) store.settings.classSize = n;
-        else sz.value = store.settings.classSize || 45;
-      }
       saveStore();
       renderTop();
       renderPage();
@@ -3704,6 +4056,7 @@ function init(){
   bindGlobal();
   bindLogin();
   bindEgg();
+  bindRoster();
   applyRoleUI();
   renderPage();
   startHomeClock();
