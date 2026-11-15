@@ -1735,7 +1735,6 @@ function usageCost(){
 }
 
 function openUsage(){
-  if(!adminOnly("访客模式：不能查看用量账单")) return;
   var m = $("usageMask");
   if(!m) return;
   var input = Number(USAGE_INFO.input) || 0;
