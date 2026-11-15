@@ -286,8 +286,8 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
 }
 .subj-main{display:flex;flex-direction:column;min-width:0}
 .hw-item{
-  display:flex;gap:14px;padding:9px 14px;border-radius:14px;background:#fffdfa;
-  border:1px solid #f4e7dd;transition:.18s;position:relative;overflow:hidden;margin-bottom:6px;
+  display:flex;gap:10px;padding:7px 12px;border-radius:14px;background:#fffdfa;
+  border:1px solid #f4e7dd;transition:.18s;position:relative;overflow:hidden;margin-bottom:6px;align-items:center;
 }
 .hw-item::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3.5px;background:var(--c,#ffb89a)}
 .hw-item:hover{transform:translateX(2px);box-shadow:0 7px 18px rgba(200,160,135,.13);border-color:#f0d6c5}
@@ -301,13 +301,14 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
 .hw-item.done .hw-check{background:var(--c,#ff9a76);border-color:transparent;color:#fff}
 .hw-body{flex:1;min-width:0}
 .hw-title{font-size:13.5px;font-weight:700;color:#4a3d44;word-break:break-word;line-height:1.5}
-.hw-meta{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
+.hw-meta{display:flex;align-items:center;justify-content:flex-end;gap:5px;margin:0;flex:none;white-space:nowrap}
 .hw-chip{display:inline-flex;align-items:center;font-size:10.5px;font-weight:700;color:#a3949a;background:#f8f1ea;border-radius:7px;padding:2px 7px;line-height:1.5;white-space:nowrap}
+.hw-short{display:none}
 .hw-chip.due{color:#b97745;background:#fff3e7}
 .hw-chip.over{color:#c25b52;background:#ffedeb}
 .hw-note{font-size:15px;color:#8d7f84;margin-top:2px;white-space:pre-wrap;word-break:break-word}
 .hw-foot{display:flex;align-items:center;gap:10px;margin-top:3px;flex-wrap:wrap;font-size:14px;color:#a3949a;font-weight:600}
-.hw-del{border:none;background:transparent;cursor:pointer;color:#cdbcc0;font-size:19px;padding:2px 6px;border-radius:8px;opacity:0;transition:.16s;align-self:flex-start}
+.hw-del{border:none;background:transparent;cursor:pointer;color:#cdbcc0;font-size:19px;padding:2px 6px;border-radius:8px;opacity:0;transition:.16s;align-self:center;flex:none}
 .hw-item:hover .hw-del{opacity:1}
 .hw-del:hover{background:#ffeceb;color:#e06a72}
 
@@ -361,6 +362,11 @@ body.board-display .hw-del{display:none!important}
 body.board-display .area-leave .card-hd a,
 body.board-display .area-remind .card-hd a{display:none!important}
 body.board-display .shell{padding-top:60px}
+/* 显示模式：作业字号放大，行距同步放开 */
+body.board-display .hw-item{padding:9px 14px;margin-bottom:7px}
+body.board-display .hw-title,
+body.board-display .hw-title-input{font-size:18px;line-height:1.5}
+body.board-display .hw-chip{font-size:11px}
 .board-exit{
   position:fixed;right:18px;top:14px;z-index:70;display:inline-flex;align-items:center;gap:6px;
   padding:8px 14px;border-radius:12px;border:1px solid #f0ddcf;background:rgba(255,255,255,.94);
@@ -739,6 +745,11 @@ table.lv-table tr:last-child td{border-bottom:none}
   .hw-add-panel{padding:8px}
   .hw-add-fields{gap:7px}
   .hw-title-input{font-size:15px}
+  .hw-item{gap:8px;padding:7px 10px}
+  .hw-meta{gap:4px}
+  .hw-chip{font-size:10px;padding:1px 5px}
+  .hw-long{display:none}
+  .hw-short{display:inline}
   .echo-form .echo-row{grid-template-columns:1fr}
   .exam-num{font-size:44px}
 }
@@ -859,6 +870,11 @@ var GUEST_PERM_LABELS = [
 ];
 /* 每次发布更新：在 CHANGELOG 顶部追加一条，并同步 README「更新日志」 */
 var CHANGELOG = [
+  { date:"2026-11-15", ver:"v1.6.2", title:"作业行布局优化", items:[
+    "作业建议时长与截止日期移到每行末尾，压缩作业行高度。",
+    "显示模式下作业标题字号增大，远看更清楚。",
+    "作业较多时页面自然撑高，不出现内部滚动条。"
+  ]},
   { date:"2026-11-15", ver:"v1.6.1", title:"班级日志回看修复", items:[
     "修复点击没有存档的日期后自动回到今天、看起来“无效果”的问题。",
     "历史回看增加页面标题、说明和“回到今天”入口，交互与今日总览一致。"
@@ -2049,20 +2065,27 @@ function hwItemHtml(hw, opts){
 
   var meta = "";
   if(hw.minutes){
-    meta += '<span class="hw-chip">建议 '+esc(hw.minutes)+' 分钟</span>';
+    meta += '<span class="hw-chip" title="建议时长 '+esc(hw.minutes)+' 分钟">'
+      + '<span class="hw-long">⏱ '+esc(hw.minutes)+' 分钟</span>'
+      + '<span class="hw-short">⏱'+esc(hw.minutes)+'分</span>'
+      + '</span>';
   }
   var due = hw.due || hw.date || "";
   if(due && due !== hw.date){
     var over = due < todayStr();
-    meta += '<span class="hw-chip due'+(over ? " over" : "")+'" title="截止日期">截止 '+esc(dateLabel(due))+'</span>';
+    var dueShort = due.slice(5).replace("-", "/");
+    meta += '<span class="hw-chip due'+(over ? " over" : "")+'" title="截止日期 '+esc(due)+'">'
+      + '<span class="hw-long">截止 '+esc(dateLabel(due))+'</span>'
+      + '<span class="hw-short">截止'+esc(dueShort)+'</span>'
+      + '</span>';
   }
 
   return '<div class="hw-item" style="--c:'+color+'">'
     + '<div class="hw-body">'
     +   titleHtml
     +   (hw.note ? '<div class="hw-note">'+esc(hw.note)+'</div>' : '')
-    +   (meta ? '<div class="hw-meta">'+meta+'</div>' : '')
     + '</div>'
+    + (meta ? '<div class="hw-meta">'+meta+'</div>' : '')
     + (opts.editable ? '<button class="hw-del" data-act="delHw" data-id="'+esc(hw.id)+'" title="删除">✕</button>' : '')
     + '</div>';
 }
