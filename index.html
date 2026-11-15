@@ -1120,6 +1120,10 @@ function applyRoster(s){
 }
 
 var CHANGELOG = [
+  { date:"2026-11-15", ver:"v1.10.1", title:"生日统计纳入教师", items:[
+    "首页生日栏、近期生日、班级日志和班级信息统一把教师生日计算在内。",
+    "相关文案由“同学生日”改为“生日”，教师会标注“老师/教师”，避免与学生混淆。"
+  ]},
   { date:"2026-11-15", ver:"v1.10", title:"工具箱 Issue 提交", items:[
     "工具箱新增 Issue 待办看板：所有人可提交和删除，管理员可回复并勾选解决。",
     "Issue 显示提交身份、时间、状态和历史回复；已解决条目集中显示。",
@@ -1959,7 +1963,7 @@ function openClassInfo(){
   $("ciName").textContent = store.settings.className || "高三(4)班";
   $("ciStudents").textContent = students.length;
   $("ciTeachers").textContent = teachers.length;
-  $("ciBirthday").textContent = students.filter(function(s){ return !!s.md; }).length;
+  $("ciBirthday").textContent = students.concat(teachers).filter(function(p){ return !!p.md; }).length;
   $("ciHead").textContent = head ? (head.name + "（" + head.subject + "）") : "暂未设置";
   $("ciTeacherList").innerHTML = teachers.length
     ? teachers.map(function(t){
@@ -2090,7 +2094,9 @@ function buildSnapshot(date){
     .map(function(r){ return { text:r.text, done:!!r.done }; });
   var md = String(date).slice(5);
   var bd = store.birthdays.filter(function(b){ return b.md === md; })
-    .map(function(b){ return b.name; });
+    .map(function(b){ return b.name; })
+    .concat((store.teachers || []).filter(function(t){ return t.md === md; })
+      .map(function(t){ return t.name + "老师"; }));
   var msg = store.messages.filter(function(m){ return m.date === date; })
     .map(function(m){ return { who:m.who||"", text:m.text, time:m.time||"" }; });
   return { homeworks:hw, leaves:lv, reminders:rm, birthdays:bd, messages:msg };
@@ -2196,8 +2202,18 @@ function birthdayText(md){
 
 function birthdaySorted(){
   var today = new Date();
-  return store.birthdays.filter(function(b){ return !!b.md; }).map(function(b){ return { b:b, days:daysToBirthday(b.md, today) }; })
-    .sort(function(x,y){ return (x.days - y.days) || studentNameCompare(x.b, y.b); });
+  var list = [];
+  store.birthdays.forEach(function(b){
+    if(b.md) list.push({ b:b, days:daysToBirthday(b.md, today), kind:"student" });
+  });
+  (store.teachers || []).forEach(function(t){
+    if(t.md) list.push({ b:t, days:daysToBirthday(t.md, today), kind:"teacher" });
+  });
+  return list.sort(function(x,y){ return (x.days - y.days) || studentNameCompare(x.b, y.b); });
+}
+function birthdayDisplayName(item){
+  var name = String((item.b && item.b.name) || "");
+  return item.kind === "teacher" ? name + "老师" : name;
 }
 
 function teacherSubjectRank(subject){
@@ -2277,9 +2293,9 @@ function viewHome(){
 
   var bdayHtml;
   if(todays.length){
-    var names = todays.map(function(x){ return x.b.name; }).join("、");
+    var names = todays.map(birthdayDisplayName).join("、");
     var wish = todays[0].b.wish || DEFAULT_WISHES[0];
-    var label = todays.length > 1 ? ("今天有 "+todays.length+" 位同学过生日") : "今天是你的生日";
+    var label = todays.length > 1 ? ("今天有 "+todays.length+" 人生日") : ("今天是"+birthdayDisplayName(todays[0])+"的生日");
     bdayHtml = '<div class="bday-hero">'
       + '<div class="bh-label">🎉 BIRTHDAY · '+esc(label)+'</div>'
       + '<div class="bh-names">'+esc(names)+' 生日快乐</div>'
@@ -2289,8 +2305,8 @@ function viewHome(){
   } else {
     var nx = upcoming[0];
     bdayHtml = '<div class="bday-none">'
-      + '<div>🎈 今天没有同学生日</div>'
-      + (nx ? '<b>距离 '+esc(nx.b.name)+' 的生日还有 '+nx.days+' 天</b>' : '<b>'+(canSet ? '去「设置」添加学生档案吧' : '学生档案为空')+'</b>')
+      + '<div>🎈 今天没有生日安排</div>'
+      + (nx ? '<b>距离 '+esc(birthdayDisplayName(nx))+' 的生日还有 '+nx.days+' 天</b>' : '<b>'+(canSet ? '去「设置」补充学生或教师生日吧' : '还没有填写生日')+'</b>')
       + '</div>';
   }
 
@@ -2302,7 +2318,7 @@ function viewHome(){
       upHtml += '<div class="bday-item">'
         + '<div class="avatar" style="background:linear-gradient(135deg,'+col+','+col+'cc)">'+esc(String(it.b.name||"?").slice(-1))+'</div>'
         + '<div class="bday-info"><div class="bday-name">'+esc(it.b.name)+'</div>'
-        + '<div class="bday-date">'+esc(String(it.b.md).replace("-","月"))+'日</div></div>'
+        + '<div class="bday-date">'+(it.kind === "teacher" ? '教师 · ' : '')+esc(birthdayText(it.b.md))+'</div></div>'
         + '<span class="bday-days">'+it.days+' 天后</span>'
         + '</div>';
     }
@@ -3153,7 +3169,7 @@ function renderJournal(){
 
   var bdHtml = snap.birthdays.length
     ? '<div class="sc-line"><span class="tx">🎂 '+esc(snap.birthdays.join("、"))+' 生日快乐</span></div>'
-    : '<div class="j-empty">当天没有同学生日</div>';
+    : '<div class="j-empty">当天没有生日</div>';
 
   var msgs = snap.messages || [];
   var msgHtml = msgs.length
@@ -4682,7 +4698,7 @@ function init(){
   showLogin();
   cloudStart();
 
-  var todayBd = store.birthdays.some(function(b){ return daysToBirthday(b.md, new Date()) === 0; });
+  var todayBd = store.birthdays.concat(store.teachers || []).some(function(b){ return daysToBirthday(b.md, new Date()) === 0; });
   var flagKey = "gaoer3_celebrated_" + todayStr();
   var already = false;
   try { already = window.localStorage.getItem(flagKey) === "1"; } catch(e){ already = false; }
