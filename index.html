@@ -173,9 +173,10 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
 .hero-by{font-size:12.5px;font-weight:700;color:#a2603a;margin-top:8px;letter-spacing:.5px}
 
 /* 高考倒计时 + 今日提醒：生日栏与目录栏之间左右各一块 */
-.home-pair{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}
+.home-pair{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:18px}
 .home-pair .card{padding:20px 22px;overflow:hidden;min-height:158px}
 .daily-card.exam{background:linear-gradient(135deg,#eef4ff,#fbfdff);border-color:#dce8fb}
+.daily-card.clock{background:linear-gradient(135deg,#f3f0ff,#fbfaff);border-color:#e3dcfa}
 .daily-card.remind{background:linear-gradient(135deg,#fff9ec,#fffdf8);border-color:#f6e7c8}
 .daily-hd{display:flex;align-items:center;gap:8px;font-size:11.5px;font-weight:800;color:#96a2b5;letter-spacing:1px}
 .daily-hd .spacer{flex:1}
@@ -192,6 +193,10 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
 .remind-line.done{opacity:.5;text-decoration:line-through}
 .remind-line.done .rdot{background:#9cd8c4}
 .remind-empty{font-size:12px;color:#b3a49f;font-weight:600;padding:18px 0 8px}
+.clock-body{display:flex;flex-direction:column;justify-content:center;height:calc(100% - 22px);padding-top:8px}
+.clock-time{font-size:46px;line-height:1;font-weight:800;color:#6b5fb0;font-variant-numeric:tabular-nums;letter-spacing:1px}
+.clock-date{font-size:12px;color:#9387b3;font-weight:700;margin-top:8px}
+.clock-up{font-size:11px;color:#a79dbb;font-weight:600;margin-top:12px;padding-top:9px;border-top:1px dashed #e7e0f5;font-variant-numeric:tabular-nums}
 
 .toc-hd{margin:26px 0 13px;display:flex;align-items:baseline;gap:10px}
 .toc-hd h2{margin:0;font-size:17px;font-weight:800;color:#5a4038}
@@ -667,6 +672,7 @@ table.lv-table tr:last-child td{border-bottom:none}
   .topbar-in{height:56px;gap:10px}
   .brand .tm{display:none}
   .top-clock{display:none}
+  .clock-time{font-size:40px}
   .toc{grid-template-columns:1fr 1fr;gap:10px}
   .toc-item{padding:14px 13px}
   .toc-ico{width:36px;height:36px;font-size:17px;border-radius:12px;margin-bottom:9px}
@@ -705,7 +711,7 @@ table.lv-table tr:last-child td{border-bottom:none}
         </div>
       </a>
       <nav class="nav" id="nav" data-page-node-id="asaWc0GEuvS3Gzuc7jvFfk">
-        <a href="#/home" data-r="home" data-page-node-id="cRhzCprJV52qx08aTmmx54">首页</a>
+        <a href="#/home" data-r="home" data-page-node-id="cRhzCprJV52qx08aTmmx54">仪表盘</a>
         <a href="#/board" data-r="board" data-page-node-id="GJfK3Ttn0QfVjz19uZvjWn">今日总览</a>
         <a href="#/leave" data-r="leave" data-page-node-id="d1gHhU1xJXGKRG91MVDjQj">请假登记</a>
         <a href="#/remind" data-r="remind" data-page-node-id="I9CeV9QD7l7P7OJ6BfjjcL">每日提醒</a>
@@ -1650,6 +1656,44 @@ function birthdaySorted(){
 }
 
 /* ================= 首页 ================= */
+/* 网站自 2026-11-15 04:00（北京时间）开始运行 */
+var SITE_START_MS = Date.UTC(2026, 10, 14, 20, 0, 0);
+var homeClockTimer = null;
+
+function beijingParts(){
+  var t = new Date(Date.now() + 8 * 3600 * 1000);
+  return {
+    y:t.getUTCFullYear(), m:t.getUTCMonth() + 1, d:t.getUTCDate(), w:t.getUTCDay(),
+    h:t.getUTCHours(), mi:t.getUTCMinutes(), s:t.getUTCSeconds()
+  };
+}
+
+function updateHomeClock(){
+  var timeEl = $("homeClockTime");
+  if(!timeEl) return;
+  var b = beijingParts();
+  timeEl.textContent = pad(b.h) + ":" + pad(b.mi) + ":" + pad(b.s);
+  var dateEl = $("homeClockDate");
+  if(dateEl) dateEl.textContent = b.y + "年" + b.m + "月" + b.d + "日 · " + WEEK[b.w];
+  var upEl = $("siteUptime");
+  if(upEl){
+    var diff = Math.max(0, Date.now() - SITE_START_MS);
+    var days = Math.floor(diff / 86400000);
+    diff -= days * 86400000;
+    var hrs = Math.floor(diff / 3600000);
+    diff -= hrs * 3600000;
+    var mins = Math.floor(diff / 60000);
+    var secs = Math.floor((diff - mins * 60000) / 1000);
+    upEl.textContent = "本站已运行 " + days + " 天 " + hrs + " 小时 " + mins + " 分 " + secs + " 秒";
+  }
+}
+
+function startHomeClock(){
+  if(homeClockTimer) clearInterval(homeClockTimer);
+  updateHomeClock();
+  homeClockTimer = setInterval(updateHomeClock, 1000);
+}
+
 function viewHome(){
   var now = new Date();
   var h = now.getHours();
@@ -1749,6 +1793,15 @@ function viewHome(){
     + '<div class="remind-list">'+remHtml+'</div>'
     + '</section>';
 
+  var clockHtml = '<section class="card daily-card clock">'
+    + '<div class="daily-hd"><span>🕰️ 北京时间</span><span class="spacer"></span><span>GMT+8</span></div>'
+    + '<div class="clock-body">'
+    +   '<div class="clock-time" id="homeClockTime">--:--:--</div>'
+    +   '<div class="clock-date" id="homeClockDate">正在校准…</div>'
+    +   '<div class="clock-up" id="siteUptime">本站已运行 —</div>'
+    + '</div>'
+    + '</section>';
+
   var toc = [
     {r:"board", icon:"📋", t:"今日总览", d:"作业录入、请假、提醒一屏看全", c:"#e2eefc", g:"#5a8fd8", n:hwToday? hwToday+" 项待完成":""},
     {r:"leave", icon:"🌿", t:"请假登记", d:"自习课请假名单与销假", c:"#ddf6ee", g:"#1f9d7d", n:lvToday? lvToday+" 人请假":""},
@@ -1781,7 +1834,7 @@ function viewHome(){
     +   bdayHtml
     +   '<div class="bday-up"><div class="bu-hd">近期生日 · 未来 60 天</div><div class="bu-list">'+upHtml+'</div></div>'
     + '</div>'
-    + '<div class="home-pair">' + examHtml + remindHtml + '</div>'
+    + '<div class="home-pair">' + examHtml + clockHtml + remindHtml + '</div>'
     + '<div class="toc-hd"><h2>目录</h2><span>想去哪儿，点一下</span></div>'
     + '<div class="toc">'+tocHtml+'</div>'
     + '<div class="sync-foot" id="syncFoot">'+syncFootHtml()+'</div>';
@@ -2654,6 +2707,7 @@ function renderPage(){
   else if(r === "tools") html = renderTools();
   else if(r === "settings") html = renderSettings();
   box.innerHTML = html;
+  if(r === "home") updateHomeClock();
   setActiveNav(r);
   renderTop();
   afterRender(r);
@@ -3384,6 +3438,7 @@ function init(){
   bindEgg();
   applyRoleUI();
   renderPage();
+  startHomeClock();
   showLogin();
   cloudStart();
 
