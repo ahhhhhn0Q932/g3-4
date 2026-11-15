@@ -574,6 +574,22 @@ table.lv-table tr:last-child td{border-bottom:none}
 .perm-item input{margin:2px 0 0;accent-color:#ff9a76;flex:none}
 .perm-item b{display:block;font-size:12.5px;color:#5d4a48;font-weight:800}
 .perm-item i{display:block;font-style:normal;font-size:10.5px;color:#a3949a;font-weight:600;margin-top:2px;line-height:1.5}
+.maint-repo{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:13px 15px;border:1px solid #f0e2d6;border-radius:14px;background:#fffdfa}
+.repo-meta{flex:1;min-width:180px}
+.repo-meta b{display:block;font-size:13px;color:#5d4a48}
+.repo-meta span{display:block;font-size:11.5px;color:#a3949a;font-weight:600;margin-top:2px}
+.repo-link{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:11px;border:1px solid #e8d8cc;background:#fff;color:#5d4a48;font-size:12px;font-weight:800;text-decoration:none;transition:.16s}
+.repo-link:hover{border-color:#c9b6aa;background:#faf7f3;color:#2f2724}
+.gh-ico{width:17px;height:17px;flex:none}
+.changelog{margin-top:14px;max-height:420px;overflow:auto;padding-right:4px}
+.cl-item{padding:12px 0;border-top:1px dashed #f1e4d9}
+.cl-item:first-child{border-top:none;padding-top:6px}
+.cl-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.cl-ver{font-size:10px;font-weight:900;color:#c06a4a;background:#fff0e6;border-radius:6px;padding:2px 7px;letter-spacing:.03em}
+.cl-head b{font-size:12.5px;color:#5d4a48}
+.cl-date{margin-left:auto;font-size:10.5px;color:#b4a5aa;font-weight:700}
+.cl-list{margin:7px 0 0 16px;padding:0;color:#8b7a78;font-size:11.8px;line-height:1.85;font-weight:600}
+.cl-list li{margin:0}
 .sync-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .sync-state{font-size:11.5px;color:#a3949a;font-weight:600}
 .btn:disabled{opacity:.55;cursor:not-allowed;box-shadow:none}
@@ -697,6 +713,7 @@ table.lv-table tr:last-child td{border-bottom:none}
   .login-choices{grid-template-columns:1fr;gap:10px}
   .pwd-grid{grid-template-columns:1fr}
   .perm-grid{grid-template-columns:1fr}
+  .cl-date{margin-left:0}
   .topbar{margin:0 -13px 16px;padding:0 13px}
   .topbar-in{height:56px;gap:10px}
   .brand .tm{display:none}
@@ -840,6 +857,39 @@ var GUEST_PERM_LABELS = [
   { k:"journal", t:"班级日志", d:"写留言" },
   { k:"tools", t:"工具箱", d:"随机抽学生、随机数" }
 ];
+/* 每次发布更新：在 CHANGELOG 顶部追加一条，并同步 README「更新日志」 */
+var CHANGELOG = [
+  { date:"2026-11-15", ver:"v1.6", title:"维护面板与更新日志", items:[
+    "设置页新增维护面板，展示版本更新日志与 GitHub 仓库入口。",
+    "README 同步新增更新日志，并与应用内记录保持一致。"
+  ]},
+  { date:"2026-11-15", ver:"v1.5", title:"界面与权限整理", items:[
+    "首页更名为仪表盘，新增北京时间与网站运行时长。",
+    "页脚入口收进设置；数据管理与云同步合并为同步设置。",
+    "新增访客权限配置，可按功能开放作业、回声洞、提醒、设置、请假、日志和工具箱。",
+    "今日总览新增显示模式，只保留作业、月历、请假和每日提醒。",
+    "班级日志改用月历回看，月历位于左侧。"
+  ]},
+  { date:"2026-11-15", ver:"v1.4", title:"手动云同步", items:[
+    "设置页新增手动云同步，首页底部展示最近一次本地保存与云端同步时间。"
+  ]},
+  { date:"2026-11-15", ver:"v1.3", title:"登录、权限与云端同步", items:[
+    "新增访客/管理员登录，管理员密码可在设置中修改。",
+    "接入 Supabase 云同步，支持本地缓存、自动拉取和手动同步。"
+  ]},
+  { date:"2026-11-15", ver:"v1.2", title:"课堂工具与内容", items:[
+    "新增工具箱：随机抽学生与可设置范围的随机数。",
+    "新增回声洞、首页高考倒计时和每日提醒卡片。",
+    "请假改为 14 个节次多选，支持 Shift 连续选择与全选。",
+    "作业支持建议时长和截止日期，有截止日期的作业持续显示到截止日。"
+  ]},
+  { date:"2026-11-15", ver:"v1.1", title:"总览与布局", items:[
+    "页面加宽到 1680px，减少两侧留白。",
+    "今日总览新增月历和历史回看。"
+  ]}
+];
+var GITHUB_URL = "https://github.com/ahhhhhn0Q932/g3-4";
+var GITHUB_ICON = '<svg class="gh-ico" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>';
 
 /* ================= 云端同步配置 ================= */
 /* publishable key 本来就是公开的；管理员密码只以哈希形式保存在 Supabase。 */
@@ -2757,7 +2807,23 @@ function renderSettings(){
     +   '</p>'
     + '</section>';
 
-  return '<div class="page-hd"><div class="ico orange" data-egg-edit="1">⚙️</div><div><h1>设置</h1><p>'+(canSet?"班级信息与数据管理":"访客模式 · 设置只读")+'</p></div></div>'
+  var clHtml = CHANGELOG.map(function(c){
+    return '<div class="cl-item">'
+      + '<div class="cl-head"><span class="cl-ver">'+esc(c.ver)+'</span><b>'+esc(c.title)+'</b><span class="cl-date">'+esc(c.date)+'</span></div>'
+      + '<ul class="cl-list">'+c.items.map(function(it){ return '<li>'+esc(it)+'</li>'; }).join("")+'</ul>'
+      + '</div>';
+  }).join("");
+
+  var maintCard = '<section class="card maint-card" style="margin-top:16px">'
+    +   '<div class="card-hd"><div class="ico purple">🛠️</div><h2>维护</h2><span class="sub">更新日志 · 代码仓库</span></div>'
+    +   '<div class="maint-repo">'
+    +     '<div class="repo-meta"><b>GitHub 仓库</b><span>ahhhhhn0Q932/g3-4 · 源码、更新日志与部署</span></div>'
+    +     '<a class="repo-link" href="'+esc(GITHUB_URL)+'" target="_blank" rel="noopener noreferrer">'+GITHUB_ICON+'<span>GitHub</span></a>'
+    +   '</div>'
+    +   '<div class="changelog">'+clHtml+'</div>'
+    + '</section>';
+
+  return '<div class="page-hd"><div class="ico orange" data-egg-edit="1">⚙️</div><div><h1>设置</h1><p>'+(canSet?"班级信息、权限与维护":"访客模式 · 设置只读")+'</p></div></div>'
     + note
     + '<div class="settings-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:16px">'
     + '<section class="card">'
@@ -2779,7 +2845,8 @@ function renderSettings(){
     + '</div>'
     + pwdCard
     + permCard
-    + syncCard;
+    + syncCard
+    + maintCard;
 }
 
 /* ================= 渲染 ================= */
