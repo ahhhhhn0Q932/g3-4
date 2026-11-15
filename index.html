@@ -198,6 +198,35 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
 .clock-date{font-size:12px;color:#9387b3;font-weight:700;margin-top:8px}
 .clock-up{font-size:11px;color:#a79dbb;font-weight:600;margin-top:12px;padding-top:9px;border-top:1px dashed #e7e0f5;font-variant-numeric:tabular-nums}
 
+/* 仪表盘右侧今日课表 */
+.home-layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:18px;align-items:start}
+.home-main{min-width:0}
+.home-side{position:sticky;top:80px;min-width:0}
+.tt-card{padding:16px 16px 13px;overflow:hidden}
+.tt-hd{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:900;color:#7a655f;letter-spacing:.5px}
+.tt-hd .spacer{flex:1}
+.tt-day{font-size:10.5px;color:#b1a09a;font-weight:700;white-space:nowrap}
+.tt-now{margin-top:10px;padding:9px 11px;border-radius:12px;background:#faf6f1;border:1px solid #f1e7dc;transition:background .2s,border-color .2s}
+.tt-now.now{background:linear-gradient(135deg,#fff0e8,#fff8f1);border-color:#f2c9b7}
+.tt-now .t1{font-size:12.5px;font-weight:900;color:#6d5852}
+.tt-now.now .t1{color:#c3684f}
+.tt-now .t2{font-size:10.5px;color:#a9968f;font-weight:600;margin-top:2px;line-height:1.45}
+.tt-list{margin-top:9px;display:flex;flex-direction:column;gap:3px}
+.tt-row{display:grid;grid-template-columns:20px 76px minmax(0,1fr) 39px;align-items:center;gap:5px;padding:5px 6px;border-radius:9px;border:1px solid transparent;color:#7c6a63}
+.tt-row .idx{font-size:9.5px;font-weight:900;color:#b7a6a0;text-align:center}
+.tt-row .time{font-size:9.5px;color:#a8958e;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap;letter-spacing:-.2px}
+.tt-row .subj{font-size:12px;font-weight:800;color:#5c4842;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tt-row .state{font-size:8.5px;font-weight:800;color:#b7a6a0;text-align:right;white-space:nowrap}
+.tt-row.now{background:linear-gradient(135deg,#ffefe5,#fff7f1);border-color:#f0c5b1;box-shadow:0 3px 10px rgba(226,137,99,.12)}
+.tt-row.now .idx,.tt-row.now .state{color:#cf6f51}
+.tt-row.now .subj{color:#b9573d}
+.tt-row.now .time{color:#b97b63}
+.tt-row.next{border-color:#ecd8cc;background:#fdf8f4}
+.tt-row.next .state{color:#b9876f}
+.tt-row.done{opacity:.46}
+.tt-row.done .subj{text-decoration:line-through;text-decoration-thickness:1px}
+.tt-empty{padding:24px 8px 18px;text-align:center;font-size:11.5px;font-weight:700;color:#b4a19a;line-height:1.7}
+
 .toc-hd{margin:26px 0 13px;display:flex;align-items:baseline;gap:10px}
 .toc-hd h2{margin:0;font-size:17px;font-weight:800;color:#5a4038}
 .toc-hd span{font-size:11.5px;color:#a3949a;font-weight:600}
@@ -881,6 +910,9 @@ table.lv-table tr:last-child td{border-bottom:none}
 
 @media(max-width:1080px){
   .toc{grid-template-columns:repeat(2,1fr)}
+  .home-layout{grid-template-columns:1fr}
+  .home-side{position:static;margin-top:18px}
+  .home-side .tt-card{max-width:400px;margin:0 auto}
   .board-grid{grid-template-columns:1fr 1fr;grid-template-areas:"hw hw" "cal remind" "cal leave";grid-template-rows:auto auto auto}
   .journal-grid{grid-template-columns:1fr}
   .date-list{flex-direction:row;overflow-x:auto;max-height:none}
@@ -1190,6 +1222,11 @@ function applyRoster(s){
 }
 
 var CHANGELOG = [
+  { date:"2026-11-15", ver:"v1.16", title:"仪表盘今日课表", items:[
+    "仪表盘右侧新增今日课表侧栏，按周一至周五展示九节课。",
+    "上课中、下一节、已结束状态随时间自动高亮，课间、大课间、午休显示休息提示，晚自习不显示。",
+    "周末显示“周末没有课”，移动端课表自动落到主内容下方。"
+  ]},
   { date:"2026-11-15", ver:"v1.15", title:"作业卡片视图与请假横滑", items:[
     "显示模式新增卡片视图 / 列表视图切换，作业按科目分栏展示，侧栏保持原布局。",
     "请假名单改为横向滑动、紧凑无气泡，并移动到每日提醒下方。",
@@ -2391,12 +2428,139 @@ function updateHomeClock(){
     var secs = Math.floor((diff - mins * 60000) / 1000);
     upEl.textContent = "本站已运行 " + days + " 天 " + hrs + " 小时 " + mins + " 分 " + secs + " 秒";
   }
+  updateTimetableNow();
 }
 
 function startHomeClock(){
   if(homeClockTimer) clearInterval(homeClockTimer);
   updateHomeClock();
   homeClockTimer = setInterval(updateHomeClock, 1000);
+}
+
+/* 今日课表：周一至周五，仅白天九节课（不含晚自习） */
+var TT_PERIODS = [
+  {n:1, start:7*60+50,  end:8*60+35},
+  {n:2, start:8*60+45,  end:9*60+30},
+  {n:3, start:10*60+5,  end:10*60+50},
+  {n:4, start:11*60,    end:11*60+45},
+  {n:5, start:13*60+20, end:14*60+5},
+  {n:6, start:14*60+15, end:15*60},
+  {n:7, start:15*60+15, end:16*60},
+  {n:8, start:16*60+10, end:16*60+55},
+  {n:9, start:16*60+55, end:17*60+40}
+];
+var TIMETABLE = {
+  1: ["语文","数学","地理","物理","体育","化学","英语","物理练","班会"],
+  2: ["英语","英语","物理","数学","化学","语文","体育","语文自习","语文练"],
+  3: ["语文","化学","英语","物理","地理","数学","数学","数自","数学练"],
+  4: ["地理","化学","语文","语文","数学","英语","物理","英语自习","英语练"],
+  5: ["数学","数学","语文","英语","地理","体育","物理","化学","地理"]
+};
+
+function ttClock(minutes){
+  return pad(Math.floor(minutes/60)) + ":" + pad(minutes%60);
+}
+function ttDayName(w){
+  return ["周日","周一","周二","周三","周四","周五","周六"][w] || "";
+}
+function ttStateAt(w, minutes){
+  if(w < 1 || w > 5){
+    return {kind:"weekend", idx:-1, next:-1, title:"周末没有课", sub:"今天没有课程安排，好好休息"};
+  }
+  var first = TT_PERIODS[0], last = TT_PERIODS[TT_PERIODS.length-1];
+  if(minutes < first.start){
+    return {kind:"before", idx:-1, next:0, title:"早间", sub:"第一节课 "+ttClock(first.start)+" 开始"};
+  }
+  for(var i=0;i<TT_PERIODS.length;i++){
+    var p = TT_PERIODS[i];
+    if(minutes >= p.start && minutes < p.end){
+      return {kind:"class", idx:i, next:-1, title:"上课中 · 第"+(i+1)+"节 "+TIMETABLE[w][i],
+        sub:ttClock(p.start)+"–"+ttClock(p.end)+" · 还剩 "+(p.end-minutes)+" 分钟", remain:p.end-minutes};
+    }
+  }
+  if(minutes >= last.end){
+    return {kind:"after", idx:-1, next:-1, title:"今日课程已结束", sub:"17:40 放学 · 晚自习不显示"};
+  }
+  for(var j=1;j<TT_PERIODS.length;j++){
+    var nx = TT_PERIODS[j], pv = TT_PERIODS[j-1];
+    if(minutes >= pv.end && minutes < nx.start){
+      var label = "课间休息";
+      if(nx.start === 10*60+5) label = "大课间";
+      else if(pv.end === 11*60+45) label = "午休";
+      return {kind:"break", idx:-1, next:j, title:label,
+        sub:"距第"+(j+1)+"节 "+ttClock(nx.start)+" 还有 "+(nx.start-minutes)+" 分钟", remain:nx.start-minutes};
+    }
+  }
+  return {kind:"before", idx:-1, next:0, title:"早间", sub:"第一节课 "+ttClock(first.start)+" 开始"};
+}
+function ttRowClass(i, st){
+  if(st.kind === "class"){
+    if(i === st.idx) return " now";
+    if(i < st.idx) return " done";
+    return "";
+  }
+  if(st.kind === "break"){
+    if(i === st.next) return " next";
+    if(i < st.next) return " done";
+    return "";
+  }
+  if(st.kind === "before" && i === 0) return " next";
+  if(st.kind === "after") return " done";
+  return "";
+}
+function ttRowState(i, st){
+  if(st.kind === "class"){
+    if(i === st.idx) return "进行中";
+    if(i < st.idx) return "已结束";
+  }
+  if(st.kind === "break"){
+    if(i === st.next) return "下一节";
+    if(i < st.next) return "已结束";
+  }
+  if(st.kind === "before" && i === 0) return "下一节";
+  if(st.kind === "after") return "已结束";
+  return "";
+}
+function timetableCardHtml(){
+  var b = beijingParts();
+  var st = ttStateAt(b.w, b.h*60+b.mi);
+  var day = TIMETABLE[b.w] || [];
+  var body = "";
+  if(!day.length){
+    body = '<div class="tt-empty">周末没有课<br>今天好好休息，下周一见</div>';
+  } else {
+    body = '<div class="tt-list">';
+    for(var i=0;i<TT_PERIODS.length;i++){
+      var p = TT_PERIODS[i];
+      body += '<div class="tt-row'+ttRowClass(i,st)+'" data-tt="'+i+'">'
+        + '<span class="idx">'+p.n+'</span>'
+        + '<span class="time">'+ttClock(p.start)+'–'+ttClock(p.end)+'</span>'
+        + '<span class="subj">'+esc(day[i] || "—")+'</span>'
+        + '<span class="state">'+ttRowState(i,st)+'</span>'
+        + '</div>';
+    }
+    body += '</div>';
+  }
+  return '<section class="card tt-card" id="ttCard" data-day="'+b.w+'">'
+    + '<div class="tt-hd"><span>📅 今日课表</span><span class="spacer"></span><span class="tt-day">'+esc(ttDayName(b.w))+'</span></div>'
+    + '<div class="tt-now'+((st.kind==="class"||st.kind==="break")?" now":"")+'" id="ttNow"><div class="t1" id="ttNowTitle">'+esc(st.title)+'</div><div class="t2" id="ttNowSub">'+esc(st.sub)+'</div></div>'
+    + body + '</section>';
+}
+function updateTimetableNow(){
+  var card = $("ttCard");
+  if(!card) return;
+  var b = beijingParts();
+  var st = ttStateAt(b.w, b.h*60+b.mi);
+  var nowBox = $("ttNow");
+  if(nowBox) nowBox.className = "tt-now" + ((st.kind==="class"||st.kind==="break") ? " now" : "");
+  var t1 = $("ttNowTitle"); if(t1) t1.textContent = st.title;
+  var t2 = $("ttNowSub"); if(t2) t2.textContent = st.sub;
+  var rows = card.querySelectorAll(".tt-row");
+  for(var i=0;i<rows.length;i++){
+    rows[i].className = "tt-row" + ttRowClass(i, st);
+    var s = rows[i].querySelector(".state");
+    if(s) s.textContent = ttRowState(i, st);
+  }
 }
 
 function viewHome(){
@@ -2528,7 +2692,7 @@ function viewHome(){
       + '</a>';
   }
 
-  return '<section class="hero"><div class="hero-in">'
+  return '<div class="home-layout"><div class="home-main"><section class="hero"><div class="hero-in">'
     + '<div class="hero-greet">'+greet+'，'+esc(name)+'</div>'
     + '<div class="hero-quote'+(hasQuote?"":" empty")+'" id="quoteText">'+(hasQuote ? esc(cur.q.t) : "回声洞还没有句子，去工具箱写一句吧。")+'</div>'
     + (hasQuote && cur.q.by ? '<div class="hero-by">—— '+esc(cur.q.by)+'</div>' : '')
@@ -2547,6 +2711,7 @@ function viewHome(){
     + '<div class="home-pair">' + examHtml + clockHtml + remindHtml + '</div>'
     + '<div class="toc-hd"><h2>目录</h2><span>想去哪儿，点一下</span></div>'
     + '<div class="toc">'+tocHtml+'</div>'
+    + '</div><aside class="home-side">'+timetableCardHtml()+'</aside></div>'
     + '<div class="sync-foot" id="syncFoot">'+syncFootHtml()+'</div>';
 }
 
@@ -5079,6 +5244,7 @@ if(typeof window !== "undefined"){
     role: function(){ return currentRole; },
     isAdmin: isAdmin,
     loginAs: loginAs,
+    ttStateAt: ttStateAt,
     cloudOn: function(){ return CLOUD_ON; },
     cloudPull: cloudPull,
     cloudPush: cloudPush,
