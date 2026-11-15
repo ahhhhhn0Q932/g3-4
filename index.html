@@ -1223,6 +1223,10 @@ function applyRoster(s){
 }
 
 var CHANGELOG = [
+  { date:"2026-11-15", ver:"v1.17.1", title:"访客点名权限收紧", items:[
+    "今日总览“应到 / 实到”名单调整改为仅管理员可用。",
+    "访客仍可进入请假登记提交请假，统计照常更新。"
+  ]},
   { date:"2026-11-15", ver:"v1.17", title:"周六课表与午休时段", items:[
     "新增周六课表：语文、英语、数学、物理、化学、地理六节课。",
     "周一至周五与周六分别使用不同的上课时间和午休时间。",
@@ -3021,14 +3025,15 @@ function leaveStat(dateStr){
   };
 }
 
-/* 三格数字条：应到 / 实到 / 请假；应到与实到可点名修改，请假为剩余名单 */
+/* 三格数字条：应到 / 实到 / 请假；仅管理员可点名修改，请假为剩余名单 */
 function leaveStatBar(st, big, clickable, dateStr){
   var d = clickable ? ' data-date="'+esc(dateStr||"")+'"' : '';
   var cp = clickable ? ' data-act="openRoster" data-mode="expected"'+d+' title="点击调整应到名单" role="button" tabindex="0"' : '';
   var ca = clickable ? ' data-act="openRoster" data-mode="present"'+d+' title="点击调整实到名单" role="button" tabindex="0"' : '';
+  var cc = clickable ? ' stat-click' : '';
   return '<div class="lv-stat'+(big ? ' big' : '')+'">'
-    + '<div class="stat-click"'+cp+'><b>'+st.total+'</b><span>应到</span></div>'
-    + '<div class="stat-click"'+ca+'><b>'+st.present+'</b><span>实到</span></div>'
+    + '<div class="stat'+cc+'"'+cp+'><b>'+st.total+'</b><span>应到</span></div>'
+    + '<div class="stat'+cc+'"'+ca+'><b>'+st.present+'</b><span>实到</span></div>'
     + '<div class="'+(st.out ? 'warn' : 'ok')+'"><b>'+st.out+'</b><span>请假</span></div>'
     + '</div>';
 }
@@ -3042,9 +3047,9 @@ function renderBoard(){
   var vdt = parseDate(vd) || new Date();
 
   var lst = leaveStat(vd);
-  var leaveHtml = leaveStatBar(lst, false, isToday, vd);
+  var leaveHtml = leaveStatBar(lst, false, isToday && isAdmin(), vd);
   if(lst.total === 0){
-    leaveHtml += '<div class="mini-empty">应到名单为空，点击“应到”添加</div>';
+    leaveHtml += '<div class="mini-empty">'+(isAdmin() ? '应到名单为空，点击“应到”添加' : '应到名单为空')+'</div>';
   } else if(lst.out === 0){
     leaveHtml += '<div class="mini-empty">'+(isToday?"今天":"这天")+'全员到齐 ✅</div>';
   } else {
@@ -3271,6 +3276,7 @@ function rosterListHtml(){
 }
 
 function openRoster(mode, dateStr){
+  if(!isAdmin()){ toast("访客模式：应到/实到名单仅管理员可调整", "👀"); return; }
   if(!canEdit("leave")){ editGuard("leave"); return; }
   if(!store.birthdays.length){ toast("学生档案为空，请先去设置添加学生", "👥"); return; }
   rosterDate = dateStr || todayStr();
@@ -3442,7 +3448,7 @@ function renderLeave(){
     + '<section class="card" style="margin-bottom:16px">'
     +   '<div class="card-hd"><div class="ico orange">📅</div><h2>'+esc(dateLabel(fd))+' 出勤与请假</h2>'
     +     '<span class="spacer"></span><input type="date" id="lvFilter" value="'+esc(fd)+'" style="width:150px;font-size:12px;padding:6px 10px"></div>'
-    +   leaveStatBar(lst, true, fd === todayStr(), fd)
+    +   leaveStatBar(lst, true, fd === todayStr() && isAdmin(), fd)
     +   chips
     + '</section>'
     + '<section class="card">'
