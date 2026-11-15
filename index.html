@@ -738,7 +738,31 @@ table.lv-table tr:last-child td{border-bottom:none}
 .roster-tools{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:10px}
 .roster-count{margin-left:auto;font-size:11px;font-weight:800;color:#c06a4a}
 .roster-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
-@media (max-width:600px){.roster-list{grid-template-columns:1fr}.roster-card{max-height:92vh}.stu-form-grid{grid-template-columns:1fr}.usage-card{padding:20px 16px}.usage-main b{font-size:30px}.usage-grid b{font-size:13px}.usage-fish img{width:64px}}
+.teacher-list{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:12px}
+.teacher-row{display:flex;align-items:center;gap:9px;padding:8px 9px;border-radius:12px;background:#fffdfa;border:1px solid #f6ede3}
+.teacher-row .avatar{width:30px;height:30px;font-size:12px;flex:none}
+.teacher-main{flex:1;min-width:0}
+.teacher-line{display:flex;align-items:center;gap:6px;min-width:0}
+.teacher-name{font-size:13px;font-weight:800;color:#4a3d44;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.teacher-sub{font-size:10px;font-weight:800;color:#fff;padding:1px 6px;border-radius:6px;flex:none}
+.teacher-role{font-size:9.5px;font-weight:800;color:#b06a4a;background:#fff1e6;padding:1px 5px;border-radius:5px;flex:none}
+.teacher-bd{font-size:10.5px;color:#a3949a;font-weight:600;margin-top:1px}
+.teacher-actions{display:flex;gap:2px;flex:none}
+.classinfo-card{width:min(560px,100%);text-align:left;padding:22px 22px 18px}
+.ci-kicker{font-size:9.5px;letter-spacing:2px;color:#b4a5aa;font-weight:800}
+.classinfo-card h2{margin:4px 0 2px;font-size:21px;color:#4a3d44}
+.ci-sub{margin:0 0 14px;font-size:11.5px;color:#a3949a;font-weight:600}
+.ci-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.ci-grid > div{padding:10px 12px;border-radius:12px;background:#fffaf5;border:1px solid #f3e3d5}
+.ci-grid span{display:block;font-size:10.5px;color:#a3949a;font-weight:700}
+.ci-grid b{font-size:24px;color:#c06a4a;line-height:1.25}
+.ci-grid em{font-style:normal;font-size:10.5px;color:#a3949a;margin-left:2px}
+.ci-head{display:flex;align-items:center;gap:7px;margin-top:12px;padding:9px 12px;border-radius:11px;background:#eef8f4;font-size:12px;font-weight:700;color:#167c62}
+.ci-teachers{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px}
+.ci-trow{display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:9px;background:#fffdfa;border:1px solid #f6ede3;font-size:11px;font-weight:700;color:#5d4c52}
+.ci-trow i{font-style:normal;color:#b4a5aa;font-size:9.5px;margin-left:auto}
+.ci-actions{display:flex;justify-content:flex-end;margin-top:14px}
+@media (max-width:600px){.roster-list{grid-template-columns:1fr}.roster-card{max-height:92vh}.stu-form-grid{grid-template-columns:1fr}.teacher-list{grid-template-columns:1fr}.ci-teachers{grid-template-columns:1fr}.usage-card{padding:20px 16px}.usage-main b{font-size:30px}.usage-grid b{font-size:13px}.usage-fish img{width:64px}}
 
 @media (max-width:600px){
   .egg-mask{padding:14px}
@@ -842,7 +866,7 @@ table.lv-table tr:last-child td{border-bottom:none}
         <a href="#/board" data-r="board" data-page-node-id="GJfK3Ttn0QfVjz19uZvjWn">今日总览</a>
         <a href="#/leave" data-r="leave" data-page-node-id="d1gHhU1xJXGKRG91MVDjQj">请假登记</a>
         <a href="#/remind" data-r="remind" data-page-node-id="I9CeV9QD7l7P7OJ6BfjjcL">每日提醒</a>
-        <a href="#/journal" data-r="journal" data-page-node-id="K7rjimDPlFV8ZYH3HiZkjO">班级日志</a>
+        <a href="#/journal" data-r="journal" data-class-info="1" data-page-node-id="K7rjimDPlFV8ZYH3HiZkjO">班级日志</a>
         <a href="#/tools" data-r="tools">工具箱</a>
         <a href="#/settings" data-r="settings" data-page-node-id="wiHImlsdt3SrHHmXjvVPtK">设置</a>
       </nav>
@@ -960,6 +984,22 @@ table.lv-table tr:last-child td{border-bottom:none}
   </div>
 </div>
 
+<div class="egg-mask" id="classInfoMask" aria-hidden="true">
+  <div class="egg-card classinfo-card">
+    <div class="ci-kicker">CLASS PROFILE</div>
+    <h2 id="ciName">高三(4)班</h2>
+    <p class="ci-sub">双击班级日志查看班级人数与教师团队</p>
+    <div class="ci-grid">
+      <div><span>学生人数</span><b id="ciStudents">0</b><em>人</em></div>
+      <div><span>教师人数</span><b id="ciTeachers">0</b><em>人</em></div>
+      <div><span>生日已填</span><b id="ciBirthday">0</b><em>人</em></div>
+    </div>
+    <div class="ci-head">班主任 <b id="ciHead">—</b></div>
+    <div class="ci-teachers" id="ciTeacherList"></div>
+    <div class="ci-actions"><button class="btn tiny" type="button" id="ciClose">收起</button></div>
+  </div>
+</div>
+
 <div class="toast" id="toast" data-page-node-id="dYfa3rKZuFTRjgOhUGKtbR"></div>
 <div class="confetti" id="confettiBox" data-page-node-id="mrg3W16uQhhBUiq03cEchv"></div>
 
@@ -986,13 +1026,64 @@ var GUEST_PERM_LABELS = [
   { k:"homework", t:"作业管理", d:"添加、编辑、删除作业" },
   { k:"echo", t:"回声洞", d:"添加、删除激励语句" },
   { k:"remind", t:"每日提醒", d:"发布、勾选、删除提醒" },
-  { k:"settings", t:"设置与数据", d:"班级信息、学生档案、导入导出" },
+  { k:"settings", t:"设置与数据", d:"班级信息、学生/教师档案、导入导出" },
   { k:"leave", t:"请假登记", d:"登记、销假、删除记录" },
   { k:"journal", t:"班级日志", d:"写留言" },
   { k:"tools", t:"工具箱", d:"随机抽学生、随机数" }
 ];
-/* 每次发布更新：在 CHANGELOG 顶部追加一条，并同步 README「更新日志」 */
+/* 2024级4班学生名单（仅姓名，来自班级名单） */
+var ROSTER_VERSION = "2024-4";
+var ROSTER_NAMES = [
+  "蔡仁杰","曹亦歆","陈思哲","单浩然","邓妍","董劲杰","顾寅秋","顾优","杭天润",
+  "李沐瑶","李泽昊","林可馨","凌霄翩","刘倾城","刘奕呈","刘濯尘","刘子墨","芦星怡",
+  "罗铭绪","马峻熙","孟凡","糜佳烨","秦羽宸","瞿佳齐","沈思骐","史涵君","史天爻",
+  "史轩铭","宋泰阳","宋一鸣","宋梓牧","孙苡涵","王粲尧","王晗","王梓恒","吴嘉艺",
+  "吴宇彤","徐筠然","杨季布","杨子轩","叶思媛","易婧萱","张景天","张开","张天慧",
+  "张文捷","章梁辰","赵晋涵","赵睿","周景明","周澜","周庆尧","周心妍","周芷澜","周子越"
+];
+var TEACHER_SUBJECTS = ["语文","数学","英语","物理","化学","地理","其他"];
+var TEACHER_ROLES = ["任课教师","班主任"];
+
+function defaultStudents(){
+  return ROSTER_NAMES.map(function(n, i){
+    return { id:"stu_" + (i + 1), name:n, md:"", year:0, wish:"" };
+  });
+}
+function defaultTeachers(){
+  return [
+    { id:"tea_chn", name:"孟娜", subject:"语文", role:"任课教师", md:"", year:0, wish:"" },
+    { id:"tea_mat", name:"黄韡", subject:"数学", role:"任课教师", md:"", year:0, wish:"" },
+    { id:"tea_eng", name:"陈莉", subject:"英语", role:"任课教师", md:"", year:0, wish:"" },
+    { id:"tea_phy", name:"陈佳彬", subject:"物理", role:"任课教师", md:"", year:0, wish:"" },
+    { id:"tea_chem", name:"赵瑞鑫", subject:"化学", role:"任课教师", md:"", year:0, wish:"" },
+    { id:"tea_geo", name:"马晓琦", subject:"地理", role:"班主任", md:"", year:0, wish:"" }
+  ];
+}
+
+/* 把名单一次导入学生档案：保留同名学生的生日/祝福，移除名单外旧测试数据 */
+function applyRoster(s){
+  var old = {};
+  (s.birthdays || []).forEach(function(b){ if(b && b.name) old[b.name] = b; });
+  s.birthdays = ROSTER_NAMES.map(function(n, i){
+    var o = old[n];
+    return {
+      id: (o && o.id) || ("stu_" + (i + 1)),
+      name: n,
+      md: (o && o.md) || "",
+      year: (o && o.year) || 0,
+      wish: (o && o.wish) || ""
+    };
+  });
+  s.settings.rosterVersion = ROSTER_VERSION;
+  s.settings.classSize = s.birthdays.length;
+}
+
 var CHANGELOG = [
+  { date:"2026-11-15", ver:"v1.9", title:"班级名单与教师档案", items:[
+    "学生档案自动导入 2024 级 4 班 55 人名单，班级人数按学生档案自动统计。",
+    "新增教师档案：6 位任课教师，记录学科、角色、生日和祝福，可添加、修改、删除。",
+    "双击班级日志（导航或页头）查看班级人数、生日填写情况和教师团队。"
+  ]},
   { date:"2026-11-15", ver:"v1.8", title:"项目用量账单彩蛋", items:[
     "双击设置页“维护”图标，打开项目 Token 用量与余额消耗账单。",
     "展示输入、缓存命中、输出、缓存命中率和按 deepseek-flash 空闲时段单价估算的累计消耗。",
@@ -1269,8 +1360,8 @@ function markCloudSync(){
 
 function defaultStore(){
   return {
-    settings: { className:"高三(4)班", classShort:"4", examDate:"2027-06-07", classSize:45, adminPassword:"123", eggText:DEFAULT_EGG_TEXT, guestPerms:Object.assign({}, DEFAULT_GUEST_PERMS) },
-    homeworks: [], birthdays: [], leaves: [], reminders: [], messages: [],
+    settings: { className:"高三(4)班", classShort:"4", examDate:"2027-06-07", classSize:ROSTER_NAMES.length, adminPassword:"123", eggText:DEFAULT_EGG_TEXT, guestPerms:Object.assign({}, DEFAULT_GUEST_PERMS), rosterVersion:ROSTER_VERSION },
+    homeworks: [], birthdays: defaultStudents(), teachers: defaultTeachers(), leaves: [], reminders: [], messages: [],
     favorites: [], archive: {}, quotes: defaultQuotes(),
     quoteState: { date:"", index:0, manual:-1 }
   };
@@ -1279,15 +1370,35 @@ function defaultStore(){
 function normalize(obj){
   var base = defaultStore();
   if(!obj || typeof obj !== "object") return base;
+  var hadRoster = !!(obj.settings && obj.settings.rosterVersion === ROSTER_VERSION);
   obj.settings = Object.assign({}, base.settings, obj.settings || {});
   obj.settings.guestPerms = Object.assign({}, DEFAULT_GUEST_PERMS, obj.settings.guestPerms || {});
   if(!obj.settings.className || obj.settings.className.indexOf("\u9ad8\u4e8c") === 0){
     obj.settings.className = "高三(4)班";
   }
   if(!obj.settings.classShort || obj.settings.classShort === "3") obj.settings.classShort = "4";
-  ["homeworks","birthdays","leaves","reminders","messages","favorites"].forEach(function(k){
+  ["homeworks","birthdays","leaves","reminders","messages","favorites","teachers"].forEach(function(k){
     obj[k] = Array.isArray(obj[k]) ? obj[k] : [];
   });
+  if(!hadRoster) applyRoster(obj);
+  obj.birthdays.forEach(function(b, i){
+    if(!b.id) b.id = "stu_" + (i + 1);
+    b.name = String(b.name || "").trim();
+    b.md = String(b.md || "").trim();
+    b.wish = String(b.wish || "").trim();
+  });
+  obj.birthdays = obj.birthdays.filter(function(b){ return !!b.name; });
+  if(!obj.teachers.length && !hadRoster) obj.teachers = defaultTeachers();
+  obj.teachers.forEach(function(t, i){
+    if(!t.id) t.id = "tea_" + (i + 1);
+    t.name = String(t.name || "").trim();
+    t.subject = String(t.subject || "其他").trim();
+    t.role = String(t.role || "任课教师").trim();
+    t.md = String(t.md || "").trim();
+    t.wish = String(t.wish || "").trim();
+  });
+  obj.teachers = obj.teachers.filter(function(t){ return !!t.name; });
+  obj.settings.classSize = obj.birthdays.length;
   if(!Array.isArray(obj.quotes)) obj.quotes = defaultQuotes();
   obj.quotes = obj.quotes.filter(function(q){ return q && String(q.t || "").trim(); });
   obj.quotes.forEach(function(q, i){
@@ -1311,6 +1422,7 @@ function migrateFromV1(){
     s.settings = Object.assign({}, s.settings, old.settings || {});
     s.homeworks = Array.isArray(old.homeworks) ? old.homeworks : [];
     s.birthdays = Array.isArray(old.birthdays) ? old.birthdays : [];
+    s.settings.rosterVersion = "";
   s.settings.classSize = s.birthdays.length;
     s.leaves = Array.isArray(old.leaves) ? old.leaves : [];
     s.favorites = Array.isArray(old.favorites) ? old.favorites : [];
@@ -1331,9 +1443,9 @@ function loadStore(){
   }
   var migrated = migrateFromV1();
   if(migrated){
-    store = migrated;
+    store = normalize(migrated);
     saveStore();
-    return migrated;
+    return store;
   }
   return defaultStore();
 }
@@ -1769,6 +1881,35 @@ function closeUsage(){
   m.setAttribute("aria-hidden", "true");
 }
 
+function openClassInfo(){
+  var m = $("classInfoMask");
+  if(!m) return;
+  var students = studentSorted();
+  var teachers = teacherSorted();
+  var head = null;
+  teachers.forEach(function(t){ if(!head && t.role === "班主任") head = t; });
+  $("ciName").textContent = store.settings.className || "高三(4)班";
+  $("ciStudents").textContent = students.length;
+  $("ciTeachers").textContent = teachers.length;
+  $("ciBirthday").textContent = students.filter(function(s){ return !!s.md; }).length;
+  $("ciHead").textContent = head ? (head.name + "（" + head.subject + "）") : "暂未设置";
+  $("ciTeacherList").innerHTML = teachers.length
+    ? teachers.map(function(t){
+        return '<div class="ci-trow"><span class="teacher-sub" style="background:'+subjectColor(t.subject)+'">'+esc(t.subject)+'</span>'
+          + '<b>'+esc(t.name)+'</b><i>'+esc(t.role || "任课教师")+'</i></div>';
+      }).join("")
+    : '<div class="j-empty" style="grid-column:1/-1">还没有教师档案</div>';
+  m.classList.add("show");
+  m.setAttribute("aria-hidden", "false");
+}
+
+function closeClassInfo(){
+  var m = $("classInfoMask");
+  if(!m) return;
+  m.classList.remove("show");
+  m.setAttribute("aria-hidden", "true");
+}
+
 function openEggEditor(){
   if(!adminOnly("访客模式：不能修改彩蛋")) return;
   var m = $("eggEditMask"), t = $("eggEditText");
@@ -1836,6 +1977,7 @@ function bindEgg(){
     if(el.closest("[data-egg-edit]")){ e.preventDefault(); openEggEditor(); return; }
     if(el.closest("[data-egg-doubao]")){ e.preventDefault(); openDoubao(); return; }
     if(el.closest("[data-egg-usage]")){ e.preventDefault(); openUsage(); return; }
+    if(el.closest("[data-class-info]")){ e.preventDefault(); openClassInfo(); return; }
   });
 
   var close = $("eggClose");
@@ -1855,10 +1997,16 @@ function bindEgg(){
   var umask = $("usageMask");
   if(umask) umask.addEventListener("click", function(e){ if(e.target === umask) closeUsage(); });
 
+  var cclose = $("ciClose");
+  if(cclose) cclose.addEventListener("click", closeClassInfo);
+  var cmask = $("classInfoMask");
+  if(cmask) cmask.addEventListener("click", function(e){ if(e.target === cmask) closeClassInfo(); });
+
   document.addEventListener("keydown", function(e){
     if(e.key !== "Escape") return;
-    var em = $("eggEditMask"), m = $("eggMask"), um = $("usageMask");
-    if(um && um.classList.contains("show")) closeUsage();
+    var em = $("eggEditMask"), m = $("eggMask"), um = $("usageMask"), cm = $("classInfoMask");
+    if(cm && cm.classList.contains("show")) closeClassInfo();
+    else if(um && um.classList.contains("show")) closeUsage();
     else if(em && em.classList.contains("show")) closeEggEditor();
     else if(m && m.classList.contains("show")) hideEgg();
   });
@@ -1982,6 +2130,25 @@ function birthdaySorted(){
   var today = new Date();
   return store.birthdays.filter(function(b){ return !!b.md; }).map(function(b){ return { b:b, days:daysToBirthday(b.md, today) }; })
     .sort(function(x,y){ return (x.days - y.days) || studentNameCompare(x.b, y.b); });
+}
+
+function teacherSubjectRank(subject){
+  var i = TEACHER_SUBJECTS.indexOf(subject);
+  return i < 0 ? 99 : i;
+}
+function teacherNameCompare(a, b){
+  var an = String((a && a.name) || ""), bn = String((b && b.name) || "");
+  if(STUDENT_COLLATOR) return STUDENT_COLLATOR.compare(an, bn);
+  return an.localeCompare(bn, "zh-Hans-CN");
+}
+function teacherSorted(){
+  return (store.teachers || []).slice().sort(function(a, b){
+    return (teacherSubjectRank(a.subject) - teacherSubjectRank(b.subject)) || teacherNameCompare(a, b);
+  });
+}
+function teacherById(id){
+  for(var i=0;i<(store.teachers||[]).length;i++) if(store.teachers[i].id === id) return store.teachers[i];
+  return null;
 }
 
 /* ================= 首页 ================= */
@@ -2481,6 +2648,7 @@ var leaveFilterDate = "";
 var leaveListExpanded = false;
 var studentListExpanded = false;
 var studentEditId = "";
+var teacherEditId = "";
 var rosterMode = "leave";
 
 function leavePeriodChipsHtml(){
@@ -2930,7 +3098,7 @@ function renderJournal(){
 
   return '<div class="page-hd">'
     + '<div class="ico purple">📔</div>'
-    + '<div><h1>'+(isToday?"班级日志":"班级日志 · 历史回看")+'</h1><p>'+(isToday?"每天的作业、请假、提醒自动存档，还能写点心里话":"正在查看 "+esc(dateLabel(sel))+" 的作业、请假、提醒与留言")+'</p></div>'
+    + '<div><h1 data-class-info="1">'+(isToday?"班级日志":"班级日志 · 历史回看")+'</h1><p>'+(isToday?"每天的作业、请假、提醒自动存档，还能写点心里话":"正在查看 "+esc(dateLabel(sel))+" 的作业、请假、提醒与留言")+'</p></div>'
     + '<span class="spacer"></span>'
     + (isToday ? '' : '<button class="btn ghost tiny" data-act="journalToday">← 回到今天</button>')
     + '<button class="btn ghost tiny" data-act="exportJournal">导出日志</button>'
@@ -3195,6 +3363,52 @@ function renderSettings(){
           + '<button class="btn ghost tiny" data-act="reset" style="color:#d9697a;border-color:#f6d6da">清空全部</button>'
         : '');
 
+  var teachers = teacherSorted();
+  var tEdit = teacherEditId ? teacherById(teacherEditId) : null;
+  var tcDateVal = tEdit && tEdit.md ? ((tEdit.year && tEdit.year > 1900 ? tEdit.year : 2000) + "-" + tEdit.md) : "";
+  var tcSubjectOpts = TEACHER_SUBJECTS.map(function(s){
+    return '<option value="'+esc(s)+'"'+((tEdit?tEdit.subject:"语文")===s?' selected':'')+'>'+esc(s)+'</option>';
+  }).join("");
+  var tcRoleOpts = TEACHER_ROLES.map(function(r){
+    return '<option value="'+esc(r)+'"'+((tEdit?tEdit.role:"任课教师")===r?' selected':'')+'>'+esc(r)+'</option>';
+  }).join("");
+  var tcForm = canSet
+    ? '<div class="stu-form-grid">'
+      +   '<div><label class="fl">姓名</label><input type="text" id="tcName" maxlength="20" placeholder="教师姓名" value="'+(tEdit?esc(tEdit.name):"")+'"></div>'
+      +   '<div><label class="fl">任教学科</label><select id="tcSubject">'+tcSubjectOpts+'</select></div>'
+      +   '<div><label class="fl">角色</label><select id="tcRole">'+tcRoleOpts+'</select></div>'
+      +   '<div><label class="fl">生日（可选）</label><input type="date" id="tcDate" value="'+esc(tcDateVal)+'"></div>'
+      + '</div>'
+      + '<input type="text" id="tcWish" maxlength="60" placeholder="专属祝福语（选填）" style="margin-top:8px" value="'+(tEdit?esc(tEdit.wish||""):"")+'">'
+      + '<div class="btn-row" style="margin-top:10px">'
+      +   '<button class="btn tiny" data-act="saveTeacher">'+(tEdit?"保存修改":"＋ 添加教师")+'</button>'
+      +   (tEdit ? '<button class="btn ghost tiny" data-act="cancelTeacherEdit">取消</button>' : '')
+      + '</div>'
+      + '<p class="echo-tip">生日可留空；班主任可设置一位，用于班级信息展示。</p>'
+    : '';
+  var tcList = teachers.length
+    ? teachers.map(function(t, i){
+        var col = AVATAR_COLORS[i % AVATAR_COLORS.length];
+        var days = t.md ? daysToBirthday(t.md, new Date()) : 9999;
+        return '<div class="teacher-row">'
+          + '<div class="avatar" style="background:linear-gradient(135deg,'+col+','+col+'cc)">'+esc(String(t.name||"?").slice(-1))+'</div>'
+          + '<div class="teacher-main"><div class="teacher-line"><span class="teacher-name">'+esc(t.name)+'</span>'
+          +   '<span class="teacher-sub" style="background:'+subjectColor(t.subject)+'">'+esc(t.subject)+'</span>'
+          +   (t.role === "班主任" ? '<span class="teacher-role">班主任</span>' : '')
+          + '</div><div class="teacher-bd">'+esc(birthdayText(t.md))+(t.md ? ' · '+(days===0?"今天生日":days+" 天后") : '')+'</div></div>'
+          + (canSet ? '<div class="teacher-actions">'
+              + '<button class="stu-edit" data-act="editTeacher" data-id="'+esc(t.id)+'" title="修改">✎</button>'
+              + '<button class="stu-del" data-act="delTeacher" data-id="'+esc(t.id)+'" title="删除">✕</button>'
+            + '</div>' : '')
+          + '</div>';
+      }).join("")
+    : '<div class="j-empty">还没有教师档案</div>';
+  var teacherCard = '<section class="card" style="margin-top:16px">'
+    + '<div class="card-hd"><div class="ico purple">👩‍🏫</div><h2>教师档案</h2><span class="sub">'+teachers.length+' 人</span></div>'
+    + tcForm
+    + '<div class="teacher-list">'+tcList+'</div>'
+    + '</section>';
+
   var pwdCard = admin
     ? '<section class="card" style="margin-top:16px">'
       +   '<div class="card-hd"><div class="ico orange">🔐</div><h2>管理员密码</h2><span class="sub">进入管理员模式时使用</span></div>'
@@ -3275,6 +3489,7 @@ function renderSettings(){
     +   '<div class="stu-list" style="margin-top:12px">'+bdList+'</div>'
     + '</section>'
     + '</div>'
+    + teacherCard
     + pwdCard
     + permCard
     + syncCard
@@ -3590,6 +3805,59 @@ function editStudent(id){
 function cancelStudentEdit(){
   studentEditId = "";
   renderPage();
+}
+
+function saveTeacher(){
+  if(!canEdit("settings")){ editGuard("settings"); return; }
+  var n = $("tcName"), sub = $("tcSubject"), role = $("tcRole"), d = $("tcDate"), w = $("tcWish");
+  if(!n) return;
+  var name = String(n.value || "").trim();
+  if(!name){ toast("请填写教师姓名", "✏️"); n.focus(); return; }
+  var editing = teacherEditId ? teacherById(teacherEditId) : null;
+  var dup = (store.teachers || []).some(function(t){ return t.name === name && (!editing || t.id !== editing.id); });
+  if(dup){ toast("教师档案里已经有「"+name+"」了", "👩‍🏫"); n.focus(); return; }
+  var dv = d ? d.value : "";
+  var md = "", year = 0;
+  if(dv){
+    var pd = parseDate(dv);
+    if(!pd){ toast("生日日期格式不对", "📅"); return; }
+    md = pad(pd.getMonth()+1)+"-"+pad(pd.getDate());
+    year = pd.getFullYear() === 2000 ? 0 : pd.getFullYear();
+  }
+  var wish = w ? String(w.value || "").trim() : "";
+  var subject = sub ? sub.value : "其他";
+  var r = role ? role.value : "任课教师";
+  if(editing){
+    editing.name = name; editing.subject = subject; editing.role = r; editing.md = md; editing.year = year; editing.wish = wish;
+    toast("教师档案已更新", "👩‍🏫");
+  } else {
+    store.teachers.push({ id:uid(), name:name, subject:subject, role:r, md:md, year:year, wish:wish });
+    toast(md ? "教师档案已添加" : "教师已添加，生日可稍后补充", "👩‍🏫");
+  }
+  teacherEditId = "";
+  commit();
+  renderPage();
+}
+
+function editTeacher(id){
+  if(!canEdit("settings")){ editGuard("settings"); return; }
+  if(!teacherById(id)) return;
+  teacherEditId = id;
+  renderPage();
+}
+
+function cancelTeacherEdit(){
+  teacherEditId = "";
+  renderPage();
+}
+
+function deleteTeacher(id){
+  if(!canEdit("settings")){ editGuard("settings"); return; }
+  store.teachers = (store.teachers || []).filter(function(t){ return t.id !== id; });
+  if(teacherEditId === id) teacherEditId = "";
+  commit();
+  renderPage();
+  toast("已从教师档案移除", "🗑️");
 }
 
 function celebrate(){
@@ -4026,6 +4294,18 @@ function handleAction(act, el){
     case "toggleStudentList":
       studentListExpanded = !studentListExpanded;
       renderPage();
+      break;
+    case "saveTeacher":
+      saveTeacher();
+      break;
+    case "editTeacher":
+      editTeacher(el.getAttribute("data-id"));
+      break;
+    case "cancelTeacherEdit":
+      cancelTeacherEdit();
+      break;
+    case "delTeacher":
+      deleteTeacher(el.getAttribute("data-id"));
       break;
     case "toggleLeaveList":
       leaveListExpanded = !leaveListExpanded;
