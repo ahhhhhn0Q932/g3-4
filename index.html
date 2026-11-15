@@ -352,6 +352,22 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
 .hw-mini.cancel:hover{background:#efe1d5}
 
 .hd-tip{font-size:11.5px;color:#b4a5aa;font-weight:700}
+body.board-display .topbar,
+body.board-display .footbar,
+body.board-display .page-hd,
+body.board-display .hw-tail,
+body.board-display .hw-add-panel,
+body.board-display .hw-del{display:none!important}
+body.board-display .area-leave .card-hd a,
+body.board-display .area-remind .card-hd a{display:none!important}
+body.board-display .shell{padding-top:60px}
+.board-exit{
+  position:fixed;right:18px;top:14px;z-index:70;display:inline-flex;align-items:center;gap:6px;
+  padding:8px 14px;border-radius:12px;border:1px solid #f0ddcf;background:rgba(255,255,255,.94);
+  color:#8d6b63;font-size:12px;font-weight:800;font-family:inherit;cursor:pointer;
+  box-shadow:0 8px 22px rgba(150,100,80,.14);backdrop-filter:blur(8px);
+}
+.board-exit:hover{border-color:#f3c5ad;color:#c06a4a;background:#fffaf4}
 
 .mini .card-hd{margin-bottom:11px}
 .mini .card-hd h2{font-size:13.5px}
@@ -1876,6 +1892,7 @@ function viewHome(){
 
 /* 总览页当前查看的日期：空字符串 = 今天；点月历里的日期则回看那天 */
 var boardDate = "";
+var boardDisplay = false;
 var calCursor = null;
 var hwAddSubject = "";
 var CAL_WEEK = ["日","一","二","三","四","五","六"];
@@ -2131,16 +2148,19 @@ function renderBoard(){
   var headDesc = esc(dateLabel(vd)) + ' ' + WEEK[vdt.getDay()] + ' · '
     + (isToday ? '作业 / 请假 / 提醒一屏看全' : '正在查看这天的作业、请假与提醒');
 
-  return '<div class="page-hd">'
+  var headHtml = '<div class="page-hd">'
     + '<div class="ico blue" data-doc-link="https://docs.qq.com/slide/DR2xJdEZmVHJhb09J?rtkey=65ebd45a6fac7962653a27f3XU82v1" title="双击打开腾讯文档">📋</div><div><h1>'+(isToday?"今日总览":"历史回看")+'</h1>'
     + '<p>'+headDesc+'</p></div>'
     + '<span class="spacer"></span>'
+    + '<button class="btn ghost tiny" data-act="toggleBoardDisplay">🖥 显示模式</button>'
     + (isToday
         ? (canHw
             ? '<span class="hd-tip">点作业文字直接改 · 点 ＋ 添加作业</span>'
             : '<span class="hd-tip">访客模式 · 作业只读</span>')
         : '<button class="btn ghost tiny" data-act="boardToday">← 回到今天</button>')
-    + '</div>'
+    + '</div>';
+
+  return (boardDisplay ? '<button class="board-exit" data-act="toggleBoardDisplay">✕ 退出显示模式</button>' : headHtml)
     + '<div class="board-grid">'
     +   '<section class="card area-hw">'
     +     '<div class="card-hd"><div class="ico blue">📚</div><h2>每日作业</h2><span class="sub">'+(isToday?(canHw?"按科目分组":"按科目分组 · 只读"):"历史记录 · 只读")+'</span></div>'
@@ -2745,6 +2765,7 @@ function hashRoute(){
 /* 所有跳转的唯一入口：先进状态再渲染，hash 只做「尽力同步」 */
 function go(r){
   if(!ROUTES[r]) r = "home";
+  if(r !== "board") boardDisplay = false;
   /* 从导航栏进入总览时回到今天，避免停留在上次回看的日期 */
   if(r === "board"){ boardDate = ""; calCursor = null; hwAddSubject = ""; }
   currentRoute = r;
@@ -2771,6 +2792,7 @@ function renderPage(){
   else if(r === "settings") html = renderSettings();
   box.innerHTML = html;
   if(r === "home") updateHomeClock();
+  document.body.classList.toggle("board-display", r === "board" && boardDisplay);
   setActiveNav(r);
   renderTop();
   afterRender(r);
@@ -3349,6 +3371,11 @@ function handleAction(act, el){
       boardDate = "";
       calCursor = null;
       hwAddSubject = "";
+      renderPage();
+      break;
+
+    case "toggleBoardDisplay":
+      boardDisplay = !boardDisplay;
       renderPage();
       break;
 
