@@ -1808,8 +1808,18 @@ var OLD_KEY = "gaoer3_classroom_v1";
 /* ================= 工具 ================= */
 function $(id){ return document.getElementById(id); }
 function pad(n){ return n<10 ? "0"+n : ""+n; }
-function todayStr(d){ d = d || new Date(); return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
-function nowTime(){ var d = new Date(); return pad(d.getHours())+":"+pad(d.getMinutes()); }
+// 全站业务日期统一按北京时间（GMT+8），避免设备时区不同导致“今天”错位
+function beijingDate(d){
+  return new Date((d ? d.getTime() : Date.now()) + 8 * 3600 * 1000);
+}
+function todayStr(d){
+  var b = beijingDate(d);
+  return b.getUTCFullYear()+"-"+pad(b.getUTCMonth()+1)+"-"+pad(b.getUTCDate());
+}
+function nowTime(){
+  var b = beijingDate();
+  return pad(b.getUTCHours())+":"+pad(b.getUTCMinutes());
+}
 function parseDate(s){
   if(!s) return null;
   var p = String(s).split("-");
@@ -1866,6 +1876,8 @@ function toast(msg, icon){
 
 /* ================= 数据 ================= */
 var store = null;
+var storeLoadWarning = "";
+var storeErrorAt = 0;
 
 /* 同步时间属于本机状态，不写进云端 payload，避免多设备互相覆盖 */
 var SYNC_META_KEY = "gaoer3_sync_meta_v1";
@@ -1889,9 +1901,9 @@ function fmtSyncTime(ts){
   if(!ts) return "";
   var d = new Date(ts);
   if(isNaN(d.getTime())) return "";
-  var now = new Date();
-  if(todayStr(d) === todayStr(now)) return pad(d.getHours())+":"+pad(d.getMinutes())+":"+pad(d.getSeconds());
-  return (d.getMonth()+1)+"-"+pad(d.getDate())+" "+pad(d.getHours())+":"+pad(d.getMinutes());
+  var b = beijingDate(d);
+  if(todayStr(d) === todayStr()) return pad(b.getUTCHours())+":"+pad(b.getUTCMinutes())+":"+pad(b.getUTCSeconds());
+  return (b.getUTCMonth()+1)+"-"+pad(b.getUTCDate())+" "+pad(b.getUTCHours())+":"+pad(b.getUTCMinutes());
 }
 
 function markLocalSync(){
@@ -2215,7 +2227,13 @@ function loadStore(){
   var raw = null;
   try { raw = window.localStorage.getItem(KEY); } catch(e){ raw = null; }
   if(raw){
-    try { return normalize(JSON.parse(raw)); } catch(e){ return defaultStore(); }
+    try { return normalize(JSON.parse(raw)); }
+    catch(e){
+      // 数据损坏时保留原始副本，避免下一次保存把它彻底覆盖
+      try { window.localStorage.setItem(KEY + "_corrupt", raw); } catch(_e){}
+      storeLoadWarning = "本地数据解析失败，已保留损坏副本并临时使用默认数据；请先导出备份再排查。";
+      return defaultStore();
+    }
   }
   var migrated = migrateFromV1();
   if(migrated){
@@ -2234,7 +2252,14 @@ function saveStore(){
     if(!cloudSuppress) scheduleCloudPush();
     return true;
   }
-  catch(e){ return false; }
+  catch(e){
+    // 存储满 / 隐私模式 / 浏览器阻止时不能静默失败
+    if(Date.now() - storeErrorAt > 5000){
+      storeErrorAt = Date.now();
+      toast("保存失败：浏览器本地存储不可用或空间不足，请先导出备份", "⚠️");
+    }
+    return false;
+  }
 }
 
 /* ================= 云端同步 ================= */
@@ -2397,9 +2422,9 @@ function scheduleCloudPush(){
 
 var cloudAutoTimer = null;
 function autoCloudTick(){
-  if(!CLOUD_ON || !currentRole || document.hidden) return;
+  if(!CLOUD_ON || !currentRole || document.hidden || syncBusy || syncDialogVisible()) return;
   cloudFetchState().then(function(r){
-    if(!r || !currentRole) return;
+    if(!r || !currentRole || syncBusy || syncDialogVisible()) return;
     var localAt = Number(syncMeta.localAt || 0);
     var remoteAt = Number(r.updatedAt || 0);
     if(!syncStaleWarned && localAt && remoteAt && Math.abs(localAt - remoteAt) > 86400000){
@@ -2426,7 +2451,7 @@ function autoCloudTick(){
 function restartCloudAuto(){
   if(cloudAutoTimer) clearTimeout(cloudAutoTimer);
   cloudAutoTimer = null;
-  if(!CLOUD_ON) return;
+  if(!CLOUD_ON || syncDialogVisible()) return;
   cloudAutoTimer = setTimeout(function(){
     cloudAutoTimer = null;
     autoCloudTick();
@@ -2641,6 +2666,10 @@ function renderSyncModal(){
   $("syncWarn").style.display = notes.length ? "block" : "none";
 }
 
+function syncDialogVisible(){
+  var mask = $("syncMask");
+  return !!(mask && mask.classList.contains("show"));
+}
 function closeSyncDialog(){
   var mask = $("syncMask");
   if(mask) mask.classList.remove("show");
@@ -2654,6 +2683,8 @@ function openSyncDialog(){
   if(currentRole === "admin" && !cloudPwd){ toast("请重新输入管理员密码", "🔐"); return; }
   clearTimeout(cloudTimer);
   cloudTimer = null;
+  // 弹窗打开期间暂停自动同步，避免选择过程中被自动拉取/重渲染打断
+  if(cloudAutoTimer){ clearTimeout(cloudAutoTimer); cloudAutoTimer = null; }
   var btn = $("cloudSyncBtn");
   if(btn){ btn.disabled = true; btn.textContent = "读取中…"; }
   syncBusy = true;
@@ -2888,6 +2919,11 @@ function loginAs(role, viaMaster){
   renderPage();
   toast(currentRole === "admin" ? "已进入管理员模式" : "已进入访客模式",
         currentRole === "admin" ? "🔓" : "👀");
+  if(storeLoadWarning){
+    var _loadWarn = storeLoadWarning;
+    storeLoadWarning = "";
+    setTimeout(function(){ toast(_loadWarn, "⚠️"); }, 1400);
+  }
   if(CLOUD_ON){
     cloudPull(true).then(function(r){
       if(currentRole === "admin" && r && r.empty){
@@ -3244,15 +3280,15 @@ function archiveAll(){
 
 function commit(){
   archiveAll();
-  saveStore();
+  return saveStore();
 }
 
 /* ================= 顶部 ================= */
 function renderTop(){
-  var now = new Date();
+  var now = beijingDate();
   var t = $("topTime"), d = $("topDate");
-  if(t) t.textContent = pad(now.getHours())+":"+pad(now.getMinutes());
-  if(d) d.textContent = (now.getMonth()+1)+"/"+now.getDate()+" "+WEEK[now.getDay()];
+  if(t) t.textContent = pad(now.getUTCHours())+":"+pad(now.getUTCMinutes());
+  if(d) d.textContent = (now.getUTCMonth()+1)+"/"+now.getUTCDate()+" "+WEEK[now.getUTCDay()];
   var name = store.settings.className || "高三(4)班";
   if($("brandName")) $("brandName").textContent = name;
   if($("footClass")) $("footClass").textContent = name;
@@ -3622,8 +3658,8 @@ function updateTimetableNow(){
 }
 
 function viewHome(){
-  var now = new Date();
-  var h = now.getHours();
+  var now = beijingDate();
+  var h = now.getUTCHours();
   var greet = h<6 ? "夜深了" : h<9 ? "早上好" : h<12 ? "上午好" : h<14 ? "午安"
             : h<18 ? "下午好" : h<22 ? "晚上好" : "夜深了";
   var name = store.settings.className || "高三(4)班";
@@ -3675,7 +3711,7 @@ function viewHome(){
 
   var today = todayStr();
   var hwToday = store.homeworks.filter(function(x){ return x.date === today && !x.done; }).length;
-  var lvToday = store.leaves.filter(function(x){ return x.date === today && !x.returned; }).length;
+  var lvToday = leaveStat(today).out;
   var rmToday = store.reminders.filter(function(x){ return remindActive(x,today) && !x.done; }).length;
 
   /* 高考倒计时 */
@@ -4442,7 +4478,7 @@ function renderLeave(){
     + '<div class="ico mint">🌿</div>'
     + '<div><h1>请假登记</h1><p>按节次登记，支持连续选择与全选</p></div>'
     + '<span class="spacer"></span>'
-    + '<span style="font-size:12px;color:#a3949a;font-weight:700">'+esc(dateLabel(today))+' '+WEEK[new Date().getDay()]+'</span>'
+    + '<span style="font-size:12px;color:#a3949a;font-weight:700">'+esc(dateLabel(today))+' '+WEEK[beijingDate().getUTCDay()]+'</span>'
     + '</div>'
     + (canLeave
         ? '<section class="card" style="margin-bottom:16px">'
@@ -5762,6 +5798,7 @@ function addLeave(){
     if(!expectedNames[stu.name]) return;
     var dup = false;
     store.leaves.forEach(function(l){
+      if(l.returned) return;
       if(l.date !== today || l.name !== stu.name) return;
       var old = Array.isArray(l.periods) ? l.periods : [l.period];
       if(l.period === "全天") old = LEAVE_PERIODS;
