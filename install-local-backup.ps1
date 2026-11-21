@@ -30,8 +30,15 @@ if (-not $python) {
 }
 
 # 结束旧任务，避免重复启动
-schtasks /End /TN $taskName 2>$null | Out-Null
-schtasks /Delete /TN $taskName /F 2>$null | Out-Null
+# 首次安装时任务不存在，schtasks 会输出“系统找不到指定的文件”并返回非零码；
+# 在 $ErrorActionPreference="Stop" 下这会中断脚本，因此临时改为 SilentlyContinue 并加 try/catch。
+$prevEap = $ErrorActionPreference
+$ErrorActionPreference = "SilentlyContinue"
+try {
+  schtasks /End /TN $taskName 2>$null | Out-Null
+  schtasks /Delete /TN $taskName /F 2>$null | Out-Null
+} catch { }
+$ErrorActionPreference = $prevEap
 
 $action = '"' + $python.Exe + '"'
 if ($python.Args) { $action += ' ' + $python.Args }

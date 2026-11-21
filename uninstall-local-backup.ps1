@@ -3,8 +3,14 @@
 $ErrorActionPreference = "Stop"
 $taskName = "ClassManagerLocalBackup"
 
-schtasks /End /TN $taskName 2>$null | Out-Null
-schtasks /Delete /TN $taskName /F 2>$null | Out-Null
+# 任务可能本就不存在，避免 $ErrorActionPreference="Stop" 下 schtasks 报错中断
+$prevEap = $ErrorActionPreference
+$ErrorActionPreference = "SilentlyContinue"
+try {
+  schtasks /End /TN $taskName 2>$null | Out-Null
+  schtasks /Delete /TN $taskName /F 2>$null | Out-Null
+} catch { }
+$ErrorActionPreference = $prevEap
 
 try {
   $conn = Get-NetTCPConnection -LocalPort 8765 -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1
