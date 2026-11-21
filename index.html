@@ -357,6 +357,7 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
 
 /* 每科队尾的小加号：点开后才展开录入面板 */
 .hw-tail{display:flex;justify-content:flex-end;padding-top:1px}
+.hw-note{margin-top:10px;padding:10px 12px;border-top:1px dashed #efded2;font-size:calc(11.5px * var(--fs));line-height:1.6;color:#8d7a72;font-weight:700;letter-spacing:.2px}
 .hw-add-btn{
   width:27px;height:27px;padding:0;border:1.5px dashed #ecd7c7;border-radius:9px;background:#fffdfa;
   color:#d8a98c;font-family:inherit;font-size:calc(17px * var(--fs));font-weight:800;line-height:1;cursor:pointer;
@@ -1530,6 +1531,13 @@ function applyBirthdays(s){
 }
 
 var CHANGELOG = [
+  { date:"2026-11-22", ver:"v1.19", title:"历史回看、作业顺序与稳定性修复", items:[
+    "今日总览历史回看也可进入显示模式，并可一键回到今天。",
+    "历史作业按语文、数学、英语、物理、化学、地理、其他的固定顺序渲染，不再随录入先后颠倒。",
+    "改课记录补齐日期字段，防止刷新或云同步后丢失；表单重渲染时保留未提交的草稿。",
+    "本地存储写入失败不再静默，损坏数据会保留副本；首页请假人数按实际学生去重；日期、时钟与同步时间统一按北京时间处理；同步弹窗打开期间暂停自动同步。",
+    "今日总览编辑模式底部新增“周末作业请标注好截止日期”提示。"
+  ]},
   { date:"2026-11-21", ver:"v1.18", title:"大版本：同步方案、显示模式与调课", items:[
     "手动云同步前可选择“本地 → 云端”或“云端 → 本地”，并逐项勾选学生教师、作业提醒、班级日志、请假、Issue、回声洞与设置；窗口并列显示本机与云端数据量、双方最后更新时间。",
     "自动同步间隔可在设置中调整，默认 1 分钟；自动策略支持智能同步、本地覆盖、云端覆盖；两端更新时间相差超过 1 天时自动弹出同步确认与警告。",
@@ -4176,6 +4184,7 @@ function renderBoard(){
     +     '<div id="hwArea"'+(boardDisplay?' class="hw-list"':'')+'>'+(isToday
           ? renderHwArea()
           : renderHwHistory(vd))+'</div>'
+    +     (isToday && !boardDisplay ? '<div class="hw-note">📌 周末作业请标注好截止日期</div>' : '')
     +   '</section>'
     +   renderBoardCalendar()
     +   '<section class="card area-remind mini">'
