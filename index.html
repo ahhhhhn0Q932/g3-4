@@ -552,6 +552,21 @@ body.board-display .hw-card .hw-title-input{font-size:calc(15px * var(--fs));lin
 .echo-item .by{font-size:calc(10.5px * var(--fs));font-weight:700;color:#a3949a}
 .echo-empty{font-size:calc(12px * var(--fs));color:#b3a49f;font-weight:600;padding:20px 4px;text-align:center}
 
+/* 工具箱：常用链接 */
+.link-card{grid-column:1/-1}
+.link-add{display:grid;grid-template-columns:1fr 1.6fr auto;gap:10px;align-items:end;margin-bottom:14px}
+.link-add .btn{margin-bottom:1px;white-space:nowrap}
+.link-list{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.link-item{display:flex;align-items:center;gap:10px;background:#fffdfa;border:1px solid #f3e7dc;border-radius:12px;padding:9px 10px;min-width:0}
+.link-item a.link-main{display:flex;align-items:center;gap:10px;flex:1;min-width:0;text-decoration:none;color:inherit}
+.link-ico{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,#eef6ff,#f6f0ff);display:flex;align-items:center;justify-content:center;font-size:15px;flex:none}
+.link-main .link-txt{min-width:0;flex:1}
+.link-name{display:block;font-size:calc(12.5px * var(--fs));font-weight:800;color:#5d4c52;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.link-host{display:block;font-size:calc(10px * var(--fs));font-weight:600;color:#b4a5aa;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.link-go{font-size:calc(11px * var(--fs));font-weight:800;color:#c98458;flex:none}
+.link-empty{grid-column:1/-1;text-align:center;color:#b3a49f;font-size:calc(12px * var(--fs));font-weight:600;padding:18px 4px}
+@media (max-width:860px){.link-add{grid-template-columns:1fr}.link-list{grid-template-columns:1fr}}
+
 /* 工具箱：Issue 提交 / 待办看板 */
 .issue-card{grid-column:1/-1}
 .issue-layout{display:grid;grid-template-columns:340px minmax(0,1fr);gap:18px;align-items:start}
@@ -1520,6 +1535,7 @@ var CHANGELOG = [
     "每日提醒新增“调课提醒”：支持对调/改课，自动更新课表并标记“调课”，记录进入班级日志与云同步。",
     "双击学生档案标题图标可全班锁定/解锁档案；锁定后只能修改生日祝福，不能增删改学生。",
     "学生档案生日已按《4班生日.xlsx》自动补全 54 人；沈思骐生日在表格中缺失，保留空白待补。",
+    "工具箱新增“常用链接”：可添加名称与网址并点击直达，内置“地理一轮复习资料-百度网盘”。",
     "显示模式作业左侧分隔条恢复对应科目主题色；生日庆祝动画播放期间重复点击不再重播，直到本轮结束。",
     "仪表盘主卡改为网站运行状态与云端状态，北京时间移至下方显示。",
     "留言板继续随班级日志分类同步到云端。",
@@ -1671,7 +1687,7 @@ var SYNC_CATS = [
   { key:"leave", name:"请假与考勤", desc:"请假记录", fields:["leaves"] },
   { key:"issues", name:"Issue 看板", desc:"问题、回复、解决状态", fields:["issues"] },
   { key:"echo", name:"回声洞", desc:"激励语句、收藏、引用状态", fields:["quotes","favorites","quoteState"] },
-  { key:"settings", name:"班级设置", desc:"班级名称、高考日期、访客权限", fields:["settings"] }
+  { key:"settings", name:"班级设置", desc:"班级名称、高考日期、访客权限", fields:["settings","links"] }
 ];
 
 var QUOTES = [
@@ -2041,10 +2057,18 @@ function startAutoScroll(){
   }, 50);
 }
 
+function defaultLinks(){
+  return [{
+    id: "link_geo_review",
+    name: "地理一轮复习资料-百度网盘",
+    url: "https://pan.baidu.com/s/1sDsQZVdSMFN7oDLfB2fZTw?pwd=7269&qq-pf-to=pcqq.group"
+  }];
+}
+
 function defaultStore(){
   return {
     settings: { className:"高三(4)班", classShort:"4", examDate:"2027-06-07", classSize:ROSTER_NAMES.length, adminPassword:"123", eggText:DEFAULT_EGG_TEXT, guestPerms:Object.assign({}, DEFAULT_GUEST_PERMS), rosterVersion:ROSTER_VERSION, birthdayVersion:BIRTHDAY_VERSION },
-    homeworks: [], birthdays: defaultStudents(), teachers: defaultTeachers(), leaves: [], reminders: [], messages: [], issues: [], swaps: [],
+    homeworks: [], birthdays: defaultStudents(), teachers: defaultTeachers(), links: defaultLinks(), leaves: [], reminders: [], messages: [], issues: [], swaps: [],
     expected: {},
     favorites: [], archive: {}, quotes: defaultQuotes(),
     quoteState: { date:"", index:0, manual:-1 }
@@ -2066,6 +2090,14 @@ function normalize(obj){
   ["homeworks","birthdays","leaves","reminders","messages","favorites","teachers","issues","swaps"].forEach(function(k){
     obj[k] = Array.isArray(obj[k]) ? obj[k] : [];
   });
+  if(!Array.isArray(obj.links)) obj.links = defaultLinks();
+  obj.links.forEach(function(l, i){
+    l.id = l.id || ("link_" + (i + 1) + "_" + uid());
+    l.name = String(l.name || "").trim();
+    l.url = String(l.url || "").trim();
+    if(l.url && !/^https?:\/\//i.test(l.url)) l.url = "https://" + l.url;
+  });
+  obj.links = obj.links.filter(function(l){ return !!l.name && /^https?:\/\//i.test(l.url); });
   if(!obj.expected || typeof obj.expected !== "object" || Array.isArray(obj.expected)) obj.expected = {};
   Object.keys(obj.expected).forEach(function(d){
     if(!Array.isArray(obj.expected[d])) delete obj.expected[d];
@@ -2501,7 +2533,7 @@ function syncCatCount(src, key){
   if(key === "leave") return (src.leaves || []).length + " 条请假";
   if(key === "issues") return (src.issues || []).length + " 条 Issue";
   if(key === "echo") return ((src.quotes || []).length + (src.favorites || []).length) + " 条语句/收藏";
-  if(key === "settings") return src.settings && src.settings.className ? src.settings.className : "未设置";
+  if(key === "settings") return (src.settings && src.settings.className ? src.settings.className : "未设置") + " · " + (src.links || []).length + " 链接";
   return "—";
 }
 
@@ -4778,6 +4810,26 @@ function replyIssue(el){
   toast("已回复", "💬");
 }
 
+function linkHostLabel(url){
+  try{ return new URL(url).hostname.replace(/^www\./i, ""); }catch(e){ return url; }
+}
+function addLink(){
+  var n = $("linkName"), u = $("linkUrl");
+  if(!n || !u) return;
+  var name = n.value.trim(), url = u.value.trim();
+  if(!name) return toast("请填写链接名称", "🔗");
+  if(!url) return toast("请填写链接地址", "🔗");
+  if(!/^https?:\/\//i.test(url)) url = "https://" + url;
+  try{ new URL(url); }catch(e){ return toast("链接格式不正确", "🔗"); }
+  store.links.push({ id:uid(), name:name, url:url });
+  commit(); renderPage(); toast("已添加常用链接", "🔗");
+}
+function delLink(id){
+  if(!adminOnly("删除链接")) return;
+  store.links = store.links.filter(function(l){ return l.id !== id; });
+  commit(); renderPage(); toast("已删除链接", "🔗");
+}
+
 function renderTools(){
   var canEcho = canEdit("echo");
   var canTools = canEdit("tools");
@@ -4846,9 +4898,34 @@ function renderTools(){
     + '</div>'
     + '</section>';
 
+  var linkRows = "";
+  if(store.links.length){
+    store.links.forEach(function(l){
+      linkRows += '<div class="link-item">'
+        + '<a class="link-main" href="'+esc(l.url)+'" target="_blank" rel="noopener noreferrer" title="'+esc(l.name)+'">'
+        +   '<span class="link-ico">🔗</span>'
+        +   '<span class="link-txt"><span class="link-name">'+esc(l.name)+'</span><span class="link-host">'+esc(linkHostLabel(l.url))+'</span></span>'
+        + '</a>'
+        + '<span class="link-go">↗</span>'
+        + (isAdmin() ? '<button class="link-del" data-act="delLink" data-id="'+esc(l.id)+'" title="删除">✕</button>' : '')
+        + '</div>';
+    });
+  } else {
+    linkRows = '<div class="link-empty">还没有常用链接，添加一个吧。</div>';
+  }
+  var linkCard = '<section class="card link-card">'
+    + '<div class="card-hd"><div class="ico blue">🔗</div><h2>常用链接</h2><span class="sub">共 '+store.links.length+' 个 · 点击直达</span></div>'
+    + '<div class="link-add">'
+    +   '<div><label class="fl">名称</label><input type="text" id="linkName" maxlength="40" placeholder="例如：地理一轮复习资料"></div>'
+    +   '<div><label class="fl">链接</label><input type="text" id="linkUrl" maxlength="500" placeholder="https://..."></div>'
+    +   '<button class="btn" data-act="addLink">＋ 添加链接</button>'
+    + '</div>'
+    + '<div class="link-list">'+linkRows+'</div>'
+    + '</section>';
+
   return '<div class="page-hd">'
     + '<div class="ico purple" data-egg-doubao="1">🧰</div><div><h1>工具箱</h1>'
-    + '<p>课堂随手用：幸运星、随机数、回声洞、Issue 提交</p></div>'
+    + '<p>课堂随手用：幸运星、随机数、常用链接、回声洞、Issue 提交</p></div>'
     + '</div>'
     + '<div class="tools-grid">'
     +   '<section class="card">'
@@ -4866,6 +4943,7 @@ function renderTools(){
     +     '<div class="btn-row"><button class="btn mint" data-act="pickNumber"'+(canTools?'':' disabled')+'>🔢 抽一个</button>'
     +     '<span class="tool-tip">'+(canTools?'按回车也能抽':'访客模式 · 无权限')+'</span></div>'
     +   '</section>'
+    +   linkCard
     +   '<section class="card echo-card">'
     +     '<div class="card-hd"><div class="ico blue">📣</div><h2>回声洞</h2><span class="sub">首页每日一句 · 共 '+store.quotes.length+' 条'+(canEcho?"":" · 只读")+'</span></div>'
     +     '<div class="echo-grid'+(canEcho?"":" readonly")+'">'
@@ -5325,6 +5403,13 @@ function afterRender(r){
     };
     if(rmin) rmin.addEventListener("keydown", onRndEnter);
     if(rmax) rmax.addEventListener("keydown", onRndEnter);
+    /* 常用链接：名称或链接输入框回车直接添加 */
+    var lkName = $("linkName"), lkUrl = $("linkUrl");
+    var onLinkEnter = function(e){
+      if(e.key === "Enter"){ e.preventDefault(); addLink(); }
+    };
+    if(lkName) lkName.addEventListener("keydown", onLinkEnter);
+    if(lkUrl) lkUrl.addEventListener("keydown", onLinkEnter);
     /* 回声洞：输入句子或署名后回车直接添加 */
     var qt = $("qText"), qb = $("qBy");
     var onQuoteEnter = function(e){
@@ -6064,6 +6149,8 @@ function handleAction(act, el){
       delQuote(el.getAttribute("data-id"));
       break;
 
+    case "addLink": addLink(); break;
+    case "delLink": delLink(el.getAttribute("data-id")); break;
     case "addIssue":
       addIssue();
       break;
