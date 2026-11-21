@@ -784,6 +784,8 @@ table.lv-table tr:last-child td{border-bottom:none}
 .sync-times.stale{border-color:#e7b49a;background:#fff1e8;color:#b06e4f}
 .sync-backup-row{display:flex;align-items:center;gap:9px;margin:-2px 0 10px;font-size:calc(11.5px * var(--fs));font-weight:800;color:#6d5b56}
 .sync-backup-row select{flex:1;margin:0;padding:7px 9px;font-size:calc(11.5px * var(--fs))}
+.sync-make-row{margin-top:4px;font-weight:650;color:#8b7b74}
+.sync-make-row input{width:15px;height:15px;accent-color:#ef8a7f;margin:0}
 .sync-local{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px;padding:8px 10px;border:1px dashed #f0dfd2;border-radius:10px;background:#fffaf5;font-size:calc(10.8px * var(--fs));color:#a3949a;font-weight:650}
 .sync-local span{color:#6d5b56;font-weight:800}
 .sync-local b{color:#4e8c74}
@@ -1338,6 +1340,10 @@ body[class*="theme-"] .page-hd .ico{background:var(--t-soft)}
     <label class="sync-backup-row" id="syncBackupRow">云端版本
       <select id="syncBackup"><option value="">最新云端数据</option></select>
     </label>
+    <label class="sync-backup-row sync-make-row" id="syncMakeBackupRow">
+      <input type="checkbox" id="syncMakeBackup">
+      覆盖云端前创建一次手动备份（保留 1 天）
+    </label>
     <div class="sync-cats" id="syncCats"></div>
     <div class="sync-warn" id="syncWarn"></div>
     <div class="sync-actions">
@@ -1438,6 +1444,7 @@ var CHANGELOG = [
     "仪表盘主卡改为网站运行状态与云端状态，北京时间移至下方显示。",
     "留言板继续随班级日志分类同步到云端。",
     "云端每日 00:00 自动生成备份，仅保留最近 5 天；手动云同步可选择“最新云端”或某个历史备份再拉取。",
+    "本机覆盖云端前可勾选创建一次性手动备份，保留 1 天后自动删除；备份下拉框区分“日常备份”与“手动备份”。",
     "新增本机自动备份小程序：安装后随 Windows 登录启动，数据保存到用户目录 ClassManagerBackup，并保留最近 30 份快照。",
     "项目用量账单刷新至 690.02M Token，余额消耗估算 ¥26.60。"
   ]},
@@ -1574,6 +1581,7 @@ var syncStaleWarned = false;
 var syncBusy = false;
 var syncBackups = [];
 var syncBackupDate = "";
+var syncMakeBackup = false;
 var SYNC_CATS = [
   { key:"people", name:"学生与教师", desc:"学生档案、教师档案、应到名单", fields:["birthdays","teachers","expected"] },
   { key:"study", name:"作业与提醒", desc:"作业清单、每日提醒、调课记录", fields:["homeworks","reminders","swaps"] },
@@ -2331,8 +2339,15 @@ function cloudSyncNow(){
 function cloudFetchState(backupDate){
   var url = CLOUD_URL + "/rest/v1/class_state?id=eq.main&select=payload,rev,updated_at";
   if(backupDate){
-    url = CLOUD_URL + "/rest/v1/class_state_backups?backup_date=eq." + encodeURIComponent(backupDate)
-      + "&select=payload,rev,created_at";
+    var key = String(backupDate);
+    if(key.indexOf("manual:") === 0){
+      url = CLOUD_URL + "/rest/v1/class_manual_backups?id=eq." + encodeURIComponent(key.slice(7))
+        + "&select=payload,rev,created_at";
+    } else {
+      if(key.indexOf("daily:") === 0) key = key.slice(6);
+      url = CLOUD_URL + "/rest/v1/class_state_backups?backup_date=eq." + encodeURIComponent(key)
+        + "&select=payload,rev,created_at";
+    }
   }
   return fetch(url, {
     headers: cloudHeaders(),
@@ -2361,14 +2376,29 @@ function cloudFetchState(backupDate){
 
 function cloudFetchBackups(){
   if(!CLOUD_ON) return Promise.resolve([]);
-  return fetch(CLOUD_URL + "/rest/v1/class_state_backups?select=backup_date,rev,created_at&order=backup_date.desc&limit=5", {
-    headers: cloudHeaders(),
-    cache: "no-store"
-  }).then(function(res){
-    if(!res.ok) return [];
-    return res.json();
-  }).then(function(rows){
-    return Array.isArray(rows) ? rows : [];
+  function rows(url){
+    return fetch(url, { headers: cloudHeaders(), cache:"no-store" }).then(function(res){
+      if(!res.ok) return [];
+      return res.json();
+    }).then(function(v){ return Array.isArray(v) ? v : []; }).catch(function(){ return []; });
+  }
+  return Promise.all([
+    rows(CLOUD_URL + "/rest/v1/class_state_backups?select=backup_date,rev,created_at&order=backup_date.desc&limit=5"),
+    rows(CLOUD_URL + "/rest/v1/class_manual_backups?select=id,rev,created_at,expires_at&order=created_at.desc&limit=20")
+  ]).then(function(list){
+    var now = Date.now(), out = [];
+    (list[0] || []).forEach(function(b){
+      out.push({ kind:"daily", key:"daily:" + b.backup_date, backup_date:b.backup_date,
+        rev:b.rev, at:new Date(b.created_at || b.backup_date).getTime() });
+    });
+    (list[1] || []).forEach(function(b){
+      var exp = b.expires_at ? new Date(b.expires_at).getTime() : 0;
+      if(exp && exp <= now) return;
+      out.push({ kind:"manual", key:"manual:" + b.id, id:b.id, rev:b.rev,
+        at:new Date(b.created_at || 0).getTime(), expires:exp });
+    });
+    out.sort(function(a,b){ return (b.at || 0) - (a.at || 0); });
+    return out;
   }).catch(function(){ return []; });
 }
 
@@ -2423,11 +2453,19 @@ function renderSyncModal(){
   var backupRow = $("syncBackupRow");
   var backupSel = $("syncBackup");
   if(backupRow) backupRow.style.display = syncDir === "down" ? "flex" : "none";
+  var makeRow = $("syncMakeBackupRow");
+  if(makeRow){
+    makeRow.style.display = (syncDir === "up" && currentRole === "admin" && syncRemote) ? "flex" : "none";
+    var makeBox = $("syncMakeBackup");
+    if(makeBox) makeBox.checked = !!syncMakeBackup;
+  }
   if(backupSel){
     var opts = ['<option value="">最新云端数据</option>'];
     syncBackups.forEach(function(b){
-      var label = b.backup_date ? b.backup_date : "备份";
-      opts.push('<option value="' + esc(label) + '">云端备份 ' + esc(label) + (b.rev ? " · rev " + esc(String(b.rev)) : "") + '</option>');
+      var label = b.kind === "manual"
+        ? "手动备份 " + (function(){ var d = new Date(b.at || 0); return (d.getMonth()+1) + "月" + d.getDate() + "日 " + pad(d.getHours()) + ":" + pad(d.getMinutes()); })()
+        : "日常备份 " + (b.backup_date || "—");
+      opts.push('<option value="' + esc(b.key || b.backup_date || "") + '">' + esc(label) + (b.rev ? " · rev " + esc(String(b.rev)) : "") + '</option>');
     });
     backupSel.innerHTML = opts.join("");
     backupSel.value = syncBackupDate || "";
@@ -2478,6 +2516,7 @@ function openSyncDialog(){
       if(!r){ restartCloudAuto(); return; }
       syncBackups = backups || [];
       syncBackupDate = "";
+      syncMakeBackup = false;
       syncRemote = r.payload;
       syncRemoteRev = r.rev;
       syncDir = "up";
@@ -2548,23 +2587,37 @@ function runSyncPlan(){
   var body = currentRole === "admin"
     ? { pwd:cloudPwd, role:"admin", data:data, touch_guest:true }
     : { pwd:null, role:"guest", data:data, touch_guest:true };
-  cloudRpc("save_state", body).then(function(res){
-    syncBusy = false;
-    $("syncGo").disabled = false;
-    $("syncGo").textContent = "开始同步";
-    if(res && res.rev) cloudRev = Math.max(cloudRev, Number(res.rev) || 0);
-    syncStaleWarned = false;
-    cloudApplyPayload(payload, res && res.rev ? res.rev : cloudRev);
-    markCloudSync();
-    closeSyncDialog();
-    toast("已按选择上传本机数据到云端", "☁️");
-  }).catch(function(e){
+  function upload(){
+    cloudRpc("save_state", body).then(function(res){
+      syncBusy = false;
+      $("syncGo").disabled = false;
+      $("syncGo").textContent = "开始同步";
+      if(res && res.rev) cloudRev = Math.max(cloudRev, Number(res.rev) || 0);
+      syncStaleWarned = false;
+      cloudApplyPayload(payload, res && res.rev ? res.rev : cloudRev);
+      markCloudSync();
+      closeSyncDialog();
+      toast("已按选择上传本机数据到云端", "☁️");
+    }).catch(fail);
+  }
+  function fail(e){
     syncBusy = false;
     $("syncGo").disabled = false;
     $("syncGo").textContent = "开始同步";
     cloudLastError = String(e && e.message || e);
     toast("上传失败：" + cloudLastError, "⚠️");
-  });
+  }
+  if(syncMakeBackup && currentRole === "admin" && syncRemote){
+    $("syncGo").textContent = "创建备份…";
+    cloudRpc("create_manual_backup", { pwd:cloudPwd }).then(function(b){
+      if(!b || b.ok === false) throw new Error((b && b.reason) || "手动备份创建失败");
+      toast("已创建一次性云端备份，1 天后自动删除", "🧷");
+      $("syncGo").textContent = "同步中…";
+      upload();
+    }).catch(fail);
+  } else {
+    upload();
+  }
 }
 
 function bindSync(){
@@ -2596,6 +2649,8 @@ function bindSync(){
       renderSyncModal();
     });
   });
+  var make = $("syncMakeBackup");
+  if(make) make.addEventListener("change", function(){ syncMakeBackup = !!this.checked; });
   var go = $("syncGo");
   if(go) go.addEventListener("click", runSyncPlan);
   var cancel = $("syncCancel");

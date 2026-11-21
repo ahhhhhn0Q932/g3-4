@@ -32,6 +32,7 @@
 
 - `class_state_backups` 表，每天北京时间 00:00 保存一份 `class_state` 快照；
 - `create_class_backup()` 自动清理 5 天前的备份；
+- `class_manual_backups` 表保存一次性手动备份，`create_manual_backup(pwd)` 写入快照并设置 1 天过期；
 - `pg_cron` 定时任务 `class-daily-backup`（UTC 16:00）。
 
 升级时请重新执行整段 SQL。若提示 `pg_cron` 未启用，先在 Supabase Dashboard → Database → Extensions 打开 `pg_cron`，再重新执行脚本末尾的定时任务部分。

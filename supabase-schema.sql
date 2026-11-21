@@ -233,6 +233,9 @@ begin
   delete from public.class_state_backups
   where backup_date < v_day - 4;
 
+  delete from public.class_manual_backups
+  where expires_at <= now();
+
   return jsonb_build_object(
     'ok', true,
     'backup_date', v_day,
@@ -243,6 +246,71 @@ end;
 $$;
 
 revoke all on function public.create_class_backup() from public;
+
+-- 9) 手动一次性云端备份（覆盖云端前可选创建，保留 1 天）
+create table if not exists public.class_manual_backups (
+  id bigserial primary key,
+  payload jsonb not null,
+  rev bigint not null default 0,
+  created_at timestamptz not null default now(),
+  expires_at timestamptz not null
+);
+
+alter table public.class_manual_backups enable row level security;
+
+drop policy if exists "class_manual_backups_read" on public.class_manual_backups;
+create policy "class_manual_backups_read"
+  on public.class_manual_backups
+  for select
+  to anon, authenticated
+  using (true);
+
+grant select on table public.class_manual_backups to anon, authenticated;
+revoke insert, update, delete on table public.class_manual_backups from anon, authenticated;
+
+create or replace function public.create_manual_backup(pwd text)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public, extensions, pg_temp
+as $$
+declare
+  v_now timestamptz := now();
+  v_expires timestamptz := now() + interval '1 day';
+  v_payload jsonb;
+  v_rev bigint;
+  v_id bigint;
+begin
+  if not coalesce(public.check_admin(pwd), false) then
+    return jsonb_build_object('ok', false, 'reason', 'bad_password');
+  end if;
+
+  select payload, rev into v_payload, v_rev
+  from public.class_state
+  where id = 'main';
+
+  if v_payload is null then
+    return jsonb_build_object('ok', false, 'reason', 'no class_state');
+  end if;
+
+  delete from public.class_manual_backups where expires_at <= v_now;
+
+  insert into public.class_manual_backups (payload, rev, created_at, expires_at)
+  values (v_payload, coalesce(v_rev, 0), v_now, v_expires)
+  returning id into v_id;
+
+  return jsonb_build_object(
+    'ok', true,
+    'id', v_id,
+    'rev', coalesce(v_rev, 0),
+    'created_at', v_now,
+    'expires_at', v_expires
+  );
+end;
+$$;
+
+revoke all on function public.create_manual_backup(text) from public;
+grant execute on function public.create_manual_backup(text) to anon, authenticated;
 
 -- 每天 UTC 16:00 = 北京时间次日 00:00；若 pg_cron 未启用会给出提示，不影响手动云同步。
 do $$
