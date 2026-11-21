@@ -2261,6 +2261,16 @@ function cloudRpc(name, body){
   });
 }
 
+function cloudErrorHint(msg){
+  var s = String(msg || "");
+  if(/bad_password/i.test(s)) return "管理员密码与云端密码不一致，请重新登录或先在设置中修改密码";
+  if(/no class_state/i.test(s)) return "云端暂无数据，请先上传一次";
+  if(/create_manual_backup|class_manual_backups|class_state_backups|PGRST20[25]|Could not find/i.test(s)){
+    return "云端备份功能未就绪，请重新运行最新 supabase-schema.sql 后再试";
+  }
+  return s;
+}
+
 function cloudApplyPayload(payload, rev){
   if(!payload || typeof payload !== "object" || Array.isArray(payload)) return false;
   var prevIssues = Array.isArray(store.issues) ? store.issues : [];
@@ -2660,6 +2670,12 @@ function openSyncDialog(){
       renderSyncModal();
       $("syncMask").classList.add("show");
     });
+  }).catch(function(e){
+    syncBusy = false;
+    if(btn){ btn.disabled = false; btn.textContent = "手动云同步"; }
+    cloudLastError = String(e && e.message || e);
+    toast("读取云端失败：" + cloudErrorHint(cloudLastError), "⚠️");
+    restartCloudAuto();
   });
 }
 
@@ -2751,7 +2767,13 @@ function runSyncPlan(){
       toast("已创建一次性云端备份，1 天后自动删除", "🧷");
       $("syncGo").textContent = "同步中…";
       upload();
-    }).catch(fail);
+    }).catch(function(e){
+      syncBusy = false;
+      $("syncGo").disabled = false;
+      $("syncGo").textContent = "开始同步";
+      cloudLastError = String(e && e.message || e);
+      toast("创建备份失败：" + cloudErrorHint(cloudLastError), "⚠️");
+    });
   } else {
     upload();
   }
@@ -2784,6 +2806,11 @@ function bindSync(){
         syncRemoteRev = 0;
       }
       renderSyncModal();
+    }).catch(function(e){
+      syncBusy = false;
+      if(goBtn){ goBtn.disabled = false; goBtn.textContent = "开始同步"; }
+      cloudLastError = String(e && e.message || e);
+      toast("读取备份失败：" + cloudErrorHint(cloudLastError), "⚠️");
     });
   });
   var make = $("syncMakeBackup");
