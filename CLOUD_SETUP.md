@@ -46,6 +46,8 @@
 3. 程序监听 `127.0.0.1:8765`，保存到 `%USERPROFILE%\ClassManagerBackup`，保留 `latest.json` 与最近 30 份快照；
 4. 手动启动可双击 `START-LOCAL-BACKUP.bat`，设置页会显示连接状态。
 
+打包好的自动保存程序也可从设置页直接下载：`https://ahhhhhn.lanzouv.com/iAgz24gw45bi`（密码 `fajj`）。
+
 ## 注意事项
 
 - 发布用 `sb_publishable_...` key 会出现在网页源码里，拿到它的人可以读取云端班级数据；请勿把特别敏感的信息放进来。

@@ -147,6 +147,7 @@
    - `snapshot-YYYYMMDD-HHMMSS.json`：最近 30 份快照；
    - `latest-meta.json`：最近一次接收时间。
 4. 手动启动可双击 `START-LOCAL-BACKUP.bat`；设置 → 同步设置会显示“本机自动备份”状态。
+5. 打包版下载：`https://ahhhhhn.lanzouv.com/iAgz24gw45bi`（密码 `fajj`），也可从设置 → 同步设置直接打开。
 
 ---
 

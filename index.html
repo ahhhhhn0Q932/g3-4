@@ -788,6 +788,10 @@ table.lv-table tr:last-child td{border-bottom:none}
 .sync-make-row input{width:15px;height:15px;accent-color:#ef8a7f;margin:0}
 .sync-local{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px;padding:8px 10px;border:1px dashed #f0dfd2;border-radius:10px;background:#fffaf5;font-size:calc(10.8px * var(--fs));color:#a3949a;font-weight:650}
 .sync-local span{color:#6d5b56;font-weight:800}
+.sync-download{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:8px;padding:8px 10px;border:1px dashed #e7d9ef;border-radius:10px;background:#fbf7ff;font-size:calc(10.8px * var(--fs));color:#8b7b94;font-weight:650}
+.sync-download span{color:#6d5b56;font-weight:800}
+.sync-download a{color:#6f58a8;word-break:break-all;text-decoration:underline}
+.sync-download b{color:#b06e4f;font-weight:800}
 .sync-local b{color:#4e8c74}
 .sync-local i{font-style:normal;flex-basis:100%;font-size:calc(10px * var(--fs));font-weight:600}
 .sync-warn{margin-top:10px;padding:9px 11px;border-radius:11px;background:#fff9f2;border:1px dashed #f0d8c7;font-size:calc(10.8px * var(--fs));line-height:1.6;color:#b07b5d;font-weight:650}
@@ -1446,6 +1450,7 @@ var CHANGELOG = [
     "云端每日 00:00 自动生成备份，仅保留最近 5 天；手动云同步可选择“最新云端”或某个历史备份再拉取。",
     "本机覆盖云端前可勾选创建一次性手动备份，保留 1 天后自动删除；备份下拉框区分“日常备份”与“手动备份”。",
     "新增本机自动备份小程序：安装后随 Windows 登录启动，数据保存到用户目录 ClassManagerBackup，并保留最近 30 份快照。",
+    "同步设置内附自动保存程序下载地址与提取密码，可直接获取安装包。",
     "项目用量账单刷新至 690.02M Token，余额消耗估算 ¥26.60。"
   ]},
   { date:"2026-11-15", ver:"v1.17.1", title:"访客点名权限收紧", items:[
@@ -5005,6 +5010,9 @@ function renderSettings(){
     +   '</div>'
     +   '<div class="sync-local"><span>本机自动备份</span><b id="localBackupState">'+esc(localBackupStateText())+'</b>'
     +     '<i>由本机小程序保存到文档目录，不经过浏览器云服务。</i></div>'
+    +   '<div class="sync-download"><span>自动保存程序下载</span>'
+    +     '<a href="https://ahhhhhn.lanzouv.com/iAgz24gw45bi" target="_blank" rel="noopener">https://ahhhhhn.lanzouv.com/iAgz24gw45bi</a>'
+    +     '<b>密码：fajj</b></div>'
     +   '<div class="pref-grid" style="margin-top:14px">'
     +     '<div class="pref-row"><label>自动云同步间隔</label><select id="syncInterval">'
     +       [15,30,60,120,300].map(function(sec){ return '<option value="'+sec+'"'+(Number(syncPrefs.intervalSec)===sec?' selected':'')+'>'+(sec<60?sec+' 秒':(sec/60)+' 分钟')+'</option>'; }).join("")
