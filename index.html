@@ -700,6 +700,11 @@ table.lv-table tr:last-child td{border-bottom:none}
 .perm-item b{display:block;font-size:calc(12.5px * var(--fs));color:#5d4a48;font-weight:800}
 .perm-item i{display:block;font-style:normal;font-size:calc(10.5px * var(--fs));color:#a3949a;font-weight:600;margin-top:2px;line-height:1.5}
 .maint-repo{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:13px 15px;border:1px solid #f0e2d6;border-radius:14px;background:#fffdfa}
+.maint-notice{padding:11px 14px;border-radius:12px;border:1px solid;font-size:calc(12px * var(--fs));line-height:1.7;font-weight:700}
+.maint-notice+.maint-notice{margin-top:8px}
+.maint-notice.apology{background:#fff3f1;border-color:#f4cbc7;color:#a34f48}
+.maint-notice.recruit{background:#f2fbf7;border-color:#cdece1;color:#3f7d6b}
+.maint-notice b{font-weight:900;margin-right:4px}
 .repo-meta{flex:1;min-width:180px}
 .repo-meta b{display:block;font-size:calc(13px * var(--fs));color:#5d4a48}
 .repo-meta span{display:block;font-size:calc(11.5px * var(--fs));color:#a3949a;font-weight:600;margin-top:2px}
@@ -774,6 +779,9 @@ table.lv-table tr:last-child td{border-bottom:none}
 .sync-cat-body i{display:block;font-style:normal;font-size:calc(10.5px * var(--fs));color:#a3949a;font-weight:600;margin-top:2px;line-height:1.5}
 .sync-cat-counts{display:flex;gap:10px;flex-wrap:wrap;margin-top:5px;font-size:calc(10.5px * var(--fs));color:#a3949a;font-weight:700}
 .sync-cat-counts b{display:inline;font-size:calc(10.5px * var(--fs));color:#6b5a52;font-weight:800}
+.sync-times{font-size:10.5px;color:#a3949a;line-height:1.7;margin:-4px 0 10px;padding:8px 10px;border:1px dashed #f0dfd2;border-radius:10px;background:#fffaf5}
+.sync-times b{color:#6d5b56}
+.sync-times.stale{border-color:#e7b49a;background:#fff1e8;color:#b06e4f}
 .sync-warn{margin-top:10px;padding:9px 11px;border-radius:11px;background:#fff9f2;border:1px dashed #f0d8c7;font-size:calc(10.8px * var(--fs));line-height:1.6;color:#b07b5d;font-weight:650}
 .sync-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
 @media (max-width:600px){
@@ -1026,9 +1034,9 @@ body.board-display{overflow:hidden}
 body.board-display .shell{padding:8px 18px 10px;max-width:none}
 body.board-display .board-grid{
   height:calc(100vh - 68px);margin-top:46px;
-  grid-template-columns:minmax(0,1fr) 280px;
+  grid-template-columns:minmax(0,1fr) 300px;
   grid-template-rows:auto minmax(0,1fr);
-  grid-template-areas:"leave leave" "hw remind";
+  grid-template-areas:"hw leave" "hw remind";
   gap:10px;
   align-items:stretch;
 }
@@ -1044,14 +1052,14 @@ body.board-display .leave-list{margin-top:4px;gap:10px;padding:1px 0 4px}
 body.board-display .leave-chip{padding:0;font-size:calc(11px * var(--fs))}
 body.board-display .area-hw>.card-hd{margin-bottom:4px;flex:none}
 body.board-display #hwArea{flex:1;min-height:0;overflow-x:hidden;overflow-y:auto;padding:0 6px 0 0}
-body.board-display .hw-cols{display:flex;align-items:flex-start;gap:26px}
-body.board-display .hw-col{flex:1;min-width:0}
-body.board-display #hwArea.hw-cards{overflow:auto}
-body.board-display .subj-group{grid-template-columns:54px minmax(0,1fr);gap:8px;padding:1px 0 5px;margin:0 0 4px;border:0;break-inside:avoid}
+body.board-display .hw-cols{display:block}
+body.board-display .hw-col{display:block}
+body.board-display .subj-group{grid-template-columns:54px minmax(0,1fr);gap:12px;padding:1px 0 5px;margin:0 0 4px;border:0;break-inside:avoid}
 body.board-display .subj-chip{font-size:calc(14px * var(--fs));padding:5px 3px;border-radius:8px}
-body.board-display .hw-item{background:none!important;border:0!important;box-shadow:none!important;padding:1px 0!important;margin:0!important;border-radius:0!important;gap:6px;min-height:0}
-body.board-display .hw-title,body.board-display .hw-title-input{font-size:calc(15px * var(--fs));line-height:1.34;font-weight:700}
-body.board-display .hw-title-input{background:transparent;padding:0;border:0}
+body.board-display .hw-item{background:none!important;border:0!important;box-shadow:none!important;padding:3px 8px 3px 12px!important;margin:0!important;border-radius:0!important;gap:8px;min-height:0;white-space:nowrap}
+body.board-display .hw-title,body.board-display .hw-title-input{font-size:calc(15px * var(--fs));line-height:1.5;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.board-display .hw-body{min-width:0;flex:1;overflow:hidden;padding-left:2px}
+body.board-display .hw-title-input{background:transparent;padding:2px 0;border:0;margin-left:0;width:100%;line-height:1.6}
 body.board-display .hw-meta{gap:5px}
 body.board-display .hw-chip{background:none;border:0;padding:0;font-size:calc(9.5px * var(--fs))}
 body.board-display .hw-body{gap:0}
@@ -1061,6 +1069,20 @@ body.board-display .area-remind .remind-list{max-height:none}
 body.board-display .board-tools{position:fixed;z-index:60;right:18px;top:10px;display:flex;gap:7px;align-items:center}
 body.board-display .board-exit{position:static}
 
+body.theme-warm{--t-accent:#ff8f7a;--t-soft:#ffe4d4;--t-bg:#fff7ef}
+body.theme-mint{--t-accent:#52b9a4;--t-soft:#dff4ee;--t-bg:#f3fbf8}
+body.theme-sky{--t-accent:#5b9fe0;--t-soft:#e2f0ff;--t-bg:#f4f9ff}
+body.theme-rose{--t-accent:#d97897;--t-soft:#ffe2eb;--t-bg:#fff6f9}
+body.theme-violet{--t-accent:#8971d8;--t-soft:#ebe4ff;--t-bg:#f8f5ff}
+body[class*="theme-"]{background:radial-gradient(1200px 500px at 15% -10%,var(--t-soft),transparent 60%),radial-gradient(900px 500px at 95% 0%,var(--t-soft),transparent 55%),var(--t-bg)}
+body[class*="theme-"] .nav a.on,
+body[class*="theme-"] .btn:not(.ghost),
+body[class*="theme-"] .cal-day.sel,
+body[class*="theme-"] .brand-badge{background:var(--t-accent)!important;color:#fff!important;border-color:transparent!important}
+body[class*="theme-"] .hero{background:linear-gradient(135deg,var(--t-soft),#fff 58%,var(--t-soft))}
+body[class*="theme-"] .cal-day.today{color:var(--t-accent)}
+body[class*="theme-"] .page-hd .ico{background:var(--t-soft)}
+
 @media(max-width:1080px){
   body.board-display{overflow:auto}
   body.board-display .shell{padding:10px 14px 20px}
@@ -1068,7 +1090,7 @@ body.board-display .board-exit{position:static}
     height:auto;min-height:0;margin-top:48px;
     grid-template-columns:1fr;
     grid-template-rows:auto;
-    grid-template-areas:"leave" "hw" "remind";
+    grid-template-areas:"hw" "leave" "remind";
   }
   body.board-display .area-hw{height:auto}
   body.board-display #hwArea{overflow:visible}
@@ -1396,13 +1418,15 @@ function applyRoster(s){
 
 var CHANGELOG = [
   { date:"2026-11-21", ver:"v1.18", title:"大版本：同步方案、显示模式与调课", items:[
-    "手动云同步前可选择“本地 → 云端”或“云端 → 本地”，并逐项勾选学生教师、作业提醒、班级日志、请假、Issue、回声洞与设置；窗口并列显示本机与云端数据量。",
-    "自动同步间隔可在设置中调整，默认 1 分钟；自动策略支持智能同步、本地覆盖、云端覆盖。",
-    "显示模式支持 16:9 单屏：隐藏月历、请假置顶、作业双栏紧凑排布、空科目折叠，并提供卡片视图切换。",
-    "设置新增全局字号、显示模式字号、自动循环滚动与滚动速度调节。",
+    "手动云同步前可选择“本地 → 云端”或“云端 → 本地”，并逐项勾选学生教师、作业提醒、班级日志、请假、Issue、回声洞与设置；窗口并列显示本机与云端数据量、双方最后更新时间。",
+    "自动同步间隔可在设置中调整，默认 1 分钟；自动策略支持智能同步、本地覆盖、云端覆盖；两端更新时间相差超过 1 天时自动弹出同步确认与警告。",
+    "显示模式支持 16:9 单屏：隐藏月历、请假栏置顶、作业单列紧凑排布、空科目折叠，去掉气泡框，作业不自动滚动；作业与左侧竖向分隔栏留出横向间距，标题首字不再贴边。",
+    "设置新增主题色、全局字号、显示模式字号、仅每日提醒自动循环滚动与滚动速度调节；显示设置仅保存在本机，不同步云端。",
     "每日提醒新增“调课提醒”：支持对调/改课，自动更新课表并标记“调课”，记录进入班级日志与云同步。",
-    "双击学生档案头像可锁定/解锁档案；锁定后只能修改生日祝福。",
-    "仪表盘主卡改为网站运行状态与云端状态，北京时间移至下方显示。"
+    "双击学生档案标题图标可全班锁定/解锁档案；锁定后只能修改生日祝福，不能增删改学生。",
+    "显示模式作业左侧分隔条恢复对应科目主题色；生日庆祝动画播放期间重复点击不再重播，直到本轮结束。",
+    "仪表盘主卡改为网站运行状态与云端状态，北京时间移至下方显示。",
+    "留言板继续随班级日志分类同步到云端。"
   ]},
   { date:"2026-11-15", ver:"v1.17.1", title:"访客点名权限收紧", items:[
     "今日总览“应到 / 实到”名单调整改为仅管理员可用。",
@@ -1532,6 +1556,8 @@ var cloudLastError = "";
 var syncDir = "up";
 var syncRemote = null;
 var syncRemoteRev = 0;
+var syncRemoteUpdatedAt = 0;
+var syncStaleWarned = false;
 var syncBusy = false;
 var SYNC_CATS = [
   { key:"people", name:"学生与教师", desc:"学生档案、教师档案、应到名单", fields:["birthdays","teachers","expected"] },
@@ -1756,28 +1782,55 @@ function markCloudSync(){
 }
 
 /* 本地显示偏好：字号、显示模式字号、自动滚动 */
+/* 显示设置仅保存在本机，不随 settings 同步 */
+var DEFAULT_UI_PREFS = { theme:"warm", fontScale:1, displayFontScale:1, scrollOn:false, scrollSpeed:24 };
+var UI_THEMES = [
+  { key:"warm", name:"暖橙" },
+  { key:"mint", name:"薄荷" },
+  { key:"sky", name:"海盐蓝" },
+  { key:"rose", name:"樱花粉" },
+  { key:"violet", name:"暮紫" }
+];
 var UI_PREFS_KEY = "gaoer3_ui_prefs_v1";
-var uiPrefs = { fontScale:1, displayFontScale:1, scrollOn:false, scrollSpeed:24 };
-try {
-  var rawUiPrefs = window.localStorage.getItem(UI_PREFS_KEY);
-  if(rawUiPrefs){
-    var parsedUiPrefs = JSON.parse(rawUiPrefs);
-    if(parsedUiPrefs && typeof parsedUiPrefs === "object"){
-      uiPrefs.fontScale = Math.min(1.4, Math.max(0.8, Number(parsedUiPrefs.fontScale) || 1));
-      uiPrefs.displayFontScale = Math.min(1.6, Math.max(0.8, Number(parsedUiPrefs.displayFontScale) || 1));
-      uiPrefs.scrollOn = !!parsedUiPrefs.scrollOn;
-      uiPrefs.scrollSpeed = Math.min(100, Math.max(4, Number(parsedUiPrefs.scrollSpeed) || 24));
-    }
+var uiPrefs = Object.assign({}, DEFAULT_UI_PREFS);
+
+function normalizeUiPrefs(p){
+  p = p && typeof p === "object" ? p : {};
+  var out = Object.assign({}, DEFAULT_UI_PREFS);
+  out.theme = UI_THEMES.some(function(t){ return t.key === p.theme; }) ? p.theme : "warm";
+  out.fontScale = Math.min(1.4, Math.max(0.8, Number(p.fontScale) || 1));
+  out.displayFontScale = Math.min(1.6, Math.max(0.8, Number(p.displayFontScale) || 1));
+  out.scrollOn = !!p.scrollOn;
+  out.scrollSpeed = Math.min(100, Math.max(4, Number(p.scrollSpeed) || 24));
+  return out;
+}
+
+function loadUiPrefs(){
+  var parsed = null;
+  try {
+    var raw = localStorage.getItem(UI_PREFS_KEY);
+    if(raw) parsed = JSON.parse(raw);
+  } catch(e){}
+  if(!parsed && store && store.settings && store.settings.display){
+    parsed = store.settings.display;
   }
-} catch(e){}
+  uiPrefs = normalizeUiPrefs(parsed || {});
+  try { localStorage.setItem(UI_PREFS_KEY, JSON.stringify(uiPrefs)); } catch(e){}
+  if(store && store.settings && store.settings.display) delete store.settings.display;
+}
 
 function saveUiPrefs(){
-  try { window.localStorage.setItem(UI_PREFS_KEY, JSON.stringify(uiPrefs)); } catch(e){}
+  uiPrefs = normalizeUiPrefs(uiPrefs);
+  try { localStorage.setItem(UI_PREFS_KEY, JSON.stringify(uiPrefs)); } catch(e){}
+  applyUiPrefs();
 }
+
 function applyUiPrefs(){
   try {
     document.documentElement.style.setProperty("--fs-base", String(uiPrefs.fontScale));
     document.documentElement.style.setProperty("--dfs", String(uiPrefs.displayFontScale));
+    document.body.classList.remove("theme-warm","theme-mint","theme-sky","theme-rose","theme-violet");
+    document.body.classList.add("theme-" + (uiPrefs.theme || "warm"));
   } catch(e){}
 }
 
@@ -1811,9 +1864,7 @@ function autoScrollTargets(){
     var max = axis === "x" ? el.scrollWidth - el.clientWidth : el.scrollHeight - el.clientHeight;
     if(max > 4) out.push({ el:el, axis:axis, max:max });
   }
-  add($("hwArea"), "y");
   add(document.querySelector(".area-remind"), "y");
-  add(document.querySelector(".area-leave .leave-list"), "x");
   return out;
 }
 function startAutoScroll(){
@@ -1851,6 +1902,7 @@ function normalize(obj){
   var hadRoster = !!(obj.settings && obj.settings.rosterVersion === ROSTER_VERSION);
   obj.settings = Object.assign({}, base.settings, obj.settings || {});
   obj.settings.guestPerms = Object.assign({}, DEFAULT_GUEST_PERMS, obj.settings.guestPerms || {});
+  obj.settings.studentsLocked = !!obj.settings.studentsLocked;
   if(!obj.settings.className || obj.settings.className.indexOf("\u9ad8\u4e8c") === 0){
     obj.settings.className = "高三(4)班";
   }
@@ -2004,6 +2056,9 @@ function cloudApplyPayload(payload, rev){
   var prevPwd = store.settings && store.settings.adminPassword;
   cloudSuppress = true;
   store = normalize(payload);
+  if(store.settings) delete store.settings.display;
+  loadUiPrefs();
+  applyUiPrefs();
   /* 旧版 SQL 还不认识 issues；不要把本机刚提交的 Issue 覆盖掉 */
   if(!Array.isArray(payload.issues) && prevIssues.length) store.issues = prevIssues;
   /* 管理员密码只保存在本机，云端载荷不含密码 */
@@ -2066,6 +2121,7 @@ function cloudPush(showError){
   var data;
   try { data = JSON.parse(JSON.stringify(store)); } catch(e){ return Promise.resolve(false); }
   if(data.settings) delete data.settings.adminPassword;
+  if(data.settings) delete data.settings.display;
 
   var leavesNow = JSON.stringify(store.leaves || []);
   var messagesNow = JSON.stringify(store.messages || []);
@@ -2120,15 +2176,30 @@ function scheduleCloudPush(){
 var cloudAutoTimer = null;
 function autoCloudTick(){
   if(!CLOUD_ON || !currentRole || document.hidden) return;
-  if(syncPrefs.strategy === "cloud"){
-    cloudPull(true);
-  } else if(syncPrefs.strategy === "local"){
-    cloudPush(false);
-  } else if(cloudDirty){
-    cloudPush(false);
-  } else {
-    cloudPull(false);
-  }
+  cloudFetchState().then(function(r){
+    if(!r || !currentRole) return;
+    var localAt = Number(syncMeta.localAt || 0);
+    var remoteAt = Number(r.updatedAt || 0);
+    if(!syncStaleWarned && localAt && remoteAt && Math.abs(localAt - remoteAt) > 86400000){
+      syncStaleWarned = true;
+      syncRemote = r.payload;
+      syncRemoteRev = r.rev;
+      syncDir = "up";
+      renderSyncModal();
+      $("syncMask").classList.add("show");
+      if(cloudAutoTimer){ clearTimeout(cloudAutoTimer); cloudAutoTimer = null; }
+      return;
+    }
+    if(syncPrefs.strategy === "cloud"){
+      cloudPull(true);
+    } else if(syncPrefs.strategy === "local"){
+      cloudPush(false);
+    } else if(cloudDirty){
+      cloudPush(false);
+    } else {
+      cloudPull(false);
+    }
+  });
 }
 function restartCloudAuto(){
   if(cloudAutoTimer) clearTimeout(cloudAutoTimer);
@@ -2192,7 +2263,7 @@ function cloudSyncNow(){
 }
 
 function cloudFetchState(){
-  return fetch(CLOUD_URL + "/rest/v1/class_state?id=eq.main&select=payload,rev", {
+  return fetch(CLOUD_URL + "/rest/v1/class_state?id=eq.main&select=payload,rev,updated_at", {
     headers: cloudHeaders(),
     cache: "no-store"
   }).then(function(res){
@@ -2201,13 +2272,14 @@ function cloudFetchState(){
   }).then(function(rows){
     cloudLastError = "";
     markCloudSync();
-    if(!Array.isArray(rows) || !rows.length) return { payload:null, rev:0 };
+    if(!Array.isArray(rows) || !rows.length){ syncRemoteUpdatedAt = 0; return { payload:null, rev:0, updatedAt:0 }; }
     var payload = rows[0].payload;
     var rev = Number(rows[0].rev || 0);
+    syncRemoteUpdatedAt = rows[0].updated_at ? new Date(rows[0].updated_at).getTime() : 0;
     if(!payload || typeof payload !== "object" || !Object.keys(payload).length){
-      return { payload:null, rev:rev };
+      return { payload:null, rev:rev, updatedAt:syncRemoteUpdatedAt };
     }
-    return { payload:payload, rev:rev };
+    return { payload:payload, rev:rev, updatedAt:syncRemoteUpdatedAt };
   }).catch(function(e){
     cloudLastError = String(e && e.message || e);
     toast("读取云端数据失败：" + cloudLastError, "⚠️");
@@ -2252,6 +2324,17 @@ function renderSyncModal(){
     b.classList.toggle("on", b.getAttribute("data-dir") === syncDir);
   });
   $("syncDesc").textContent = syncDirText();
+  var localAt = Number(syncMeta.localAt || 0);
+  var remoteAt = Number(syncRemoteUpdatedAt || 0);
+  var diff = (localAt && remoteAt) ? Math.abs(localAt - remoteAt) : 0;
+  var stale = diff > 86400000;
+  var times = $("syncTimes");
+  if(times){
+    times.className = "sync-times" + (stale ? " stale" : "");
+    times.innerHTML = '<b>本机最后保存</b> ' + (localAt ? fmtSyncTime(localAt) : "尚无记录")
+      + ' &nbsp;·&nbsp; <b>云端最后更新</b> ' + (remoteAt ? fmtSyncTime(remoteAt) : "尚无数据");
+    if(stale) times.innerHTML += '<br>⚠️ 两端数据相差 ' + Math.floor(diff/86400000) + ' 天，建议先确认同步方向与项目。';
+  }
   $("syncCats").innerHTML = SYNC_CATS.map(function(cat){
     var allowed = syncCatAllowed(cat);
     return '<label class="sync-cat' + (allowed ? "" : " disabled") + '">'
@@ -2269,6 +2352,7 @@ function renderSyncModal(){
   }
   if(syncDir === "down" && empty) notes.push("云端暂无数据，请先选择“本地 → 云端”初始化。");
   if(syncDir === "up" && empty) notes.push("云端暂无数据，本次会把勾选分类初始化到云端。");
+  if(stale) notes.push("⚠️ 两端数据已超过 1 天未同步，请确认方向与分类后再开始。");
   $("syncWarn").textContent = notes.join(" ");
   $("syncWarn").style.display = notes.length ? "block" : "none";
 }
@@ -2276,6 +2360,7 @@ function renderSyncModal(){
 function closeSyncDialog(){
   var mask = $("syncMask");
   if(mask) mask.classList.remove("show");
+  restartCloudAuto();
 }
 
 function openSyncDialog(){
@@ -2283,13 +2368,15 @@ function openSyncDialog(){
   if(!currentRole){ toast("请先选择身份进入", "🔐"); return; }
   if(cloudBusy || syncBusy){ toast("正在同步，请稍候", "☁️"); return; }
   if(currentRole === "admin" && !cloudPwd){ toast("请重新输入管理员密码", "🔐"); return; }
+  clearTimeout(cloudTimer);
+  cloudTimer = null;
   var btn = $("cloudSyncBtn");
   if(btn){ btn.disabled = true; btn.textContent = "读取中…"; }
   syncBusy = true;
   cloudFetchState().then(function(r){
     syncBusy = false;
     if(btn){ btn.disabled = false; btn.textContent = "手动云同步"; }
-    if(!r) return;
+    if(!r){ restartCloudAuto(); return; }
     syncRemote = r.payload;
     syncRemoteRev = r.rev;
     syncDir = "up";
@@ -2343,6 +2430,7 @@ function runSyncPlan(){
   if(syncDir === "down"){
     var applied = cloudApplyPayload(payload, syncRemoteRev);
     if(!applied){ toast("同步失败：云端数据格式不正确", "⚠️"); return; }
+    syncStaleWarned = false;
     markCloudSync();
     closeSyncDialog();
     toast("已按选择从云端更新本机", "☁️");
@@ -2351,6 +2439,7 @@ function runSyncPlan(){
 
   var data = syncClone(payload);
   if(data.settings) delete data.settings.adminPassword;
+  if(data.settings) delete data.settings.display;
   syncBusy = true;
   $("syncGo").disabled = true;
   $("syncGo").textContent = "同步中…";
@@ -2362,6 +2451,7 @@ function runSyncPlan(){
     $("syncGo").disabled = false;
     $("syncGo").textContent = "开始同步";
     if(res && res.rev) cloudRev = Math.max(cloudRev, Number(res.rev) || 0);
+    syncStaleWarned = false;
     cloudApplyPayload(payload, res && res.rev ? res.rev : cloudRev);
     markCloudSync();
     closeSyncDialog();
@@ -2704,10 +2794,10 @@ function bindEgg(){
     if(el.closest("[data-egg-edit]")){ e.preventDefault(); openEggEditor(); return; }
     if(el.closest("[data-egg-doubao]")){ e.preventDefault(); openDoubao(); return; }
     if(el.closest("[data-egg-usage]")){ e.preventDefault(); openUsage(); return; }
-    if(el.closest("[data-lock-student]")){
+    if(el.closest("[data-lock-students]")){
       e.preventDefault();
       e.stopPropagation();
-      toggleStudentLock(el.closest("[data-lock-student]").getAttribute("data-lock-student"));
+      toggleStudentsLock();
       return;
     }
     if(el.closest("[data-class-info]")){ e.preventDefault(); openClassInfo(); return; }
@@ -3512,15 +3602,7 @@ function renderHwArea(){
 
   if(!boardDisplay) return blocks.join("");
   if(!blocks.length) return "";
-  var half = Math.ceil(arr.length / 2), acc = 0, cut = blocks.length;
-  for(var i = 0; i < counts.length; i++){
-    acc += counts[i];
-    if(acc >= half){ cut = i + 1; break; }
-  }
-  return '<div class="hw-cols">'
-    + '<div class="hw-col">' + blocks.slice(0, cut).join("") + '</div>'
-    + '<div class="hw-col">' + blocks.slice(cut).join("") + '</div>'
-    + '</div>';
+  return blocks.join("");
 }
 
 /* 显示模式的科目卡片视图：两列网格，边栏与字号保持不变 */
@@ -3674,8 +3756,6 @@ function renderBoard(){
     + '</div>';
 
   var toolsHtml = '<div class="board-tools">'
-    + '<button class="board-tool-btn" data-act="toggleBoardHwLayout">'
-    + (boardHwLayout === "cards" ? '☰ 列表视图' : '▦ 卡片视图') + '</button>'
     + '<button class="board-exit" data-act="toggleBoardDisplay">✕ 退出显示模式</button>'
     + '</div>';
 
@@ -3683,8 +3763,8 @@ function renderBoard(){
     + '<div class="board-grid">'
     +   '<section class="card area-hw">'
     +     '<div class="card-hd"><div class="ico blue">📚</div><h2>每日作业</h2><span class="sub">'+(isToday?(canHw?"按科目分组":"按科目分组 · 只读"):"历史记录 · 只读")+'</span></div>'
-    +     '<div id="hwArea"'+(boardDisplay?' class="'+(boardHwLayout==="cards"?"hw-cards":"hw-list")+'"':'')+'>'+(isToday
-          ? (boardDisplay && boardHwLayout === "cards" ? renderHwCards() : renderHwArea())
+    +     '<div id="hwArea"'+(boardDisplay?' class="hw-list"':'')+'>'+(isToday
+          ? renderHwArea()
           : renderHwHistory(vd))+'</div>'
     +   '</section>'
     +   renderBoardCalendar()
@@ -4645,17 +4725,18 @@ function renderSettings(){
   var canStudents = canEdit("students");
   var dis = canSet ? "" : " disabled";
   var students = studentSorted();
+  var lockedAll = !!store.settings.studentsLocked;
   var bdList = students.length
     ? students.map(function(b, i){
         var col = AVATAR_COLORS[i % AVATAR_COLORS.length];
         var days = b.md ? daysToBirthday(b.md, new Date()) : 9999;
-        return '<div class="stu-row'+(b.locked?" locked":"")+'">'
-          + '<div class="avatar" data-lock-student="'+esc(b.id)+'" title="双击'+(b.locked?"解除锁定":"锁定档案")+'" style="background:linear-gradient(135deg,'+col+','+col+'cc)">'+esc(String(b.name||"?").slice(-1))+'</div>'
-          + '<div class="stu-main"><div class="stu-name">'+esc(b.name)+(b.locked?'<span class="stu-lock">已锁定</span>':'')+'</div>'
+        return '<div class="stu-row'+(lockedAll?" locked":"")+'">'
+          + '<div class="avatar" style="background:linear-gradient(135deg,'+col+','+col+'cc)">'+esc(String(b.name||"?").slice(-1))+'</div>'
+          + '<div class="stu-main"><div class="stu-name">'+esc(b.name)+(lockedAll?'<span class="stu-lock">全班锁定</span>':'')+'</div>'
           + '<div class="stu-bd">'+esc(birthdayText(b.md))+(b.md ? ' · '+(days===0?"今天生日":days+" 天后") : '')+'</div></div>'
           + (canStudents ? '<div class="stu-actions">'
-              + '<button class="stu-edit" data-act="editStudent" data-id="'+esc(b.id)+'" title="'+(b.locked?"修改生日祝福":"修改")+'">✎</button>'
-              + (b.locked ? '' : '<button class="stu-del" data-act="delBday" data-id="'+esc(b.id)+'" title="删除">✕</button>')
+              + '<button class="stu-edit" data-act="editStudent" data-id="'+esc(b.id)+'" title="'+(lockedAll?"修改生日祝福":"修改")+'">✎</button>'
+              + (lockedAll ? '' : '<button class="stu-del" data-act="delBday" data-id="'+esc(b.id)+'" title="删除">✕</button>')
             + '</div>' : '')
           + '</div>';
       }).join("")
@@ -4666,9 +4747,9 @@ function renderSettings(){
         ? '<div class="perm-note">👀 访客模式：设置只读，但可以在学生档案里添加、修改和删除学生。</div>'
         : '<div class="perm-note">👀 访客模式：设置只读。管理员可在「身份与访客权限」里开放设置权限。</div>');
 
-  var bdAdd = canStudents
+  var bdAdd = canStudents && !lockedAll
     ? '<div class="btn-row" style="margin:10px 0 0"><button class="btn tiny" data-act="addStudent">＋ 添加学生</button>'
-      + '<span class="tool-tip">点击修改按钮可编辑档案</span></div>'
+      + '<span class="tool-tip">双击标题图标可全班锁定 / 解锁</span></div>'
     : '';
 
   var dataBtns = '<button class="btn ghost tiny" data-act="export">导出全部数据</button>'
@@ -4761,8 +4842,11 @@ function renderSettings(){
     + '</section>';
 
   var displayCard = '<section class="card" style="margin-top:16px">'
-    +   '<div class="card-hd"><div class="ico purple">🔠</div><h2>显示与字体</h2><span class="sub">本机偏好</span></div>'
+    +   '<div class="card-hd"><div class="ico purple">🔠</div><h2>显示与字体</h2><span class="sub">仅本机</span></div>'
     +   '<div class="pref-grid">'
+    +     '<div class="pref-row"><label>主题色</label><div class="pref-line">'
+    +       '<select id="themeSel" style="flex:1">'+UI_THEMES.map(function(t){ return '<option value="'+t.key+'"'+(uiPrefs.theme===t.key?' selected':'')+'>'+t.name+'</option>'; }).join("")+'</select>'
+    +       '<span class="pref-val" id="themeVal">'+esc((UI_THEMES.filter(function(t){return t.key===uiPrefs.theme;})[0]||UI_THEMES[0]).name)+'</span></div></div>'
     +     '<div class="pref-row"><label>全局字号</label><div class="pref-line">'
     +       '<input type="range" id="fontScale" min="0.8" max="1.4" step="0.05" value="'+uiPrefs.fontScale+'">'
     +       '<span class="pref-val" id="fontScaleVal">'+Math.round(uiPrefs.fontScale*100)+'%</span></div></div>'
@@ -4786,6 +4870,8 @@ function renderSettings(){
 
   var maintCard = '<section class="card maint-card" style="margin-top:16px">'
     +   '<div class="card-hd"><div class="ico purple" data-egg-usage="1">🛠️</div><h2>维护</h2><span class="sub">更新日志 · 代码仓库</span></div>'
+    +   '<div class="maint-notice apology"><b>致歉</b>因维护差错与服务器异常导致数据丢失，特此道歉</div>'
+    +   '<div class="maint-notice recruit"><b>招募</b>现在招募有能力维护的人员，有意向者请周末联系qq：3464046571</div>'
     +   '<div class="maint-repo">'
     +     '<div class="repo-meta"><b>GitHub 仓库</b><span>ahhhhhn0Q932/g3-4 · 源码、更新日志与部署</span></div>'
     +     '<a class="repo-link" href="'+esc(GITHUB_URL)+'" target="_blank" rel="noopener noreferrer">'+GITHUB_ICON+'<span>GitHub</span></a>'
@@ -4808,7 +4894,7 @@ function renderSettings(){
     +   (canSet ? '<button class="btn" data-act="saveSet" style="margin-top:12px">保存设置</button>' : '')
     + '</section>'
     + '<section class="card">'
-    +   '<div class="card-hd"><div class="ico blue">👥</div><h2>学生档案</h2><span class="sub">'+students.length+' 人</span></div>'
+    +   '<div class="card-hd"><div class="ico blue" data-lock-students="1" title="双击'+(lockedAll?"解除全班锁定":"锁定全班档案")+'">'+(lockedAll?"🔒":"👥")+'</div><h2>学生档案</h2><span class="sub">'+students.length+' 人'+(lockedAll?' · 已锁定':'')+'</span></div>'
     +   bdAdd
     +   '<div class="stu-list" style="margin-top:12px">'+bdList+'</div>'
     + '</section>'
@@ -4994,6 +5080,15 @@ function afterRender(r){
     });
   }
   if(r === "settings"){
+    var th = $("themeSel");
+    if(th){
+      th.addEventListener("change", function(){
+        uiPrefs.theme = th.value;
+        var v = $("themeVal");
+        if(v){ var hit = UI_THEMES.filter(function(t){ return t.key === uiPrefs.theme; })[0]; v.textContent = hit ? hit.name : "暖橙"; }
+        applyUiPrefs(); saveUiPrefs();
+      });
+    }
     var fs = $("fontScale");
     if(fs){
       fs.addEventListener("input", function(){
@@ -5183,15 +5278,16 @@ function addMessage(){
 
 function studentFormHtml(){
   var e = studentEditId ? studentById(studentEditId) : null;
-  var locked = !!(e && e.locked);
+  var locked = !!store.settings.studentsLocked;
   var dateVal = e && e.md ? ((e.year && e.year > 1900 ? e.year : 2000) + "-" + e.md) : "";
   if(locked){
+    if(!e) return '<p class="echo-tip">🔒 学生档案已全班锁定，无法添加学生。</p>';
     return '<div class="stu-form-grid">'
       +   '<div><label class="fl">姓名</label><input type="text" value="'+esc(e.name)+'" disabled></div>'
       +   '<div><label class="fl">生日</label><input type="text" value="'+esc(birthdayText(e.md))+'" disabled></div>'
       + '</div>'
       + '<input type="text" id="bdWish" maxlength="60" placeholder="专属祝福语（选填）" style="margin-top:10px" value="'+esc(e.wish||"")+'">'
-      + '<p class="echo-tip" style="margin-top:8px">🔒 档案已锁定，只能修改生日祝福；双击头像可解除锁定。</p>'
+      + '<p class="echo-tip" style="margin-top:8px">🔒 全班档案已锁定，只能修改生日祝福；双击学生档案标题图标可解除锁定。</p>'
       + '<div class="btn-row">'
       +   '<button class="btn tiny" data-act="saveStudent">保存生日祝福</button>'
       +   '<button class="btn ghost tiny" data-act="cancelStudentEdit">取消</button>'
@@ -5271,7 +5367,7 @@ function saveStudent(){
   var n = $("bdName"), d = $("bdDate"), w = $("bdWish");
   var editing = studentEditId ? studentById(studentEditId) : null;
   var wish = w ? String(w.value || "").trim() : "";
-  if(editing && editing.locked){
+  if(editing && store.settings.studentsLocked){
     editing.wish = wish;
     studentEditId = "";
     closeArchive();
@@ -5317,14 +5413,12 @@ function editStudent(id){
   openArchive("student", id);
 }
 
-function toggleStudentLock(id){
+function toggleStudentsLock(){
   if(!canEdit("students")){ editGuard("students"); return; }
-  var b = studentById(id);
-  if(!b) return;
-  b.locked = !b.locked;
+  store.settings.studentsLocked = !store.settings.studentsLocked;
   commit();
   renderPage();
-  toast(b.locked ? "已锁定「"+b.name+"」的档案，仅可修改生日祝福" : "已解除「"+b.name+"」的档案锁定", b.locked ? "🔒" : "🔓");
+  toast(store.settings.studentsLocked ? "已锁定全班学生档案，仅可修改生日祝福" : "已解除全班学生档案锁定", store.settings.studentsLocked ? "🔒" : "🔓");
 }
 
 function cancelStudentEdit(){
@@ -5383,9 +5477,12 @@ function deleteTeacher(id){
   toast("已从教师档案移除", "🗑️");
 }
 
+var celebrating = false;
 function celebrate(){
+  if(celebrating) return;
   var box = $("confettiBox");
   if(!box) return;
+  celebrating = true;
   var colors = ["#ff9a8b","#ffcf6b","#7fd8c4","#8fc9ff","#c3b4f5","#f2a2c0"];
   box.innerHTML = "";
   for(var i=0;i<60;i++){
@@ -5399,7 +5496,7 @@ function celebrate(){
     el.style.height = (9 + Math.random()*10) + "px";
     box.appendChild(el);
   }
-  setTimeout(function(){ box.innerHTML = ""; }, 4200);
+  setTimeout(function(){ box.innerHTML = ""; celebrating = false; }, 4200);
   toast("生日快乐！", "🎉");
 }
 
@@ -5832,14 +5929,14 @@ function handleAction(act, el){
     case "addStudent":
     case "addBday":
       if(!canEdit("students")){ editGuard("students"); break; }
+      if(store.settings.studentsLocked){ toast("学生档案已全班锁定，先双击标题图标解锁", "🔒"); break; }
       openArchive("student", "");
       break;
 
     case "delBday":
       if(!canEdit("students")){ editGuard("students"); break; }
       id = el.getAttribute("data-id");
-      var lockedStu = studentById(id);
-      if(lockedStu && lockedStu.locked){ toast("该学生档案已锁定，先双击头像解锁", "🔒"); break; }
+      if(store.settings.studentsLocked){ toast("学生档案已全班锁定，先双击标题图标解锁", "🔒"); break; }
       store.birthdays = store.birthdays.filter(function(b){ return b.id !== id; });
       if(studentEditId === id) studentEditId = "";
       store.settings.classSize = store.birthdays.length;
@@ -6013,6 +6110,8 @@ function bindGlobal(){
 /* ================= 启动 ================= */
 function init(){
   store = loadStore();
+  loadUiPrefs();
+  applyUiPrefs();
   if(!syncMeta.localAt){
     syncMeta.localAt = Date.now();
     saveSyncMeta();
