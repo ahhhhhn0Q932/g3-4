@@ -3898,12 +3898,17 @@ function renderHwHistory(dateStr){
     groups[h.subject].push(h);
   });
 
+  var subjects = SUBJECTS.map(function(s){ return s.name; });
+  order.forEach(function(k){ if(subjects.indexOf(k) < 0) subjects.push(k); });
+
   var html = "";
-  order.forEach(function(sub){
+  subjects.forEach(function(sub){
+    var list = groups[sub];
+    if(!list || !list.length) return;
     html += '<div class="subj-group" style="--c:'+subjectColor(sub)+'">'
       + '<div class="subj-chip">'+esc(sub)+'</div>'
       + '<div class="subj-main">';
-    groups[sub].forEach(function(hw){ html += hwItemHtml(hw, { editable:false }); });
+    list.forEach(function(hw){ html += hwItemHtml(hw, { editable:false }); });
     html += '</div></div>';
   });
   return html;
