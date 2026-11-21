@@ -745,6 +745,42 @@ table.lv-table tr:last-child td{border-bottom:none}
 .sync-state{font-size:11.5px;color:#a3949a;font-weight:600}
 .btn:disabled{opacity:.55;cursor:not-allowed;box-shadow:none}
 
+/* ============ 云同步方案弹窗 ============ */
+.sync-modal-mask{z-index:470}
+.egg-card.sync-modal-card{text-align:left}
+.sync-modal-card{width:min(660px,100%);max-height:92vh;overflow:auto;text-align:left;padding:22px 24px 18px}
+.sync-hd{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.sync-hd h2{margin:2px 0 0;font-size:21px;color:#4a3d44;letter-spacing:-.02em}
+.sync-dir{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0 10px}
+.sync-dir button{
+  border:1.5px solid #f0e2d6;background:#fffdfa;border-radius:13px;padding:10px 12px;cursor:pointer;
+  font-family:inherit;text-align:left;color:#7d6b70;font-size:12px;font-weight:800;transition:.16s;
+}
+.sync-dir button small{display:block;margin-top:2px;font-size:10.5px;font-weight:600;color:#b09a92}
+.sync-dir button.on{border-color:#ffb692;background:#fff4ec;color:#b9603f;box-shadow:0 0 0 3px rgba(255,175,140,.10)}
+.sync-dir button.on small{color:#c5896b}
+.sync-desc{margin:0 0 12px;font-size:11.5px;line-height:1.7;color:#a3949a;font-weight:600}
+.sync-cats{display:flex;flex-direction:column;gap:7px;max-height:340px;overflow:auto;padding-right:3px}
+.sync-cat{
+  display:flex;align-items:flex-start;gap:9px;padding:9px 11px;border:1px solid #f1e4d9;border-radius:12px;
+  background:#fffdfa;cursor:pointer;transition:.16s;
+}
+.sync-cat:hover{border-color:#f3cdb6;background:#fff8f1}
+.sync-cat.disabled{opacity:.52;cursor:not-allowed;background:#fbf7f2}
+.sync-cat input{margin:3px 0 0;accent-color:#ff9a76;flex:none}
+.sync-cat-body{flex:1;min-width:0}
+.sync-cat-body b{display:block;font-size:12.5px;color:#5d4a48;font-weight:800}
+.sync-cat-body i{display:block;font-style:normal;font-size:10.5px;color:#a3949a;font-weight:600;margin-top:2px;line-height:1.5}
+.sync-cat-counts{display:flex;gap:10px;flex-wrap:wrap;margin-top:5px;font-size:10.5px;color:#a3949a;font-weight:700}
+.sync-cat-counts b{display:inline;font-size:10.5px;color:#6b5a52;font-weight:800}
+.sync-warn{margin-top:10px;padding:9px 11px;border-radius:11px;background:#fff9f2;border:1px dashed #f0d8c7;font-size:10.8px;line-height:1.6;color:#b07b5d;font-weight:650}
+.sync-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+@media (max-width:600px){
+  .sync-modal-card{padding:19px 16px 15px}
+  .sync-dir{grid-template-columns:1fr}
+  .sync-cats{max-height:40vh}
+}
+
 /* ============ 登录 ============ */
 .login-gate{
   position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;
@@ -1143,6 +1179,26 @@ table.lv-table tr:last-child td{border-bottom:none}
   </div>
 </div>
 
+<div class="egg-mask sync-modal-mask" id="syncMask" aria-hidden="true">
+  <div class="egg-card sync-modal-card">
+    <div class="sync-hd">
+      <div><div class="egg-kicker">CLOUD SYNC</div><h2>选择云同步方案</h2></div>
+      <button class="hw-del arc-close" type="button" id="syncClose" title="关闭">✕</button>
+    </div>
+    <div class="sync-dir" id="syncDir">
+      <button type="button" data-dir="up" class="on">本地 → 云端<small>本机数据覆盖云端</small></button>
+      <button type="button" data-dir="down">云端 → 本地<small>云端数据覆盖本机</small></button>
+    </div>
+    <p class="sync-desc" id="syncDesc"></p>
+    <div class="sync-cats" id="syncCats"></div>
+    <div class="sync-warn" id="syncWarn"></div>
+    <div class="sync-actions">
+      <button class="btn tiny" type="button" id="syncCancel">取消</button>
+      <button class="btn" type="button" id="syncGo">开始同步</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast" data-page-node-id="dYfa3rKZuFTRjgOhUGKtbR"></div>
 <div class="confetti" id="confettiBox" data-page-node-id="mrg3W16uQhhBUiq03cEchv"></div>
 
@@ -1223,6 +1279,11 @@ function applyRoster(s){
 }
 
 var CHANGELOG = [
+  { date:"2026-11-21", ver:"v1.18", title:"选择性云同步方案", items:[
+    "手动云同步前可选择“本地 → 云端”或“云端 → 本地”，并逐项勾选学生教师、作业提醒、班级日志、请假、Issue、回声洞与设置。",
+    "同步窗口会并列显示本机与云端的简要数据量，默认以本地数据为准。",
+    "自动同步间隔由 10 秒延长为 1 分钟；云端数据写回时不再覆盖本机管理员密码。"
+  ]},
   { date:"2026-11-15", ver:"v1.17.1", title:"访客点名权限收紧", items:[
     "今日总览“应到 / 实到”名单调整改为仅管理员可用。",
     "访客仍可进入请假登记提交请假，统计照常更新。"
@@ -1348,6 +1409,19 @@ var cloudSuppress = false;
 var cloudSnapLeaves = null;
 var cloudSnapMessages = null;
 var cloudLastError = "";
+var syncDir = "up";
+var syncRemote = null;
+var syncRemoteRev = 0;
+var syncBusy = false;
+var SYNC_CATS = [
+  { key:"people", name:"学生与教师", desc:"学生档案、教师档案、应到名单", fields:["birthdays","teachers","expected"] },
+  { key:"study", name:"作业与提醒", desc:"作业清单、每日提醒", fields:["homeworks","reminders"] },
+  { key:"journal", name:"班级日志", desc:"留言、历史归档", fields:["messages","archive"] },
+  { key:"leave", name:"请假与考勤", desc:"请假记录", fields:["leaves"] },
+  { key:"issues", name:"Issue 看板", desc:"问题、回复、解决状态", fields:["issues"] },
+  { key:"echo", name:"回声洞", desc:"激励语句、收藏、引用状态", fields:["quotes","favorites","quoteState"] },
+  { key:"settings", name:"班级设置", desc:"班级名称、高考日期、访客权限", fields:["settings"] }
+];
 
 var QUOTES = [
   {t:"你现在的努力，是为了以后有底气选择想要的生活。", tag:"励志"},
@@ -1716,11 +1790,14 @@ function cloudRpc(name, body){
 function cloudApplyPayload(payload, rev){
   if(!payload || typeof payload !== "object" || Array.isArray(payload)) return false;
   var prevIssues = Array.isArray(store.issues) ? store.issues : [];
+  var prevPwd = store.settings && store.settings.adminPassword;
   cloudSuppress = true;
   store = normalize(payload);
   /* 旧版 SQL 还不认识 issues；不要把本机刚提交的 Issue 覆盖掉 */
   if(!Array.isArray(payload.issues) && prevIssues.length) store.issues = prevIssues;
-  if(store.settings) delete store.settings.adminPassword;
+  /* 管理员密码只保存在本机，云端载荷不含密码 */
+  if(prevPwd && store.settings) store.settings.adminPassword = prevPwd;
+  else if(store.settings) delete store.settings.adminPassword;
   saveStore();
   cloudSuppress = false;
   cloudRev = Math.max(cloudRev, Number(rev) || 0);
@@ -1833,7 +1910,7 @@ function cloudStart(){
   if(!CLOUD_ON) return;
   setInterval(function(){
     if(!document.hidden && currentRole) cloudPull(false);
-  }, 10000);
+  }, 60000);
   document.addEventListener("visibilitychange", function(){
     if(!document.hidden && currentRole) cloudPull(false);
   });
@@ -1879,25 +1956,212 @@ function syncStateText(){
 }
 
 function cloudSyncNow(){
+  openSyncDialog();
+}
+
+function cloudFetchState(){
+  return fetch(CLOUD_URL + "/rest/v1/class_state?id=eq.main&select=payload,rev", {
+    headers: cloudHeaders(),
+    cache: "no-store"
+  }).then(function(res){
+    if(!res.ok) throw new Error("HTTP " + res.status);
+    return res.json();
+  }).then(function(rows){
+    cloudLastError = "";
+    markCloudSync();
+    if(!Array.isArray(rows) || !rows.length) return { payload:null, rev:0 };
+    var payload = rows[0].payload;
+    var rev = Number(rows[0].rev || 0);
+    if(!payload || typeof payload !== "object" || !Object.keys(payload).length){
+      return { payload:null, rev:rev };
+    }
+    return { payload:payload, rev:rev };
+  }).catch(function(e){
+    cloudLastError = String(e && e.message || e);
+    toast("读取云端数据失败：" + cloudLastError, "⚠️");
+    return null;
+  });
+}
+
+function syncCatCount(src, key){
+  src = src || {};
+  if(key === "people"){
+    var days = src.expected && typeof src.expected === "object" ? Object.keys(src.expected).length : 0;
+    return (src.birthdays || []).length + " 学生 · " + (src.teachers || []).length + " 教师" + (days ? " · " + days + " 天名单" : "");
+  }
+  if(key === "study"){
+    return (src.homeworks || []).length + " 作业 · " + (src.reminders || []).length + " 提醒";
+  }
+  if(key === "journal"){
+    return (src.messages || []).length + " 留言 · " + Object.keys(src.archive || {}).length + " 天归档";
+  }
+  if(key === "leave") return (src.leaves || []).length + " 条请假";
+  if(key === "issues") return (src.issues || []).length + " 条 Issue";
+  if(key === "echo") return ((src.quotes || []).length + (src.favorites || []).length) + " 条语句/收藏";
+  if(key === "settings") return src.settings && src.settings.className ? src.settings.className : "未设置";
+  return "—";
+}
+
+function syncCatAllowed(cat){
+  if(currentRole === "admin") return true;
+  if(syncDir === "down") return true;
+  return ["leave", "journal", "issues"].indexOf(cat.key) >= 0;
+}
+
+function syncDirText(){
+  return syncDir === "up"
+    ? "以本地数据为准：勾选的分类从本机写入云端；未勾选分类保留云端原样。默认方案。"
+    : "以云端数据为准：勾选的分类从云端写入本机；未勾选分类保留本机原样。此操作不可撤销。";
+}
+
+function renderSyncModal(){
+  var dirBtns = document.querySelectorAll("#syncDir button");
+  Array.prototype.forEach.call(dirBtns, function(b){
+    b.classList.toggle("on", b.getAttribute("data-dir") === syncDir);
+  });
+  $("syncDesc").textContent = syncDirText();
+  $("syncCats").innerHTML = SYNC_CATS.map(function(cat){
+    var allowed = syncCatAllowed(cat);
+    return '<label class="sync-cat' + (allowed ? "" : " disabled") + '">'
+      + '<input type="checkbox" data-cat="' + esc(cat.key) + '"' + (allowed ? " checked" : " disabled") + '>'
+      + '<span class="sync-cat-body"><b>' + esc(cat.name) + '</b><i>' + esc(cat.desc) + '</i>'
+      + '<span class="sync-cat-counts"><span>本机 <b>' + esc(syncCatCount(store, cat.key)) + '</b></span>'
+      + '<span>云端 <b>' + esc(syncCatCount(syncRemote, cat.key)) + '</b></span></span></span>'
+      + '</label>';
+  }).join("");
+  var empty = !syncRemote;
+  $("syncGo").disabled = (syncDir === "down" && empty) || syncBusy;
+  var notes = [];
+  if(currentRole !== "admin" && syncDir === "up"){
+    notes.push("访客上传仅支持请假、班级日志留言和 Issue；其他分类请使用云端 → 本地。");
+  }
+  if(syncDir === "down" && empty) notes.push("云端暂无数据，请先选择“本地 → 云端”初始化。");
+  if(syncDir === "up" && empty) notes.push("云端暂无数据，本次会把勾选分类初始化到云端。");
+  $("syncWarn").textContent = notes.join(" ");
+  $("syncWarn").style.display = notes.length ? "block" : "none";
+}
+
+function closeSyncDialog(){
+  var mask = $("syncMask");
+  if(mask) mask.classList.remove("show");
+}
+
+function openSyncDialog(){
   if(!CLOUD_ON){ toast("云同步未配置", "☁️"); return; }
   if(!currentRole){ toast("请先选择身份进入", "🔐"); return; }
-  if(cloudBusy){ toast("正在同步，请稍候", "☁️"); return; }
+  if(cloudBusy || syncBusy){ toast("正在同步，请稍候", "☁️"); return; }
+  if(currentRole === "admin" && !cloudPwd){ toast("请重新输入管理员密码", "🔐"); return; }
   var btn = $("cloudSyncBtn");
-  if(btn){ btn.disabled = true; btn.textContent = "同步中…"; }
-  var done = function(msg, ok){
-    var b = $("cloudSyncBtn");
-    if(b){ b.disabled = false; b.textContent = "手动云同步"; }
-    var st = document.querySelector(".sync-state");
-    if(st) st.textContent = syncStateText();
-    updateSyncFoot();
-    if(msg) toast(msg, ok ? "☁️" : "⚠️");
-  };
-  cloudPush(true).then(function(ok){
-    if(!ok){ done("云端上传失败，请稍后再试", false); return null; }
-    return cloudPull(true).then(function(r){
-      done(r === null ? "已上传，拉取失败" : "云同步完成", r !== null);
-    });
-  }).catch(function(){ done("云同步失败，请稍后再试", false); });
+  if(btn){ btn.disabled = true; btn.textContent = "读取中…"; }
+  syncBusy = true;
+  cloudFetchState().then(function(r){
+    syncBusy = false;
+    if(btn){ btn.disabled = false; btn.textContent = "手动云同步"; }
+    if(!r) return;
+    syncRemote = r.payload;
+    syncRemoteRev = r.rev;
+    syncDir = "up";
+    renderSyncModal();
+    $("syncMask").classList.add("show");
+  });
+}
+
+function syncClone(v){
+  return v === undefined ? null : JSON.parse(JSON.stringify(v));
+}
+
+function syncCopyField(target, source, field){
+  if(field === "settings"){
+    var pwd = target.settings && target.settings.adminPassword;
+    target.settings = syncClone(source.settings || {});
+    if(pwd) target.settings.adminPassword = pwd;
+    return;
+  }
+  if(source[field] === undefined){
+    target[field] = (field === "archive" || field === "expected") ? {} : [];
+  } else {
+    target[field] = syncClone(source[field]);
+  }
+}
+
+function buildSyncPayload(dir, selected){
+  var base = dir === "up" ? (syncRemote ? syncClone(syncRemote) : {}) : syncClone(store);
+  var source = dir === "up" ? store : syncRemote;
+  selected.forEach(function(key){
+    var cat = null;
+    SYNC_CATS.forEach(function(c){ if(c.key === key) cat = c; });
+    if(!cat) return;
+    cat.fields.forEach(function(f){ syncCopyField(base, source, f); });
+  });
+  if(!base.settings) base.settings = {};
+  return base;
+}
+
+function runSyncPlan(){
+  if(syncBusy || cloudBusy) return;
+  var selected = Array.prototype.map.call(document.querySelectorAll("#syncCats input[data-cat]:checked"), function(i){
+    return i.getAttribute("data-cat");
+  });
+  if(!selected.length){ toast("请至少选择一项要同步的数据", "☁️"); return; }
+  if(syncDir === "down" && !syncRemote){ toast("云端暂无数据", "☁️"); return; }
+  if(syncDir === "up" && currentRole === "admin" && !cloudPwd){ toast("请重新输入管理员密码", "🔐"); return; }
+
+  var payload = buildSyncPayload(syncDir, selected);
+
+  if(syncDir === "down"){
+    var applied = cloudApplyPayload(payload, syncRemoteRev);
+    if(!applied){ toast("同步失败：云端数据格式不正确", "⚠️"); return; }
+    markCloudSync();
+    closeSyncDialog();
+    toast("已按选择从云端更新本机", "☁️");
+    return;
+  }
+
+  var data = syncClone(payload);
+  if(data.settings) delete data.settings.adminPassword;
+  syncBusy = true;
+  $("syncGo").disabled = true;
+  $("syncGo").textContent = "同步中…";
+  var body = currentRole === "admin"
+    ? { pwd:cloudPwd, role:"admin", data:data, touch_guest:true }
+    : { pwd:null, role:"guest", data:data, touch_guest:true };
+  cloudRpc("save_state", body).then(function(res){
+    syncBusy = false;
+    $("syncGo").disabled = false;
+    $("syncGo").textContent = "开始同步";
+    if(res && res.rev) cloudRev = Math.max(cloudRev, Number(res.rev) || 0);
+    cloudApplyPayload(payload, res && res.rev ? res.rev : cloudRev);
+    markCloudSync();
+    closeSyncDialog();
+    toast("已按选择上传本机数据到云端", "☁️");
+  }).catch(function(e){
+    syncBusy = false;
+    $("syncGo").disabled = false;
+    $("syncGo").textContent = "开始同步";
+    cloudLastError = String(e && e.message || e);
+    toast("上传失败：" + cloudLastError, "⚠️");
+  });
+}
+
+function bindSync(){
+  var dir = $("syncDir");
+  if(dir) dir.addEventListener("click", function(e){
+    var b = e.target.closest("button[data-dir]");
+    if(!b) return;
+    syncDir = b.getAttribute("data-dir");
+    renderSyncModal();
+  });
+  var go = $("syncGo");
+  if(go) go.addEventListener("click", runSyncPlan);
+  var cancel = $("syncCancel");
+  if(cancel) cancel.addEventListener("click", closeSyncDialog);
+  var close = $("syncClose");
+  if(close) close.addEventListener("click", closeSyncDialog);
+  var mask = $("syncMask");
+  if(mask) mask.addEventListener("click", function(e){ if(e.target === mask) closeSyncDialog(); });
+  document.addEventListener("keydown", function(e){
+    if(e.key === "Escape" && $("syncMask") && $("syncMask").classList.contains("show")) closeSyncDialog();
+  });
 }
 
 
@@ -4096,9 +4360,9 @@ function renderSettings(){
     + '</section>';
 
   var syncCard = '<section class="card sync-card" style="margin-top:16px">'
-    +   '<div class="card-hd"><div class="ico blue">🔄</div><h2>同步设置</h2><span class="sub">数据备份 · 手动同步</span></div>'
-    +   '<p class="sync-desc">数据保存在当前浏览器中，换设备或清缓存会丢失，建议定期导出备份。'
-    +     (CLOUD_ON ? '管理员上传以本机数据为准；访客只合并请假与留言，不会覆盖作业和设置。' : '云同步未配置。')+'</p>'
+    +   '<div class="card-hd"><div class="ico blue">🔄</div><h2>同步设置</h2><span class="sub">数据备份 · 选择同步</span></div>'
+    +   '<p class="sync-desc">手动同步时可选择“本地 → 云端”或“云端 → 本地”，并逐项勾选要同步的数据；默认以本地为准。'
+    +     (CLOUD_ON ? '自动同步每 1 分钟检查一次；管理员上传完整数据，访客只合并请假、留言和 Issue。' : '云同步未配置。')+'</p>'
     +   '<div class="btn-row">'+dataBtns+'</div>'
     +   (canSet ? '<input type="file" id="importFile" accept=".json" style="display:none">' : '')
     +   '<div class="sync-row" style="margin-top:12px">'
@@ -5252,6 +5516,7 @@ function init(){
   bindLogin();
   bindEgg();
   bindRoster();
+  bindSync();
   applyRoleUI();
   renderPage();
   startHomeClock();
