@@ -135,6 +135,19 @@
 - 仪表盘底部显示最近一次本地保存和云端同步时间，云端异常时会给出提示。
 - 云端表结构和 RPC 见 [supabase-schema.sql](supabase-schema.sql)，首次使用需按 [CLOUD_SETUP.md](CLOUD_SETUP.md) 在 Supabase SQL Editor 中执行一次建表脚本。
 
+### 本机自动备份
+
+浏览器无法静默写入 `AppData` 等系统目录，因此使用一个只监听 `127.0.0.1:8765` 的小程序：
+
+1. 安装 Python 3（含 `pythonw.exe`）。
+2. 右键运行 `install-local-backup.ps1`；或在 PowerShell 执行：
+   `powershell -ExecutionPolicy Bypass -File .\install-local-backup.ps1`
+3. 程序会注册登录启动任务，并把数据保存到 `%USERPROFILE%\ClassManagerBackup`：
+   - `latest.json`：最新一份可导入的数据；
+   - `snapshot-YYYYMMDD-HHMMSS.json`：最近 30 份快照；
+   - `latest-meta.json`：最近一次接收时间。
+4. 手动启动可双击 `START-LOCAL-BACKUP.bat`；设置 → 同步设置会显示“本机自动备份”状态。
+
 ---
 
 ## 更新日志
@@ -156,7 +169,10 @@
 - 双击学生档案标题图标可全班锁定/解锁档案；锁定后只能修改生日祝福，不能增删改学生。
 - 仪表盘主卡改为网站运行时间与云端服务器状态，北京时间与日期移到下方显示。
 - 留言板随班级日志分类同步到云端。
-- 浏览器无法静默写入 AppData 等系统目录，本地自动备份仍使用浏览器存储与手动导出。
+- 云端新增每日备份表：每天北京时间 00:00 自动保存一份，仅保留最近 5 天；手动同步的“云端 → 本地”可选择最新数据或某个历史备份。
+- 新增本机自动备份程序（`local-backup-server.py`）：安装后随 Windows 登录启动，数据写入用户目录 `ClassManagerBackup`，保留最近 30 份快照，不依赖浏览器云服务。
+- 浏览器无法静默写入 AppData 等系统目录，因此本机自动备份由上述小程序完成。
+- 项目用量账单刷新至 690.02M Token，余额消耗估算 ¥26.60。
 
 ### v1.17.1 · 访客点名权限收紧（2026-11-15）
 

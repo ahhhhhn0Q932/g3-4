@@ -181,3 +181,84 @@ grant execute on function public.save_state(text, text, jsonb, boolean) to anon,
 grant execute on function public.change_admin_pwd(text, text) to anon, authenticated;
 
 notify pgrst, 'reload schema';
+
+-- 8) 云端每日备份（每天 00:00 北京时间，仅保留最近 5 天）
+--    pg_cron 在 Supabase 中通常需要先在 Dashboard -> Database -> Extensions 启用。
+create table if not exists public.class_state_backups (
+  id bigserial primary key,
+  backup_date date not null unique,
+  payload jsonb not null,
+  rev bigint not null default 0,
+  created_at timestamptz not null default now()
+);
+
+alter table public.class_state_backups enable row level security;
+
+drop policy if exists "class_state_backups_read" on public.class_state_backups;
+create policy "class_state_backups_read"
+  on public.class_state_backups
+  for select
+  to anon, authenticated
+  using (true);
+
+grant select on table public.class_state_backups to anon, authenticated;
+revoke insert, update, delete on table public.class_state_backups from anon, authenticated;
+
+create or replace function public.create_class_backup()
+returns jsonb
+language plpgsql
+security definer
+set search_path = public, extensions, pg_temp
+as $$
+declare
+  v_day date := (now() at time zone 'Asia/Shanghai')::date;
+  v_payload jsonb;
+  v_rev bigint;
+begin
+  select payload, rev into v_payload, v_rev
+  from public.class_state
+  where id = 'main';
+
+  if v_payload is null then
+    return jsonb_build_object('ok', false, 'reason', 'no class_state');
+  end if;
+
+  insert into public.class_state_backups (backup_date, payload, rev, created_at)
+  values (v_day, v_payload, coalesce(v_rev, 0), now())
+  on conflict (backup_date) do update
+    set payload = excluded.payload,
+        rev = excluded.rev,
+        created_at = now();
+
+  delete from public.class_state_backups
+  where backup_date < v_day - 4;
+
+  return jsonb_build_object(
+    'ok', true,
+    'backup_date', v_day,
+    'rev', coalesce(v_rev, 0),
+    'kept_days', 5
+  );
+end;
+$$;
+
+revoke all on function public.create_class_backup() from public;
+
+-- 每天 UTC 16:00 = 北京时间次日 00:00；若 pg_cron 未启用会给出提示，不影响手动云同步。
+do $$
+begin
+  create extension if not exists pg_cron;
+  begin
+    perform cron.unschedule('class-daily-backup');
+  exception when others then null;
+  end;
+  perform cron.schedule(
+    'class-daily-backup',
+    '0 16 * * *',
+    'select public.create_class_backup();'
+  );
+exception when others then
+  raise notice 'pg_cron 未启用：请先在 Dashboard -> Database -> Extensions 打开 pg_cron，再重新执行本段。';
+end $$;
+
+notify pgrst, 'reload schema';
