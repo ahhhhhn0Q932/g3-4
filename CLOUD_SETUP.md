@@ -37,16 +37,17 @@
 
 升级时请重新执行整段 SQL。若提示 `pg_cron` 未启用，先在 Supabase Dashboard → Database → Extensions 打开 `pg_cron`，再重新执行脚本末尾的定时任务部分。
 
-## 本机自动备份
+## 本机自动备份（自动保存宏）
 
-浏览器不能静默写入 `AppData`，所以增加一个本机 Python 小程序：
+浏览器不能静默写入 `AppData`，所以增加一个本机 Python 小程序（当前版本 `1.1.0`）：
 
-1. 安装 Python 3；
+1. 安装 Python 3，并勾选 Add Python to PATH；
 2. 运行 `install-local-backup.ps1`（右键使用 PowerShell 运行）；
 3. 程序监听 `127.0.0.1:8765`，保存到 `%USERPROFILE%\ClassManagerBackup`，保留 `latest.json` 与最近 30 份快照；
-4. 手动启动可双击 `START-LOCAL-BACKUP.bat`，设置页会显示连接状态。
+4. 数据没有变化时只更新 `latest.json`，不会重复生成快照；有变化时才新增快照并自动清理旧快照；
+5. 手动启动可双击 `START-LOCAL-BACKUP.bat`，卸载运行 `uninstall-local-backup.ps1`，设置页会显示连接状态。
 
-打包好的自动保存程序也可从设置页直接下载：`https://ahhhhhn.lanzouv.com/iAgz24gw45bi`（密码 `fajj`）。
+完整教程（安装、恢复、更新、卸载、常见问题）见 [`LOCAL_BACKUP_GUIDE.md`](LOCAL_BACKUP_GUIDE.md)。打包好的自动保存程序也可从设置页直接下载：`https://ahhhhhn.lanzouv.com/iAgz24gw45bi`（密码 `fajj`）。
 
 ## 注意事项
 

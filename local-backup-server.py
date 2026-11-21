@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""班级管理系统 - 本地自动备份小程序
+"""班级管理系统 - 本机自动保存宏（本地备份服务）
 仅监听 127.0.0.1:8765；浏览器把当前数据 POST 到 /save，
 程序保存 latest.json 与最多 30 份带时间戳的快照。
 """
@@ -15,6 +15,7 @@ from urllib.parse import urlparse
 HOST = "127.0.0.1"
 PORT = int(os.environ.get("CLASS_BACKUP_PORT", "8765"))
 BASE_DIR = Path(os.environ.get("CLASS_BACKUP_DIR", str(Path.home() / "ClassManagerBackup")))
+VERSION = "1.1.0"
 MAX_SNAPSHOTS = 30
 MAX_BODY = 20 * 1024 * 1024
 
@@ -32,29 +33,45 @@ def prune_snapshots():
             pass
 
 
+def atomic_write(path, text):
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp.write_text(text, encoding="utf-8")
+    os.replace(tmp, path)
+
+
 def write_backup(payload):
     ensure_dir()
     store = payload.get("store", payload) if isinstance(payload, dict) else payload
     now = datetime.now()
-    stamp = now.strftime("%Y%m%d-%H%M%S")
     text = json.dumps(store, ensure_ascii=False, indent=2)
 
     latest = BASE_DIR / "latest.json"
-    latest.write_text(text, encoding="utf-8")
+    changed = True
+    if latest.exists():
+        try:
+            changed = latest.read_text(encoding="utf-8") != text
+        except OSError:
+            changed = True
+    atomic_write(latest, text)
 
-    snapshot = BASE_DIR / f"snapshot-{stamp}.json"
-    snapshot.write_text(text, encoding="utf-8")
+    snapshot_name = None
+    if changed:
+        stamp = now.strftime("%Y%m%d-%H%M%S-%f")
+        snapshot = BASE_DIR / f"snapshot-{stamp}.json"
+        atomic_write(snapshot, text)
+        snapshot_name = snapshot.name
+        prune_snapshots()
 
     meta = {
+        "version": VERSION,
         "savedAt": payload.get("savedAt") if isinstance(payload, dict) else None,
         "receivedAt": now.isoformat(timespec="seconds"),
-        "file": snapshot.name,
+        "file": snapshot_name or "latest.json",
+        "changed": changed,
+        "bytes": len(text.encode("utf-8")),
     }
-    (BASE_DIR / "latest-meta.json").write_text(
-        json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8"
-    )
-    prune_snapshots()
-    return snapshot
+    atomic_write(BASE_DIR / "latest-meta.json", json.dumps(meta, ensure_ascii=False, indent=2))
+    return snapshot_name, changed, len(text.encode("utf-8"))
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -87,7 +104,9 @@ class Handler(BaseHTTPRequestHandler):
             self._json(200, {
                 "ok": True,
                 "service": "class-backup",
+                "version": VERSION,
                 "dir": str(BASE_DIR),
+                "snapshots": len(list(BASE_DIR.glob("snapshot-*.json"))),
                 "time": datetime.now().isoformat(timespec="seconds"),
             })
         elif path == "/latest-meta":
@@ -110,10 +129,13 @@ class Handler(BaseHTTPRequestHandler):
                 raise ValueError("invalid body size")
             raw = self.rfile.read(length)
             payload = json.loads(raw.decode("utf-8"))
-            snapshot = write_backup(payload)
+            snapshot, changed, size = write_backup(payload)
             self._json(200, {
                 "ok": True,
-                "file": snapshot.name,
+                "version": VERSION,
+                "file": snapshot or "latest.json",
+                "changed": changed,
+                "bytes": size,
                 "dir": str(BASE_DIR),
                 "time": datetime.now().isoformat(timespec="seconds"),
             })
@@ -128,8 +150,13 @@ class Handler(BaseHTTPRequestHandler):
 
 def main():
     ensure_dir()
-    server = ThreadingHTTPServer((HOST, PORT), Handler)
-    print(f"ClassManager local backup: http://{HOST}:{PORT}")
+    try:
+        server = ThreadingHTTPServer((HOST, PORT), Handler)
+    except OSError as exc:
+        print(f"无法启动：端口 {PORT} 可能已被占用。", file=sys.stderr)
+        print(f"请关闭其他备份程序，或设置环境变量 CLASS_BACKUP_PORT 使用其他端口。", file=sys.stderr)
+        raise SystemExit(1) from exc
+    print(f"ClassManager local backup v{VERSION}: http://{HOST}:{PORT}")
     print(f"Backup directory: {BASE_DIR}")
     try:
         server.serve_forever()

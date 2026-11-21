@@ -1,34 +1,60 @@
-# 班级管理系统 - 本地自动备份安装脚本
-# 用法：在 PowerShell 中右键“使用 PowerShell 运行”，或：
+﻿# 班级管理系统 - 本机自动保存宏安装脚本
+# 用法（二选一）：
+#   右键 -> 使用 PowerShell 运行
 #   powershell -ExecutionPolicy Bypass -File .\install-local-backup.ps1
 $ErrorActionPreference = "Stop"
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $server = Join-Path $here "local-backup-server.py"
+$taskName = "ClassManagerLocalBackup"
+$healthUrl = "http://127.0.0.1:8765/health"
 
 if (-not (Test-Path $server)) {
   throw "找不到 local-backup-server.py：$server"
 }
 
-$python = $null
-foreach ($name in @("pythonw.exe", "python.exe")) {
-  $cmd = Get-Command $name -ErrorAction SilentlyContinue
-  if ($cmd) { $python = $cmd.Source; break }
-}
-if (-not $python) {
-  throw "未找到 Python。请先安装 Python 3，并确保 pythonw.exe 在 PATH 中。"
+function Find-Python {
+  foreach ($name in @("pythonw.exe", "python.exe")) {
+    $cmd = Get-Command $name -ErrorAction SilentlyContinue
+    if ($cmd) { return @{ Exe = $cmd.Source; Args = "" } }
+  }
+  foreach ($name in @("pyw.exe", "py.exe")) {
+    $cmd = Get-Command $name -ErrorAction SilentlyContinue
+    if ($cmd) { return @{ Exe = $cmd.Source; Args = "-3" } }
+  }
+  return $null
 }
 
-$taskName = "ClassManagerLocalBackup"
-$action = "`"$python`" `"$server`""
+$python = Find-Python
+if (-not $python) {
+  throw "未找到 Python 3。请先安装 Python，并勾选 Add Python to PATH。"
+}
+
+# 结束旧任务，避免重复启动
+schtasks /End /TN $taskName 2>$null | Out-Null
+schtasks /Delete /TN $taskName /F 2>$null | Out-Null
+
+$action = '"' + $python.Exe + '"'
+if ($python.Args) { $action += ' ' + $python.Args }
+$action += ' "' + $server + '"'
 schtasks /Create /TN $taskName /SC ONLOGON /TR $action /F /RL LIMITED | Out-Null
 schtasks /Run /TN $taskName | Out-Null
-Start-Sleep -Milliseconds 800
 
-try {
-  $health = Invoke-RestMethod -Uri "http://127.0.0.1:8765/health" -TimeoutSec 4
-  Write-Host "安装完成，备份服务已启动。" -ForegroundColor Green
+$ok = $false
+for ($i = 0; $i -lt 12; $i++) {
+  Start-Sleep -Milliseconds 500
+  try {
+    $health = Invoke-RestMethod -Uri $healthUrl -TimeoutSec 2
+    if ($health.ok) { $ok = $true; break }
+  } catch { }
+}
+
+if ($ok) {
+  Write-Host "安装完成，自动保存宏已启动。" -ForegroundColor Green
+  Write-Host "版本：$($health.version)"
   Write-Host "备份目录：$($health.dir)"
-  Write-Host "以后登录 Windows 会自动启动；手动启动可运行 START-LOCAL-BACKUP.bat。"
-} catch {
-  Write-Warning "任务已创建，但健康检查失败。请运行 START-LOCAL-BACKUP.bat 查看错误。"
+  Write-Host "以后登录 Windows 会自动启动。"
+  Write-Host "手动启动：双击 START-LOCAL-BACKUP.bat"
+} else {
+  Write-Warning "任务已创建，但 6 秒内未连上 127.0.0.1:8765。"
+  Write-Host "请双击 START-LOCAL-BACKUP.bat 查看错误；常见原因是 Python 未安装或 8765 端口被占用。"
 }

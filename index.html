@@ -1173,13 +1173,14 @@ body[class*="theme-"] .page-hd .ico{background:var(--t-soft)}
 .remind-tab.on{background:linear-gradient(135deg,#ff9d7d,#ffcf6b);border-color:transparent;color:#fff}
 .swap-grid{display:grid;grid-template-columns:1.1fr 1fr 1fr 1fr 1fr;gap:9px}
 .swap-grid .fl{margin-bottom:0}
+.swap-new{grid-column:span 2}
 .swap-hint{font-size:calc(11px * var(--fs));color:#a3949a;font-weight:600;line-height:1.7;margin:9px 0}
 .swap-item{display:flex;align-items:center;gap:9px;padding:9px 11px;border-bottom:1px dashed #f1e3dc}
 .swap-tag{flex:none;font-size:calc(10px * var(--fs));font-weight:800;padding:2px 7px;border-radius:6px;background:#ffe6d9;color:#c25b37}
 .swap-txt{flex:1;min-width:0;font-size:calc(12px * var(--fs));color:#5d4d52;font-weight:700;line-height:1.55}
 .swap-item .hw-del{position:static;opacity:1}
 @media(max-width:860px){.swap-grid{grid-template-columns:1fr 1fr}}
-@media(max-width:600px){.swap-grid{grid-template-columns:1fr}}
+@media(max-width:600px){.swap-grid{grid-template-columns:1fr}.swap-new{grid-column:auto}}
 
 </style>
 </head>
@@ -1533,7 +1534,7 @@ var CHANGELOG = [
     "自动同步间隔可在设置中调整，默认 1 分钟；自动策略支持智能同步、本地覆盖、云端覆盖；两端更新时间相差超过 1 天时自动弹出同步确认与警告。",
     "显示模式支持 16:9 单屏：隐藏月历、请假栏置顶、作业单列紧凑排布、空科目折叠，去掉气泡框，作业不自动滚动；作业与左侧竖向分隔栏留出横向间距，标题首字不再贴边。",
     "设置新增主题色、全局字号、显示模式字号、仅每日提醒自动循环滚动与滚动速度调节；显示设置仅保存在本机，不同步云端。",
-    "每日提醒新增“调课提醒”：支持对调/改课，自动更新课表并标记“调课”，记录进入班级日志与云同步。",
+    "每日提醒新增“调课提醒”：对调模式交换两节课；改课模式只修改某天某节的新科目，保存后更新课表并标记“改课”，记录进入班级日志与云同步。",
     "双击学生档案标题图标可全班锁定/解锁档案；锁定后只能修改生日祝福，不能增删改学生。",
     "学生档案生日已按《4班生日.xlsx》自动补全 54 人；沈思骐生日在表格中缺失，保留空白待补。",
     "工具箱新增“常用链接”：可添加名称与网址并点击直达，内置“地理一轮复习资料-百度网盘”；默认仅管理员可修改，可在访客权限中开放。",
@@ -1543,6 +1544,7 @@ var CHANGELOG = [
     "云端每日 00:00 自动生成备份，仅保留最近 5 天；手动云同步可选择“最新云端”或某个历史备份再拉取。",
     "本机覆盖云端前可勾选创建一次性手动备份，保留 1 天后自动删除；备份下拉框区分“日常备份”与“手动备份”。",
     "新增本机自动备份小程序：安装后随 Windows 登录启动，数据保存到用户目录 ClassManagerBackup，并保留最近 30 份快照。",
+    "本机自动保存宏升级至 1.1.0：内容未变化时不重复生成快照、原子写入、端口占用提示、安装/卸载脚本，并附带完整使用教程 LOCAL_BACKUP_GUIDE.md。",
     "同步设置内附自动保存程序下载地址与提取密码，可直接获取安装包。",
     "请假原因选择“其他”时可手动填写具体理由，未填写时不允许提交。",
     "项目用量账单刷新至 690.02M Token，余额消耗估算 ¥26.60。"
@@ -1909,11 +1911,14 @@ var localBackupTimer = null;
 var localBackupBusy = false;
 var localBackupAt = 0;
 var localBackupOnline = false;
+var localBackupPending = false;
+var localBackupRetry = null;
+var localBackupRetryCount = 0;
 
 function localBackupStateText(){
   if(localBackupAt) return "已保存 " + fmtSyncTime(localBackupAt);
   if(localBackupOnline) return "程序已连接，等待保存";
-  return "未连接 · 运行 install-local-backup.ps1";
+  return "未连接 · 运行 install-local-backup.ps1（教程见下）";
 }
 
 function updateLocalBackupState(){
@@ -1929,12 +1934,15 @@ function pingLocalBackup(){
 
 function scheduleLocalBackup(){
   clearTimeout(localBackupTimer);
+  localBackupRetryCount = 0;
   localBackupTimer = setTimeout(pushLocalBackup, 1200);
 }
 
 function pushLocalBackup(){
-  if(localBackupBusy) return;
+  if(localBackupBusy){ localBackupPending = true; return; }
   localBackupBusy = true;
+  clearTimeout(localBackupRetry);
+  localBackupRetry = null;
   fetch(LOCAL_BACKUP_URL + "/save", {
     method:"POST",
     headers:{ "Content-Type":"application/json" },
@@ -1945,11 +1953,23 @@ function pushLocalBackup(){
     if(!res.ok) throw new Error("HTTP " + res.status);
     localBackupOnline = true;
     localBackupAt = Date.now();
+    localBackupRetryCount = 0;
     updateLocalBackupState();
+    if(localBackupPending){
+      localBackupPending = false;
+      scheduleLocalBackup();
+    }
   }).catch(function(){
     localBackupBusy = false;
     localBackupOnline = false;
     updateLocalBackupState();
+    if(localBackupPending){
+      localBackupPending = false;
+      scheduleLocalBackup();
+    } else if(!localBackupRetry && localBackupRetryCount < 3){
+      localBackupRetryCount += 1;
+      localBackupRetry = setTimeout(function(){ localBackupRetry = null; pushLocalBackup(); }, 15000);
+    }
   });
 }
 
@@ -3406,8 +3426,12 @@ function ttSubjectAt(dateStr, idx){
       if(dateStr === s.dateA && idx === s.periodA - 1){ subj = ttBaseSubject(s.dateB, s.periodB - 1); tag = "调课"; }
       else if(dateStr === s.dateB && idx === s.periodB - 1){ subj = ttBaseSubject(s.dateA, s.periodA - 1); tag = "调课"; }
     } else {
-      if(dateStr === s.dateB && idx === s.periodB - 1){ subj = ttBaseSubject(s.dateA, s.periodA - 1); tag = "调课"; }
-      else if(dateStr === s.dateA && idx === s.periodA - 1){ subj = "自习"; tag = "调课"; }
+      if(s.subject){
+        if(dateStr === s.dateA && idx === s.periodA - 1){ subj = s.subject; tag = "改课"; }
+      } else {
+        if(dateStr === s.dateB && idx === s.periodB - 1){ subj = ttBaseSubject(s.dateA, s.periodA - 1); tag = "调课"; }
+        else if(dateStr === s.dateA && idx === s.periodA - 1){ subj = "自习"; tag = "调课"; }
+      }
     }
   });
   return { subject:subj || "—", tag:tag };
@@ -3428,8 +3452,15 @@ function periodOptionsHtml(dateStr, selected){
 }
 function swapSummary(s){
   var a = dateLabel(s.dateA) + " 第"+s.periodA+"节 " + (ttBaseSubject(s.dateA, s.periodA-1) || "—");
+  if(s.type === "change" && s.subject){
+    return "改课：" + a + " → " + s.subject;
+  }
+  if(s.type === "change"){
+    var b0 = dateLabel(s.dateB) + " 第"+s.periodB+"节 " + (ttBaseSubject(s.dateB, s.periodB-1) || "—");
+    return "改课：" + a + " ⇢ " + b0;
+  }
   var b = dateLabel(s.dateB) + " 第"+s.periodB+"节 " + (ttBaseSubject(s.dateB, s.periodB-1) || "—");
-  return (s.type === "change" ? "改课：" : "对调：") + a + " ⇄ " + b;
+  return "对调：" + a + " ⇄ " + b;
 }
 function ttStateAt(w, minutes){
   if(w === 0){
@@ -4413,16 +4444,24 @@ function renderLeave(){
 /* ================= 每日提醒 ================= */
 function swapFormHtml(){
   var dA = nextTeachingDate(), dB = dA;
+  var allSubs = [];
+  Object.keys(TIMETABLE).forEach(function(k){
+    (TIMETABLE[k] || []).forEach(function(s){ if(s && allSubs.indexOf(s) < 0) allSubs.push(s); });
+  });
+  ["自习","班会","体育"].forEach(function(s){ if(allSubs.indexOf(s) < 0) allSubs.push(s); });
+  var subOptions = allSubs.map(function(s){ return '<option value="'+esc(s)+'"></option>'; }).join("");
   return '<section class="card swap-card">'
     + '<div class="card-hd"><div class="ico sun">🔁</div><h2>调课 / 改课</h2><span class="sub">按课程表选择，保存后自动更新当天课表</span></div>'
     + '<div class="swap-grid">'
-    +   '<label class="fl">方式<select id="swapType"><option value="swap">对调两节课</option><option value="change">改课（原课变自习）</option></select></label>'
-    +   '<label class="fl">原课日期<input type="date" id="swapDateA" value="'+dA+'" min="'+todayStr()+'"></label>'
-    +   '<label class="fl">原课节次<select id="swapPeriodA">'+periodOptionsHtml(dA,1)+'</select></label>'
-    +   '<label class="fl">目标日期<input type="date" id="swapDateB" value="'+dB+'" min="'+todayStr()+'"></label>'
-    +   '<label class="fl">目标节次<select id="swapPeriodB">'+periodOptionsHtml(dB,2)+'</select></label>'
+    +   '<label class="fl">方式<select id="swapType"><option value="swap">对调两节课</option><option value="change">改课（修改某节科目）</option></select></label>'
+    +   '<label class="fl">日期<input type="date" id="swapDateA" value="'+dA+'" min="'+todayStr()+'"></label>'
+    +   '<label class="fl">节次<select id="swapPeriodA">'+periodOptionsHtml(dA,1)+'</select></label>'
+    +   '<label class="fl swap-target">对调日期<input type="date" id="swapDateB" value="'+dB+'" min="'+todayStr()+'"></label>'
+    +   '<label class="fl swap-target">对调节次<select id="swapPeriodB">'+periodOptionsHtml(dB,2)+'</select></label>'
+    +   '<label class="fl swap-new" style="display:none">新科目<input type="text" id="swapNewSubject" maxlength="12" list="swapSubjectList" placeholder="例如：数学"></label>'
     + '</div>'
-    + '<p class="swap-hint">调课会交换两节课；改课会把原课变成自习，并把目标课移到新节次。保存后会同步到课表、班级日志和云端。</p>'
+    + '<datalist id="swapSubjectList">'+subOptions+'</datalist>'
+    + '<p class="swap-hint">调课会交换两节课；改课会直接把所选日期的这一节改成新科目。保存后会同步到课表、班级日志和云端。</p>'
     + '<div class="btn-row"><button class="btn tiny" data-act="saveSwap">保存调课</button><span class="swap-hint">仅管理员可操作</span></div>'
     + '</section>';
 }
@@ -4433,8 +4472,8 @@ function swapListHtml(){
       + '<div class="swap-txt">'+esc(swapSummary(s))+'</div>'
       + (canEdit("remind") ? '<button class="hw-del" data-act="delSwap" data-id="'+esc(s.id)+'" title="删除">✕</button>' : '')
       + '</div>';
-  }).join("") : '<div class="empty"><span class="big">🔁</span>还没有调课记录</div>';
-  return '<section class="card"><div class="card-hd"><div class="ico purple">📋</div><h2>调课记录</h2><span class="sub">'+list.length+' 条</span></div>'+rows+'</section>';
+  }).join("") : '<div class="empty"><span class="big">🔁</span>还没有调课 / 改课记录</div>';
+  return '<section class="card"><div class="card-hd"><div class="ico purple">📋</div><h2>调课 / 改课记录</h2><span class="sub">'+list.length+' 条</span></div>'+rows+'</section>';
 }
 function renderRemind(){
   var today = todayStr();
@@ -4515,15 +4554,29 @@ function saveSwap(){
   var pa = parseInt(($("swapPeriodA") || {}).value || "0", 10);
   var pb = parseInt(($("swapPeriodB") || {}).value || "0", 10);
   var dayA = parseDate(da), dayB = parseDate(db);
-  if(!dayA || !dayB || !pa || !pb){ toast("请选择完整的日期和节次", "🔁"); return; }
-  if(!TIMETABLE[dayA.getDay()] || !TIMETABLE[dayA.getDay()].length || !TIMETABLE[dayB.getDay()] || !TIMETABLE[dayB.getDay()].length){
+  if(!dayA || !pa){ toast("请选择日期和节次", "🔁"); return; }
+  if(!TIMETABLE[dayA.getDay()] || !TIMETABLE[dayA.getDay()].length){
     toast("所选日期没有课程安排", "📅"); return;
   }
-  if(pa > TIMETABLE[dayA.getDay()].length || pb > TIMETABLE[dayB.getDay()].length){ toast("节次超出当天课程", "📅"); return; }
+  if(pa > TIMETABLE[dayA.getDay()].length){ toast("节次超出当天课程", "📅"); return; }
+  if(type === "change"){
+    var newSub = String(($("swapNewSubject") || {}).value || "").trim();
+    if(!newSub){ toast("请填写改课后的科目", "🔁"); return; }
+    store.swaps.push({ id:uid(), type:"change", dateA:da, periodA:pa, subject:newSub, createdAt:Date.now() });
+    commit();
+    toast("改课已保存，课表已更新", "🔁");
+    renderPage();
+    return;
+  }
+  if(!dayB || !pb){ toast("请选择完整的对调日期和节次", "🔁"); return; }
+  if(!TIMETABLE[dayB.getDay()] || !TIMETABLE[dayB.getDay()].length){
+    toast("所选日期没有课程安排", "📅"); return;
+  }
+  if(pb > TIMETABLE[dayB.getDay()].length){ toast("节次超出当天课程", "📅"); return; }
   if(da === db && pa === pb){ toast("原课和目标课是同一节", "🔁"); return; }
   store.swaps.push({ id:uid(), type:type, dateA:da, periodA:pa, dateB:db, periodB:pb, createdAt:Date.now() });
   commit();
-  toast(type === "change" ? "改课已保存，课表已更新" : "调课已保存，课表已更新", "🔁");
+  toast("调课已保存，课表已更新", "🔁");
   renderPage();
 }
 function delSwap(id){
@@ -5181,6 +5234,12 @@ function renderSettings(){
     +   '<div class="sync-download"><span>自动保存程序下载</span>'
     +     '<a href="https://ahhhhhn.lanzouv.com/iAgz24gw45bi" target="_blank" rel="noopener">https://ahhhhhn.lanzouv.com/iAgz24gw45bi</a>'
     +     '<b>密码：fajj</b></div>'
+    +   '<div class="sync-download"><span>GitHub 最新版</span>'
+    +     '<a href="https://github.com/ahhhhhn0Q932/g3-4/raw/main/auto-save-file.zip" target="_blank" rel="noopener">auto-save-file.zip</a>'
+    +     '<b>免密码</b></div>'
+    +   '<div class="sync-download"><span>使用教程</span>'
+    +     '<a href="https://github.com/ahhhhhn0Q932/g3-4/blob/main/LOCAL_BACKUP_GUIDE.md" target="_blank" rel="noopener">LOCAL_BACKUP_GUIDE.md</a>'
+    +     '<b>安装 / 恢复 / 卸载</b></div>'
     +   '<div class="pref-grid" style="margin-top:14px">'
     +     '<div class="pref-row"><label>自动云同步间隔</label><select id="syncInterval">'
     +       [15,30,60,120,300].map(function(sec){ return '<option value="'+sec+'"'+(Number(syncPrefs.intervalSec)===sec?' selected':'')+'>'+(sec<60?sec+' 秒':(sec/60)+' 分钟')+'</option>'; }).join("")
@@ -5351,8 +5410,22 @@ function afterRender(r){
     }
     var sa = $("swapDateA"), pa = $("swapPeriodA");
     var sb = $("swapDateB"), pb = $("swapPeriodB");
+    var st = $("swapType"), ns = $("swapNewSubject");
     if(sa && pa) sa.addEventListener("change", function(){ pa.innerHTML = periodOptionsHtml(sa.value, 1); });
     if(sb && pb) sb.addEventListener("change", function(){ pb.innerHTML = periodOptionsHtml(sb.value, 2); });
+    function syncSwapType(){
+      var isChange = st && st.value === "change";
+      document.querySelectorAll(".swap-target").forEach(function(el){ el.style.display = isChange ? "none" : ""; });
+      var wrap = document.querySelector(".swap-new");
+      if(wrap) wrap.style.display = isChange ? "" : "none";
+      if(isChange && ns && !ns.value && sa && pa){
+        ns.value = ttBaseSubject(sa.value, parseInt(pa.value || "1", 10) - 1) || "";
+      }
+    }
+    if(st) st.addEventListener("change", syncSwapType);
+    if(sa) sa.addEventListener("change", syncSwapType);
+    if(pa) pa.addEventListener("change", syncSwapType);
+    syncSwapType();
   }
   if(r === "board"){
     /* 标题是 textarea：按内容自动撑高，长作业能整段换行显示 */
