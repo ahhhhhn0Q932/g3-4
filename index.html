@@ -189,6 +189,10 @@ select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='ht
 .exam-sub{font-size:calc(12px * var(--fs));color:#8797b3;font-weight:700;padding-bottom:6px;line-height:1.5}
 .exam-note{font-size:calc(11.5px * var(--fs));color:#9aa8bd;font-weight:600;margin-top:9px}
 .remind-list{display:flex;flex-direction:column;gap:6px;margin-top:12px;max-height:118px;overflow:auto;padding-right:2px}
+/* 自动循环滚动时隐藏滚动条，克隆内容由 JS 插入 */
+.auto-scroll-on{scrollbar-width:none;-ms-overflow-style:none}
+.auto-scroll-on::-webkit-scrollbar{width:0;height:0;display:none}
+.auto-scroll-clone{pointer-events:none}
 .remind-line{display:flex;align-items:flex-start;gap:8px;font-size:calc(12px * var(--fs));font-weight:600;color:#6b5a4e;line-height:1.5}
 .remind-line .rdot{width:6px;height:6px;border-radius:50%;background:#f0b34a;flex:none;margin-top:6px}
 .remind-line.done{opacity:.5;text-decoration:line-through}
@@ -1070,7 +1074,7 @@ body.board-display .board-grid{
 }
 body.board-display .area-cal{display:none}
 body.board-display .area-hw{grid-area:hw;display:flex;flex-direction:column;min-height:0;height:100%;padding:10px 14px 8px}
-body.board-display .area-remind{grid-area:remind;min-height:0;overflow:auto;padding:10px 12px}
+body.board-display .area-remind{grid-area:remind;min-height:0;overflow:hidden;padding:10px 12px;display:flex;flex-direction:column}
 body.board-display .area-leave{grid-area:leave;padding:7px 12px 8px}
 body.board-display .area-leave .card-hd{margin-bottom:5px}
 body.board-display .area-leave .card-hd h2{font-size:calc(14px * var(--fs))}
@@ -1093,7 +1097,7 @@ body.board-display .hw-chip{background:none;border:0;padding:0;font-size:calc(9.
 body.board-display .hw-body{gap:0}
 body.board-display .hw-del,body.board-display .hw-tail,body.board-display .hw-add-panel{display:none!important}
 body.board-display .area-leave .mini-empty{margin-top:2px}
-body.board-display .area-remind .remind-list{max-height:none}
+body.board-display .area-remind .remind-list{max-height:none;flex:1;min-height:0;overflow-y:auto;margin-top:8px}
 body.board-display .board-tools{position:fixed;z-index:60;right:18px;top:10px;display:flex;gap:7px;align-items:center}
 body.board-display .board-exit{position:static}
 
@@ -1536,7 +1540,8 @@ var CHANGELOG = [
     "历史作业按语文、数学、英语、物理、化学、地理、其他的固定顺序渲染，不再随录入先后颠倒。",
     "改课记录补齐日期字段，防止刷新或云同步后丢失；表单重渲染时保留未提交的草稿。",
     "本地存储写入失败不再静默，损坏数据会保留副本；首页请假人数按实际学生去重；日期、时钟与同步时间统一按北京时间处理；同步弹窗打开期间暂停自动同步。",
-    "今日总览编辑模式底部新增“周末作业请标注好截止日期”提示。"
+    "今日总览编辑模式底部新增“周末作业请标注好截止日期”提示。",
+    "显示模式自动滚动改为无缝循环：滚动到底部后由克隆内容衔接顶部，循环过程不跳回；滚动期间隐藏滚动条。"
   ]},
   { date:"2026-11-21", ver:"v1.18", title:"大版本：同步方案、显示模式与调课", items:[
     "手动云同步前可选择“本地 → 云端”或“云端 → 本地”，并逐项勾选学生教师、作业提醒、班级日志、请假、Issue、回声洞与设置；窗口并列显示本机与云端数据量、双方最后更新时间。",
@@ -2067,8 +2072,30 @@ function saveSyncPrefs(){
 
 /* 显示模式下，对超出可视区域的栏目循环滚动 */
 var autoScrollTimer = null;
+var autoScrollEls = [];
 function stopAutoScroll(){
   if(autoScrollTimer){ clearInterval(autoScrollTimer); autoScrollTimer = null; }
+  autoScrollEls.forEach(function(el){
+    el.classList.remove("auto-scroll-on");
+    var clone = el.querySelector(":scope > .auto-scroll-clone");
+    if(clone) clone.remove();
+  });
+  autoScrollEls = [];
+}
+function prepareAutoLoop(el){
+  var old = el.querySelector(":scope > .auto-scroll-clone");
+  if(old) old.remove();
+  el.classList.remove("auto-scroll-on");
+  var baseH = el.scrollHeight;
+  if(baseH <= el.clientHeight + 4) return 0;
+  var clone = document.createElement("div");
+  clone.className = "auto-scroll-clone";
+  clone.setAttribute("aria-hidden", "true");
+  clone.innerHTML = el.innerHTML;
+  el.appendChild(clone);
+  el.classList.add("auto-scroll-on");
+  autoScrollEls.push(el);
+  return baseH;
 }
 function autoScrollTargets(){
   var out = [];
@@ -2077,7 +2104,7 @@ function autoScrollTargets(){
     var max = axis === "x" ? el.scrollWidth - el.clientWidth : el.scrollHeight - el.clientHeight;
     if(max > 4) out.push({ el:el, axis:axis, max:max });
   }
-  add(document.querySelector(".area-remind"), "y");
+  add(document.querySelector(".area-remind .remind-list"), "y");
   return out;
 }
 function startAutoScroll(){
@@ -2085,6 +2112,9 @@ function startAutoScroll(){
   if(!boardDisplay || !uiPrefs.scrollOn) return;
   var targets = autoScrollTargets();
   if(!targets.length) return;
+  targets.forEach(function(t){
+    if(t.axis === "y") t.loopH = prepareAutoLoop(t.el);
+  });
   var step = Math.max(1, Number(uiPrefs.scrollSpeed) || 24) / 20;
   autoScrollTimer = setInterval(function(){
     if(!boardDisplay || !uiPrefs.scrollOn){ stopAutoScroll(); return; }
@@ -2092,7 +2122,12 @@ function startAutoScroll(){
       if(!document.body.contains(t.el)) return;
       var cur = t.axis === "x" ? t.el.scrollLeft : t.el.scrollTop;
       var next = cur + step;
-      if(next >= t.max - 1) next = 0;
+      if(t.loopH){
+        /* 克隆一份内容接在尾部；越过原始高度时减去一份，画面完全一致，形成无缝循环 */
+        if(next >= t.loopH) next -= t.loopH;
+      } else if(next >= t.max - 1){
+        next = 0;
+      }
       if(t.axis === "x") t.el.scrollLeft = next;
       else t.el.scrollTop = next;
     });
