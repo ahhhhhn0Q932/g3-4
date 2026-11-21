@@ -1451,6 +1451,7 @@ var CHANGELOG = [
     "本机覆盖云端前可勾选创建一次性手动备份，保留 1 天后自动删除；备份下拉框区分“日常备份”与“手动备份”。",
     "新增本机自动备份小程序：安装后随 Windows 登录启动，数据保存到用户目录 ClassManagerBackup，并保留最近 30 份快照。",
     "同步设置内附自动保存程序下载地址与提取密码，可直接获取安装包。",
+    "请假原因选择“其他”时可手动填写具体理由，未填写时不允许提交。",
     "项目用量账单刷新至 690.02M Token，余额消耗估算 ¥26.60。"
   ]},
   { date:"2026-11-15", ver:"v1.17.1", title:"访客点名权限收紧", items:[
@@ -4265,7 +4266,8 @@ function renderLeave(){
           +   studentPickerHtml(today)
           +   '<div class="form-grid" style="margin-top:10px">'
           +     '<div class="full"><label class="fl">原因</label><select id="lvReason">'
-          +       '<option>病假</option><option>事假</option><option>就诊</option><option>竞赛集训</option><option>体训</option><option>其他</option></select></div>'
+          +       '<option>病假</option><option>事假</option><option>就诊</option><option>竞赛集训</option><option>体训</option><option>其他</option></select>'
+          +       '<input type="text" id="lvReasonOther" maxlength="40" placeholder="请输入具体请假理由" style="display:none;margin-top:8px"></div>'
           +   '</div>'
           +   '<div class="period-block">'
           +     '<label class="fl">节次（可多选，按住 Shift 可连续选择）</label>'
@@ -5158,6 +5160,16 @@ function afterRender(r){
     });
     initLeaveStudents();
     initLeavePeriods();
+    var lr = $("lvReason"), lro = $("lvReasonOther");
+    if(lr && lro){
+      var syncReasonOther = function(){
+        var on = lr.value === "其他";
+        lro.style.display = on ? "block" : "none";
+        if(!on) lro.value = "";
+      };
+      lr.addEventListener("change", syncReasonOther);
+      syncReasonOther();
+    }
   }
   if(r === "remind"){
     var rmChk = $("rmDueChk"), rmDue = $("rmDue");
@@ -5400,6 +5412,11 @@ function addLeave(){
   if(!periods.length){ toast("请选择请假节次，可多选或全选", "🕒"); return; }
   var period = periodRangeText(periods);
   var reason = $("lvReason") ? $("lvReason").value : "事假";
+  var reasonOther = $("lvReasonOther");
+  if(reason === "其他"){
+    reason = reasonOther ? String(reasonOther.value || "").trim() : "";
+    if(!reason){ toast("原因选择了“其他”，请填写具体理由", "✍️"); if(reasonOther) reasonOther.focus(); return; }
+  }
   var today = todayStr();
   var expectedNames = {};
   expectedStudents(today).forEach(function(s){ expectedNames[s.name] = true; });
