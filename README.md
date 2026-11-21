@@ -150,7 +150,7 @@
    - `latest-meta.json`：最近一次接收时间、版本与大小。
 4. 数据没有变化时只更新 `latest.json`，不重复生成快照；有新变化才新增快照并清理旧快照。
 5. 手动启动可双击 `START-LOCAL-BACKUP.bat`；卸载运行 `uninstall-local-backup.ps1`，备份文件不会被删除。
-6. 设置 → 同步设置会显示“本机自动备份”状态；打包版下载：`https://ahhhhhn.lanzouv.com/iAgz24gw45bi`（密码 `fajj`）。
+6. 设置 → 同步设置会显示“本机自动备份”状态；打包版下载：`https://ahhhhhn.lanzouv.com/i483l4gwgmyf`（密码 `nsfz`）。
 7. 完整安装、恢复、更新、卸载与排错教程见 [`LOCAL_BACKUP_GUIDE.md`](LOCAL_BACKUP_GUIDE.md)。
 
 ---
