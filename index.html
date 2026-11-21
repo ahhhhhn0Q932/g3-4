@@ -1391,20 +1391,78 @@ var GUEST_PERM_LABELS = [
 ];
 /* 2024级4班学生名单（仅姓名，来自班级名单） */
 var ROSTER_VERSION = "2024-4";
+var BIRTHDAY_VERSION = "2024-4-birthdays";
 var ROSTER_NAMES = [
   "蔡仁杰","曹亦歆","陈思哲","单浩然","邓妍","董劲杰","顾寅秋","顾优","杭天润",
-  "李沐瑶","李泽昊","林可馨","凌霄翩","刘倾城","刘奕呈","刘濯尘","刘子墨","芦星怡",
+  "李沐瑶","李泽昊","林可馨","凌霄翮","刘倾城","刘奕呈","刘濯尘","刘子墨","芦星怡",
   "罗铭绪","马峻熙","孟凡","糜佳烨","秦羽宸","瞿佳齐","沈思骐","史涵君","史天爻",
-  "史轩铭","宋泰阳","宋一鸣","宋梓牧","孙苡涵","王粲尧","王晗","王梓恒","吴嘉艺",
+  "史轩铭","宋泰阳","宋一鸣","宋梓牧","孙芑涵","王粲尧","王晗","王梓恒","吴嘉艺",
   "吴宇彤","徐筠然","杨季布","杨子轩","叶思媛","易婧萱","张景天","张开","张天慧",
   "张文捷","章梁辰","赵晋涵","赵睿","周景明","周澜","周庆尧","周心妍","周芷澜","周子越"
 ];
+var ROSTER_BIRTHDAYS = {
+  "周庆尧": { md:"01-06", year:2009 },
+  "林可馨": { md:"01-16", year:2009 },
+  "杨子轩": { md:"01-07", year:2009 },
+  "张开": { md:"01-12", year:2009 },
+  "赵晋涵": { md:"01-06", year:2009 },
+  "孟凡": { md:"01-22", year:2009 },
+  "刘子墨": { md:"01-05", year:2009 },
+  "曹亦歆": { md:"01-05", year:2009 },
+  "马峻熙": { md:"01-05", year:2009 },
+  "张天慧": { md:"02-22", year:2009 },
+  "李泽昊": { md:"02-08", year:2009 },
+  "罗铭绪": { md:"03-12", year:2009 },
+  "董劲杰": { md:"03-05", year:2009 },
+  "秦羽宸": { md:"03-14", year:2009 },
+  "刘濯尘": { md:"03-27", year:2009 },
+  "凌霄翮": { md:"03-02", year:2009 },
+  "周心妍": { md:"05-26", year:2009 },
+  "周子越": { md:"05-11", year:2009 },
+  "王梓恒": { md:"05-06", year:2009 },
+  "张文捷": { md:"06-14", year:2009 },
+  "陈思哲": { md:"06-18", year:2009 },
+  "邓妍": { md:"07-06", year:2009 },
+  "孙芑涵": { md:"07-14", year:2009 },
+  "宋一鸣": { md:"07-17", year:2009 },
+  "徐筠然": { md:"07-01", year:2009 },
+  "宋梓牧": { md:"07-26", year:2009 },
+  "易婧萱": { md:"07-20", year:2009 },
+  "单浩然": { md:"08-31", year:2009 },
+  "赵睿": { md:"08-26", year:2009 },
+  "周芷澜": { md:"08-07", year:2009 },
+  "糜佳烨": { md:"08-12", year:2009 },
+  "顾优": { md:"08-08", year:2009 },
+  "章梁辰": { md:"08-12", year:2009 },
+  "杨季布": { md:"08-18", year:2009 },
+  "张景天": { md:"09-18", year:2008 },
+  "周景明": { md:"09-16", year:2008 },
+  "吴嘉艺": { md:"09-20", year:2008 },
+  "史涵君": { md:"09-26", year:2008 },
+  "蔡仁杰": { md:"09-01", year:2008 },
+  "宋泰阳": { md:"10-17", year:2008 },
+  "叶思媛": { md:"10-14", year:2008 },
+  "刘倾城": { md:"10-02", year:2009 },
+  "王晗": { md:"10-10", year:2008 },
+  "周澜": { md:"10-01", year:2008 },
+  "李沐瑶": { md:"11-16", year:2008 },
+  "杭天润": { md:"11-25", year:2008 },
+  "吴宇彤": { md:"11-01", year:2008 },
+  "史轩铭": { md:"11-25", year:2008 },
+  "顾寅秋": { md:"11-13", year:2008 },
+  "史天爻": { md:"12-25", year:2007 },
+  "刘奕呈": { md:"12-23", year:2008 },
+  "芦星怡": { md:"12-16", year:2008 },
+  "瞿佳齐": { md:"12-21", year:2008 },
+  "王粲尧": { md:"12-01", year:2008 },
+};
 var TEACHER_SUBJECTS = ["语文","数学","英语","物理","化学","地理","其他"];
 var TEACHER_ROLES = ["任课教师","班主任"];
 
 function defaultStudents(){
   return ROSTER_NAMES.map(function(n, i){
-    return { id:"stu_" + (i + 1), name:n, md:"", year:0, wish:"" };
+    var b = ROSTER_BIRTHDAYS[n] || {};
+    return { id:"stu_" + (i + 1), name:n, md:b.md || "", year:b.year || 0, wish:"" };
   });
 }
 function defaultTeachers(){
@@ -1423,17 +1481,34 @@ function applyRoster(s){
   var old = {};
   (s.birthdays || []).forEach(function(b){ if(b && b.name) old[b.name] = b; });
   s.birthdays = ROSTER_NAMES.map(function(n, i){
-    var o = old[n];
+    var o = old[n], b = ROSTER_BIRTHDAYS[n] || {};
     return {
       id: (o && o.id) || ("stu_" + (i + 1)),
       name: n,
-      md: (o && o.md) || "",
-      year: (o && o.year) || 0,
+      md: (o && o.md) || b.md || "",
+      year: (o && o.year) || b.year || 0,
       wish: (o && o.wish) || ""
     };
   });
   s.settings.rosterVersion = ROSTER_VERSION;
   s.settings.classSize = s.birthdays.length;
+}
+
+/* 只补生日，不替换名单；保留用户已填写的生日与祝福 */
+function applyBirthdays(s){
+  var fixes = { "凌霄翩":"凌霄翮", "孙苡涵":"孙芑涵" };
+  (s.birthdays || []).forEach(function(b){
+    if(fixes[b.name]){
+      var oldName = b.name;
+      b.name = fixes[b.name];
+      (s.leaves || []).forEach(function(l){ if(l.name === oldName) l.name = b.name; });
+    }
+    var src = ROSTER_BIRTHDAYS[b.name];
+    if(!src) return;
+    if(!b.md) b.md = src.md;
+    if(!b.year) b.year = src.year;
+  });
+  s.settings.birthdayVersion = BIRTHDAY_VERSION;
 }
 
 var CHANGELOG = [
@@ -1444,6 +1519,7 @@ var CHANGELOG = [
     "设置新增主题色、全局字号、显示模式字号、仅每日提醒自动循环滚动与滚动速度调节；显示设置仅保存在本机，不同步云端。",
     "每日提醒新增“调课提醒”：支持对调/改课，自动更新课表并标记“调课”，记录进入班级日志与云同步。",
     "双击学生档案标题图标可全班锁定/解锁档案；锁定后只能修改生日祝福，不能增删改学生。",
+    "学生档案生日已按《4班生日.xlsx》自动补全 54 人；沈思骐生日在表格中缺失，保留空白待补。",
     "显示模式作业左侧分隔条恢复对应科目主题色；生日庆祝动画播放期间重复点击不再重播，直到本轮结束。",
     "仪表盘主卡改为网站运行状态与云端状态，北京时间移至下方显示。",
     "留言板继续随班级日志分类同步到云端。",
@@ -1967,7 +2043,7 @@ function startAutoScroll(){
 
 function defaultStore(){
   return {
-    settings: { className:"高三(4)班", classShort:"4", examDate:"2027-06-07", classSize:ROSTER_NAMES.length, adminPassword:"123", eggText:DEFAULT_EGG_TEXT, guestPerms:Object.assign({}, DEFAULT_GUEST_PERMS), rosterVersion:ROSTER_VERSION },
+    settings: { className:"高三(4)班", classShort:"4", examDate:"2027-06-07", classSize:ROSTER_NAMES.length, adminPassword:"123", eggText:DEFAULT_EGG_TEXT, guestPerms:Object.assign({}, DEFAULT_GUEST_PERMS), rosterVersion:ROSTER_VERSION, birthdayVersion:BIRTHDAY_VERSION },
     homeworks: [], birthdays: defaultStudents(), teachers: defaultTeachers(), leaves: [], reminders: [], messages: [], issues: [], swaps: [],
     expected: {},
     favorites: [], archive: {}, quotes: defaultQuotes(),
@@ -1979,6 +2055,7 @@ function normalize(obj){
   var base = defaultStore();
   if(!obj || typeof obj !== "object") return base;
   var hadRoster = !!(obj.settings && obj.settings.rosterVersion === ROSTER_VERSION);
+  var hadBirthdayVersion = !!(obj.settings && obj.settings.birthdayVersion === BIRTHDAY_VERSION);
   obj.settings = Object.assign({}, base.settings, obj.settings || {});
   obj.settings.guestPerms = Object.assign({}, DEFAULT_GUEST_PERMS, obj.settings.guestPerms || {});
   obj.settings.studentsLocked = !!obj.settings.studentsLocked;
@@ -2002,6 +2079,7 @@ function normalize(obj){
     b.locked = !!b.locked;
   });
   obj.birthdays = obj.birthdays.filter(function(b){ return !!b.name; });
+  if(!hadBirthdayVersion) applyBirthdays(obj);
   if(!obj.teachers.length && !hadRoster) obj.teachers = defaultTeachers();
   obj.teachers.forEach(function(t, i){
     if(!t.id) t.id = "tea_" + (i + 1);
