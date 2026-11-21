@@ -2173,7 +2173,7 @@ function normalize(obj){
     s.periodB = parseInt(s.periodB, 10) || 1;
     s.createdAt = Number(s.createdAt) || Date.now();
   });
-  obj.swaps = obj.swaps.filter(function(s){ return s && s.dateA && s.dateB; });
+  obj.swaps = obj.swaps.filter(function(s){ return s && s.dateA && (s.type === "change" || s.dateB); });
   obj.settings.classSize = obj.birthdays.length;
   if(!Array.isArray(obj.quotes)) obj.quotes = defaultQuotes();
   obj.quotes = obj.quotes.filter(function(q){ return q && String(q.t || "").trim(); });
@@ -4601,9 +4601,10 @@ function saveSwap(){
   if(type === "change"){
     var newSub = String(($("swapNewSubject") || {}).value || "").trim();
     if(!newSub){ toast("请填写改课后的科目", "🔁"); return; }
-    store.swaps.push({ id:uid(), type:"change", dateA:da, periodA:pa, subject:newSub, createdAt:Date.now() });
+    store.swaps.push({ id:uid(), type:"change", dateA:da, periodA:pa, dateB:da, periodB:pa, subject:newSub, createdAt:Date.now() });
     commit();
     toast("改课已保存，课表已更新", "🔁");
+    skipDraft = true;
     renderPage();
     return;
   }
@@ -4616,6 +4617,7 @@ function saveSwap(){
   store.swaps.push({ id:uid(), type:type, dateA:da, periodA:pa, dateB:db, periodB:pb, createdAt:Date.now() });
   commit();
   toast("调课已保存，课表已更新", "🔁");
+  skipDraft = true;
   renderPage();
 }
 function delSwap(id){
@@ -4868,6 +4870,7 @@ function addIssue(){
   });
   commit();
   toast("Issue 已提交", "🐞");
+  skipDraft = true;
   renderPage();
 }
 function delIssue(id){
@@ -4919,7 +4922,7 @@ function addLink(){
   if(!/^https?:\/\//i.test(url)) url = "https://" + url;
   try{ new URL(url); }catch(e){ return toast("链接格式不正确", "🔗"); }
   store.links.push({ id:uid(), name:name, url:url });
-  commit(); renderPage(); toast("已添加常用链接", "🔗");
+  commit(); skipDraft = true; renderPage(); toast("已添加常用链接", "🔗");
 }
 function delLink(id){
   if(!editGuard("links", "访客模式：常用链接仅管理员可修改")) return;
@@ -5140,6 +5143,7 @@ function addQuote(){
   store.quoteState.manual = -1;
   commit();
   toast("已收进回声洞", "📣");
+  skipDraft = true;
   renderPage();
 }
 
@@ -5377,6 +5381,8 @@ function hashRoute(){
 /* 所有跳转的唯一入口：先进状态再渲染，hash 只做「尽力同步」 */
 function go(r){
   if(!ROUTES[r]) r = "home";
+  draftFields = null;
+  skipDraft = false;
   if(r !== "board"){ boardDisplay = false; boardHwLayout = "list"; }
   /* 从导航栏进入总览时回到今天，避免停留在上次回看的日期 */
   if(r === "board"){ boardDate = ""; calCursor = null; hwAddSubject = ""; }
@@ -5389,11 +5395,53 @@ function go(r){
   renderPage();
 }
 
+var draftFields = null;
+var skipDraft = false;
+
+function captureDrafts(){
+  if(skipDraft){ skipDraft = false; draftFields = null; return; }
+  var d = {};
+  var els = document.querySelectorAll("#page input[id], #page textarea[id], #page select[id]");
+  for(var i=0;i<els.length;i++){
+    var el = els[i];
+    d[el.id] = { v: el.value, c: el.checked };
+  }
+  ["lvStudents","lvPeriods"].forEach(function(g){
+    var boxes = document.querySelectorAll("#"+g+" input[type=checkbox]");
+    for(var j=0;j<boxes.length;j++){
+      d["@"+g+":"+boxes[j].value] = { c: boxes[j].checked };
+    }
+  });
+  draftFields = d;
+}
+
+function restoreDrafts(){
+  if(!draftFields) return;
+  var d = draftFields;
+  draftFields = null;
+  Object.keys(d).forEach(function(id){
+    var el = document.getElementById(id);
+    if(!el) return;
+    var old = d[id];
+    if(el.type === "checkbox" || el.type === "radio") el.checked = old.c;
+    else if(old.v !== "" || el.value === "") el.value = old.v;
+  });
+  Object.keys(d).forEach(function(k){
+    if(k.charAt(0) !== "@") return;
+    var parts = k.slice(1).split(":");
+    var boxes = document.querySelectorAll("#"+parts[0]+" input[type=checkbox]");
+    for(var i=0;i<boxes.length;i++){
+      if(boxes[i].value === parts.slice(1).join(":")) boxes[i].checked = d[k].c;
+    }
+  });
+}
+
 function renderPage(){
   var r = ROUTES[currentRoute] ? currentRoute : "home";
   currentRoute = r;
   var box = $("page");
   if(!box) return;
+  captureDrafts();
   var html = "";
   if(r === "home") html = viewHome();
   else if(r === "board") html = renderBoard();
@@ -5403,6 +5451,7 @@ function renderPage(){
   else if(r === "tools") html = renderTools();
   else if(r === "settings") html = renderSettings();
   box.innerHTML = html;
+  restoreDrafts();
   if(r === "home") updateHomeClock();
   document.body.classList.toggle("board-display", r === "board" && boardDisplay);
   setActiveNav(r);
@@ -5424,6 +5473,8 @@ function afterRender(r){
     });
     initLeaveStudents();
     initLeavePeriods();
+    if(typeof updateStuPickCount === "function") updateStuPickCount();
+    if(typeof updateLeavePeriodSummary === "function") updateLeavePeriodSummary();
     var lr = $("lvReason"), lro = $("lvReasonOther");
     if(lr && lro){
       var syncReasonOther = function(){
@@ -5729,6 +5780,7 @@ function addLeave(){
   if(!added){ toast("所选同学今天这些节次已经登记过了", "🌿"); return; }
   commit();
   toast("已登记 " + added + " 人：" + period, "🌿");
+  skipDraft = true;
   renderPage();
 }
 
@@ -5749,6 +5801,7 @@ function addRemind(){
   });
   commit();
   toast("已发布 " + lines.length + " 条提醒" + (due !== today ? "，截止 " + dateLabel(due) : ""), "🔔");
+  skipDraft = true;
   renderPage();
 }
 
@@ -5763,6 +5816,7 @@ function addMessage(){
   commit();
   el.value = "";
   toast("留言已保存到 " + dateLabel(d), "💬");
+  skipDraft = true;
   renderPage();
 }
 
