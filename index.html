@@ -4151,7 +4151,7 @@ function renderBoard(){
     + '<div class="ico blue" data-doc-link="https://docs.qq.com/slide/DR2xJdEZmVHJhb09J?rtkey=65ebd45a6fac7962653a27f3XU82v1" title="双击打开腾讯文档">📋</div><div><h1>'+(isToday?"今日总览":"历史回看")+'</h1>'
     + '<p>'+headDesc+'</p></div>'
     + '<span class="spacer"></span>'
-    + (isToday ? '<button class="btn display-mode-btn" data-act="toggleBoardDisplay">🖥 显示模式</button>' : '')
+    + '<button class="btn display-mode-btn" data-act="toggleBoardDisplay">🖥 显示模式</button>'
     + (isToday
         ? (canHw
             ? '<span class="hd-tip">点作业文字直接改 · 点 ＋ 添加作业</span>'
@@ -4160,6 +4160,7 @@ function renderBoard(){
     + '</div>';
 
   var toolsHtml = '<div class="board-tools">'
+    + (!isToday ? '<button class="btn ghost tiny" data-act="boardToday">← 回到今天</button>' : '')
     + '<button class="board-exit" data-act="toggleBoardDisplay">✕ 退出显示模式</button>'
     + '</div>';
 
