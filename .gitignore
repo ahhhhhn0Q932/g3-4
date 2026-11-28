@@ -1,0 +1,19 @@
+node_modules/
+backend/node_modules/
+backend/.env
+backend/.mysql/
+backend/.npm-cache/
+frontend/node_modules/
+frontend/dist/
+frontend/.npm-cache/
+frontend/.build.log
+*.log
+.DS_Store
+.test-tmp/
+.browser-test/
+.check*.js
+.snippet.js
+.token-test.json
+
+# local single-machine SQLite data
+backend/data/

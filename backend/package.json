@@ -1,0 +1,38 @@
+{
+  "name": "classpanel-backend",
+  "version": "2.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=24"
+  },
+  "description": "ClassPanel 后端：MySQL 云端模式 / SQLite 本机单机模式 + Express",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "local": "node src/server.js -local",
+    "local:build": "npm --prefix ../frontend run build && node src/server.js -local",
+    "start": "node src/server.js",
+    "static": "node scripts/static-server.js",
+    "db:init": "node scripts/init-db.js",
+    "super:create": "node scripts/create-super-admin.js",
+    "token:create": "node scripts/create-access-token.js",
+    "mysql:setup": "bash scripts/mysql-setup.sh",
+    "mysql:start": "bash scripts/mysql-start.sh",
+    "mysql:stop": "bash scripts/mysql-stop.sh",
+    "mysql:status": "bash scripts/mysql-status.sh"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "fast-deep-equal": "^3.1.3",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0",
+    "mysql2": "^3.14.1",
+    "pg": "^8.16.3",
+    "zod": "^3.25.28"
+  }
+}
