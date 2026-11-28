@@ -130,7 +130,7 @@ npm run static
 
 ---
 
-## 本机单机模式（SQLite）
+## 本机单机模式（SQLite / Supabase）
 
 适合只在一台电脑上使用的场景，不需要安装 MySQL，也不需要总管理员账号。
 
@@ -152,11 +152,16 @@ node src/server.js -local
 
 打开 `http://127.0.0.1:3001`：
 
-- **第一次打开**会显示「本机单机模式 · 首次设置」，只能创建一个班级。
-- 创建后本机最多只有一个班级，不再显示注册入口。
+- **第一次打开先选择存储方式**：
+  - **本地 SQLite**：数据保存在本机，不需要数据库账号。
+  - **Supabase**：连接 Supabase PostgreSQL，需要填写数据库地址、端口、库名、用户名、密码和是否使用 SSL。
+- **存储方式写入本机配置后不可更改**；选择 Supabase 时会先测试连接，连接失败不会锁定。
+- 选定存储方式后，才能创建本机唯一班级；创建后不再显示注册入口。
 - 不显示总管理员控制台、注册码和总管理员相关入口；`/api/super` 在本机模式不可用。
-- 班级数据保存在 `backend/data/classpanel-local.sqlite`，令牌登录、云端多班级等功能不参与本机模式。
-- 如需重置本机数据，停止服务后删除 `backend/data/classpanel-local.sqlite*`，下次启动可重新首次设置。
+- 选择 SQLite 时数据保存在 `backend/data/classpanel-local.sqlite`；选择 Supabase 时数据保存在远端 PostgreSQL，表名以 `classpanel_` 开头，首次连接会自动建表并开启 RLS，避免 anon key 直接读取。
+- 存储选择保存在 `backend/data/local-storage.json`（权限 0600）；Supabase 密码仅保存在该本机配置文件中，不写入网页或 Git。
+- Supabase 连接信息在 Supabase Dashboard → Connect 中查看，使用**数据库用户名/密码**，不是 Supabase 网站登录账号。
+- 如需彻底重置本机数据，停止服务后删除 `backend/data/`；如果使用 Supabase，还需要在 Supabase 中手动清理 `classpanel_*` 表。
 - 本机模式仍支持班级主账号、普通管理员、普通账号和只读权限。
 
 云端 MySQL 模式保持不变：`cd backend && npm run dev`。
@@ -290,7 +295,7 @@ node src/server.js -local
 
 ## 更新日志
 
-完整版本记录见应用内「开发」页；当前为 `v2.6`：
+完整版本记录见应用内「开发」页；当前为 `v2.7`：
 
 - 前后端分离：React + Vite + MUI 前端，Express + MySQL Community 后端。
 - 多班级与总管理员控制台。
@@ -299,6 +304,7 @@ node src/server.js -local
 - 令牌登录改为班级电脑客户端专用，网页不显示；通过后端 CLI 生成/撤销。
 - 新增 `-local` 单机模式：SQLite 本地数据库、隐藏总管理员界面、仅允许首次创建一个班级。
 - 修复 MUI 输入框被旧版全局样式覆盖、按钮图标不居中及课程表/作业页面文字贴边问题。
+- 本机单机模式支持首次选择 SQLite 或 Supabase，选择后不可更改；Supabase 支持填写数据库连接信息。
 - 保留原有暖色主题与主要业务功能。
 - 提高次要文字、空状态、提示语和表单占位符对比度，改善浅色背景下的可读性。
 - 新增自定义课程表：多模板、每周模板分配、科目与授课老师、每日课程选择；课间/午休仅到达时段时显示。

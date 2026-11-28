@@ -92,6 +92,20 @@ const accountUpdateSchema = z.object({
   password: password.optional()
 }).refine((value) => value.username !== undefined || value.displayName !== undefined || value.password !== undefined, "没有需要修改的字段");
 
+const supabaseConnectionSchema = z.object({
+  host: z.string().trim().min(1, "请填写数据库地址").max(255, "数据库地址过长"),
+  port: z.coerce.number().int("端口必须是整数").min(1, "端口不正确").max(65535, "端口不正确").default(5432),
+  database: z.string().trim().min(1, "请填写数据库名称").max(63, "数据库名称过长").default("postgres"),
+  user: z.string().trim().min(1, "请填写数据库用户名").max(128, "数据库用户名过长"),
+  password: z.string().min(1, "请填写数据库密码").max(256, "数据库密码过长"),
+  ssl: z.boolean().optional().default(true)
+});
+
+const localStorageSetupSchema = z.discriminatedUnion("mode", [
+  z.object({ mode: z.literal("sqlite") }),
+  z.object({ mode: z.literal("supabase"), supabase: supabaseConnectionSchema })
+]);
+
 const registrationCodeCreateSchema = z.object({
   note: z.string().trim().max(100, "备注最多 100 个字符").optional().default(""),
   maxUses: z.union([z.number(), z.string()]).optional().default(1),
@@ -118,6 +132,7 @@ module.exports = {
   charLength,
   registerSchema,
   localRegisterSchema,
+  localStorageSetupSchema,
   classLoginSchema,
   superLoginSchema,
   guestLoginSchema,

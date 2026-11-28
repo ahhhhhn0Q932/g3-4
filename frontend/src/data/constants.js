@@ -108,6 +108,14 @@ export const TEACHER_SUBJECTS = ["语文","数学","英语","历史","物理","�
 export const TEACHER_ROLES = ["任课教师","班主任"];
 
 export const CHANGELOG = [
+{ date:"2026-11-28", ver:"v2.7", title:"单机存储方式选择", items:[
+"本机单机模式首次打开时可以选择「本地 SQLite」或「Supabase」作为数据存储方式。",
+"存储方式写入本机配置后不可更改；选择 Supabase 会先测试连接，失败不会锁定。",
+"Supabase 选项支持填写数据库地址、端口、库名、用户名、密码和 SSL 设置，首次连接自动创建 classpanel_* 数据表。",
+"数据库密码只保存在本机 backend/data/local-storage.json（权限 0600），不会写入网页或 Git。",
+"本机模式仍保持单班级限制、总管理员界面隐藏、主账号/管理员/普通只读账号权限。",
+"本机数据层拆分为 SQLite 与 Supabase PostgreSQL 两个适配器，共用同一套班级 API。"
+]},
 { date:"2026-11-28", ver:"v2.6", title:"界面细节修正", items:[
 "修复旧版全局 input/textarea 样式覆盖 MUI 输入框的问题，解决文字贴边、标签与边框重叠。",
 "修复 .btn 使用 inline-block 导致带图标按钮图标/文字不居中和按钮异常变高的问题。",

@@ -3,8 +3,8 @@ const { createApp } = require("./app");
 
 let closeDatabase = async () => {};
 if (config.local) {
-  const local = require("./local/db");
-  closeDatabase = async () => local.close();
+  const local = require("./local/store");
+  closeDatabase = async () => local.closeLocalStore();
 } else {
   const { pool } = require("./db");
   closeDatabase = async () => pool.end();
@@ -14,7 +14,7 @@ const app = createApp();
 const server = app.listen(config.port, "127.0.0.1", () => {
   if (config.local) {
     console.log(`[classpanel] 本机单机模式已启动：http://127.0.0.1:${config.port}`);
-    console.log(`[classpanel] 数据库：SQLite ${config.localDbPath}`);
+    console.log(`[classpanel] 存储：首次打开选择 SQLite 或 Supabase · 配置 ${config.localConfigPath}`);
     console.log(`[classpanel] 前端目录：${config.frontendDist}`);
   } else {
     console.log(`[classpanel] API 已启动：http://127.0.0.1:${config.port}/api`);

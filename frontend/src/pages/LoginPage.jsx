@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Box, Button, Stack, TextField, Typography } from "@mui/material";
+import { Box, Button, Checkbox, FormControlLabel, Stack, TextField, Typography } from "@mui/material";
 import LockOpenRoundedIcon from "@mui/icons-material/LockOpenRounded";
 import AddHomeRoundedIcon from "@mui/icons-material/AddHomeRounded";
 import PersonOutlineRoundedIcon from "@mui/icons-material/PersonOutlineRounded";
@@ -12,9 +12,11 @@ const tabs = [
 ];
 
 export default function LoginPage() {
-  const { loginClass, registerClass, appConfig } = useApp();
+  const { loginClass, registerClass, appConfig, configureStorage, refreshConfig } = useApp();
   const isLocal = appConfig.mode === "local";
-  const firstSetup = isLocal && !appConfig.classExists;
+  const needsStorage = isLocal && !appConfig.storageConfigured;
+  const storageError = isLocal && appConfig.storageConfigured ? (appConfig.storageError || "") : "";
+  const firstSetup = isLocal && appConfig.storageConfigured && !appConfig.classExists;
   const visibleTabs = isLocal ? tabs.filter((t) => t.key !== "register") : tabs;
   const [tab, setTab] = useState("admin");
   const [busy, setBusy] = useState("");
@@ -24,6 +26,9 @@ export default function LoginPage() {
   const [reg, setReg] = useState({
     className: "", adminUsername: "", adminDisplayName: "", adminPassword: "", adminPassword2: "", registrationCode: ""
   });
+  const [storageChoice, setStorageChoice] = useState("sqlite");
+  const [db, setDb] = useState({ host: "", port: "5432", database: "postgres", user: "postgres", password: "", ssl: true });
+  const [storageErr, setStorageErr] = useState("");
 
   const setError = (key, message) => setErr((prev) => ({ ...prev, [key]: message }));
 
@@ -61,6 +66,37 @@ export default function LoginPage() {
     }
   }
 
+  async function submitStorage(e) {
+    e.preventDefault();
+    setStorageErr("");
+    if (storageChoice === "supabase") {
+      if (!db.host.trim() || !db.database.trim() || !db.user.trim() || !db.password) {
+        setStorageErr("请填写完整的数据库地址、库名、用户名和密码");
+        return;
+      }
+      const port = Number(db.port);
+      if (!Number.isInteger(port) || port < 1 || port > 65535) {
+        setStorageErr("数据库端口不正确");
+        return;
+      }
+    }
+    if (!window.confirm("存储方式选定后不可更改，确定使用" + (storageChoice === "supabase" ? " Supabase " : "本地 SQLite ") + "吗？")) return;
+    setBusy("storage");
+    try {
+      await configureStorage(storageChoice === "supabase" ? {
+        mode: "supabase",
+        supabase: {
+          host: db.host.trim(), port: Number(db.port), database: db.database.trim(),
+          user: db.user.trim(), password: db.password, ssl: !!db.ssl
+        }
+      } : { mode: "sqlite" });
+    } catch (e2) {
+      setStorageErr(e2.message || "连接失败");
+    } finally {
+      setBusy("");
+    }
+  }
+
   async function submitRegister(e) {
     e.preventDefault();
     setError("register", "");
@@ -91,10 +127,78 @@ export default function LoginPage() {
         <Box className="login-logo">班</Box>
         <Typography component="h1">班级管理系统</Typography>
         <Typography className="login-sub">
-          {firstSetup ? "本机单机模式 · 首次设置" : isLocal ? "本机单机模式 · 数据保存在本地 SQLite" : "班级数据由 MySQL 服务器统一保存"}
+          {needsStorage ? "本机单机模式 · 选择数据存储方式" : storageError ? "本机单机模式 · 数据库连接异常" : firstSetup ? "本机单机模式 · 首次设置" : isLocal ? "本机单机模式 · " + (appConfig.storageMode === "supabase" ? "Supabase 数据库" : "本地 SQLite") : "班级数据由 MySQL 服务器统一保存"}
         </Typography>
 
-        {firstSetup ? (
+        {needsStorage ? (
+          <Box className="login-panel on" component="form" id="localStorageForm" onSubmit={submitStorage}>
+            <Typography className="login-hint">请选择数据存储方式。选定后会写入本机配置并锁定，不能再次更改。</Typography>
+            <Box className="storage-options">
+              <Box
+                className={"storage-option" + (storageChoice === "sqlite" ? " on" : "")}
+                role="button" tabIndex={0}
+                onClick={() => setStorageChoice("sqlite")}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") setStorageChoice("sqlite"); }}
+              >
+                <span className="storage-ico">💾</span>
+                <span><b>本地 SQLite</b><i>数据保存在这台电脑，不需要数据库账号</i></span>
+              </Box>
+              <Box
+                className={"storage-option" + (storageChoice === "supabase" ? " on" : "")}
+                role="button" tabIndex={0}
+                onClick={() => setStorageChoice("supabase")}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") setStorageChoice("supabase"); }}
+              >
+                <span className="storage-ico" style={{ fontWeight: 900, color: "#3fa383" }}>S</span>
+                <span><b>Supabase</b><i>连接 Supabase PostgreSQL，数据存到远端数据库</i></span>
+              </Box>
+            </Box>
+            {storageChoice === "supabase" ? (
+              <>
+                <Typography className="login-hint" sx={{ mt: 1.5 }}>Supabase 数据库连接信息（在 Dashboard → Connect 中查看）</Typography>
+                <Box className="login-grid">
+                  <Box>
+                    <Typography className="fl" component="label">数据库地址</Typography>
+                    <TextField fullWidth size="small" value={db.host} onChange={(e) => setDb({ ...db, host: e.target.value })} placeholder="db.xxxx.supabase.co" />
+                  </Box>
+                  <Box>
+                    <Typography className="fl" component="label">端口</Typography>
+                    <TextField fullWidth size="small" type="number" value={db.port} onChange={(e) => setDb({ ...db, port: e.target.value })} placeholder="5432" />
+                  </Box>
+                </Box>
+                <Box className="login-grid">
+                  <Box>
+                    <Typography className="fl" component="label">数据库名</Typography>
+                    <TextField fullWidth size="small" value={db.database} onChange={(e) => setDb({ ...db, database: e.target.value })} placeholder="postgres" />
+                  </Box>
+                  <Box>
+                    <Typography className="fl" component="label">数据库用户名</Typography>
+                    <TextField fullWidth size="small" value={db.user} onChange={(e) => setDb({ ...db, user: e.target.value })} placeholder="postgres" />
+                  </Box>
+                </Box>
+                <Typography className="fl" component="label">数据库密码</Typography>
+                <TextField fullWidth size="small" type="password" value={db.password} onChange={(e) => setDb({ ...db, password: e.target.value })} placeholder="数据库连接密码（不是 Supabase 登录密码）" />
+                <FormControlLabel
+                  sx={{ mt: 0.5 }}
+                  control={<Checkbox size="small" checked={db.ssl} onChange={(e) => setDb({ ...db, ssl: e.target.checked })} />}
+                  label={<Typography sx={{ fontSize: 12, fontWeight: 700 }}>使用 SSL（Supabase 默认需要）</Typography>}
+                />
+                <Typography className="login-hint">连接成功后会在数据库中创建班级数据表；数据库密码只保存在本机配置文件中。</Typography>
+              </>
+            ) : null}
+            <Typography className="login-err">{storageErr}</Typography>
+            <Button className="btn login-submit" type="submit" disabled={busy === "storage"}>
+              {busy === "storage" ? "正在测试连接…" : "测试连接并锁定存储方式"}
+            </Button>
+          </Box>
+        ) : storageError ? (
+          <Box className="login-panel on" id="localStorageError">
+            <Typography className="login-hint">存储方式已经锁定，但数据库连接失败：</Typography>
+            <Typography sx={{ fontSize: 12, color: "#b23f3f", fontWeight: 700, lineHeight: 1.7, wordBreak: "break-word" }}>{storageError}</Typography>
+            <Button className="btn login-submit" sx={{ mt: 1.5 }} onClick={refreshConfig}>重试连接</Button>
+            <Typography className="login-hint">如连接地址或密码填错，需要停止服务后删除 backend/data/local-storage.json 重新选择存储方式。</Typography>
+          </Box>
+        ) : firstSetup ? (
           <Box className="login-panel on" component="form" id="localSetupForm" onSubmit={submitRegister}>
             <Typography className="login-hint">本机只能创建一个班级。创建后，本机将不再显示注册入口。</Typography>
             <Typography className="fl" component="label">班级名称（最多 10 个字符）</Typography>
@@ -265,7 +369,7 @@ export default function LoginPage() {
 
         <Typography className="login-foot">
           {isLocal ? (
-            <>本机单机模式 · 数据保存在本地 SQLite</>
+            <>本机单机模式 · {needsStorage ? "请选择存储方式" : storageError ? "数据库异常" : appConfig.storageMode === "supabase" ? "Supabase 数据库" : "本地 SQLite"}</>
           ) : (
             <><a href="#/super">总管理员控制台 →</a><br />总管理员账号只能通过后端控制台创建 · 数据保存到 MySQL</>
           )}

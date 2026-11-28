@@ -9,11 +9,11 @@ const { config } = require("./config");
 const localMode = !!config.local;
 let query = null;
 let localRouter = null;
-let localGetClass = null;
+let localStatus = null;
 if (localMode) {
   const local = require("./local/routes");
   localRouter = local.router;
-  localGetClass = local.getClass;
+  localStatus = local.getLocalStatus;
 } else {
   ({ query } = require("./db"));
 }
@@ -46,8 +46,8 @@ function createApp() {
   app.get("/api/health", async (req, res, next) => {
     try {
       if (localMode) {
-        const cls = localGetClass();
-        return res.json({ ok: true, service: "classpanel-local", mode: "local", classExists: !!cls, time: new Date().toISOString() });
+        const status = await localStatus();
+        return res.json({ ok: true, service: "classpanel-local", mode: "local", storageMode: status.storageMode, classExists: status.classExists, storageError: status.storageError, time: new Date().toISOString() });
       }
       await query("SELECT 1 AS ok");
       res.json({ ok: true, service: "classpanel-backend", mode: "cloud", time: new Date().toISOString() });
@@ -56,10 +56,14 @@ function createApp() {
     }
   });
 
-  app.get("/api/config", (req, res) => {
-    if (!localMode) return res.json({ mode: "cloud", classExists: null, className: null });
-    const cls = localGetClass();
-    return res.json({ mode: "local", classExists: !!cls, className: cls ? cls.name : null });
+  app.get("/api/config", async (req, res, next) => {
+    try {
+      if (!localMode) return res.json({ mode: "cloud", classExists: null, className: null });
+      const status = await localStatus();
+      return res.json({ mode: "local", ...status });
+    } catch (error) {
+      next(error);
+    }
   });
 
   if (localMode) {

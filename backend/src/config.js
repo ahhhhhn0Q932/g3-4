@@ -26,6 +26,7 @@ const config = {
   isProd,
   local: isLocal,
   localDbPath: process.env.LOCAL_DB_PATH || path.join(__dirname, "..", "data", "classpanel-local.sqlite"),
+  localConfigPath: process.env.LOCAL_CONFIG_PATH || path.join(__dirname, "..", "data", "local-storage.json"),
   frontendDist: path.join(__dirname, "..", "..", "frontend", "dist"),
   port: Number(process.env.PORT || (isLocal ? 3001 : 3001)),
   frontendPort: Number(process.env.FRONTEND_PORT || 5173),

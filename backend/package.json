@@ -2,7 +2,9 @@
   "name": "classpanel-backend",
   "version": "2.0.0",
   "private": true,
-  "engines": { "node": ">=24" },
+  "engines": {
+    "node": ">=24"
+  },
   "description": "ClassPanel 后端：MySQL 云端模式 / SQLite 本机单机模式 + Express",
   "main": "src/server.js",
   "scripts": {
@@ -30,6 +32,7 @@
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
     "mysql2": "^3.14.1",
+    "pg": "^8.16.3",
     "zod": "^3.25.28"
   }
 }

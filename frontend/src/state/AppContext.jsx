@@ -45,7 +45,7 @@ export function AppProvider({ children }) {
   const [store, setStore] = useState(loadCachedStore);
   const [session, setSession] = useState(storedSession);
   const [ready, setReady] = useState(false);
-  const [appConfig, setAppConfig] = useState({ mode: "cloud", classExists: null, className: null });
+  const [appConfig, setAppConfig] = useState({ mode: "cloud", classExists: null, className: null, storageConfigured: false, storageMode: null, storage: null, storageError: "" });
   const [configReady, setConfigReady] = useState(false);
   const [uiPrefs, setUiPrefs] = useState(loadPrefs);
   const [server, setServer] = useState({ revision: 0, lastSync: 0, error: "" });
@@ -215,7 +215,11 @@ export function AppProvider({ children }) {
       setAppConfig({
         mode: data && data.mode === "local" ? "local" : "cloud",
         classExists: data && data.mode === "local" ? !!data.classExists : null,
-        className: data && data.mode === "local" ? (data.className || "") : null
+        className: data && data.mode === "local" ? (data.className || "") : null,
+        storageConfigured: data && data.mode === "local" ? !!data.storageConfigured : true,
+        storageMode: data && data.mode === "local" ? (data.storageMode || null) : null,
+        storage: data && data.mode === "local" ? (data.storage || null) : null,
+        storageError: data && data.mode === "local" ? (data.storageError || "") : ""
       });
     } catch (e) {
       setAppConfig((prev) => (prev.mode ? prev : { mode: "cloud", classExists: null, className: null }));
@@ -250,6 +254,13 @@ export function AppProvider({ children }) {
     startPolling();
     setReady(true);
   }, [loadServerState, startPolling, toast]);
+
+  const configureStorage = useCallback(async (payload) => {
+    const data = await apiRequest("/local/storage", { public: true, method: "POST", body: payload });
+    await refreshConfig();
+    toast(data.storage && data.storage.mode === "supabase" ? "已连接 Supabase，存储方式已锁定" : "已选择本地 SQLite，存储方式已锁定", "💾");
+    return data;
+  }, [refreshConfig, toast]);
 
   const loginClass = useCallback(async (username, password) => {
     const data = await apiRequest("/auth/class/login", { public: true, method: "POST", body: { username, password } });
@@ -690,7 +701,7 @@ export function AppProvider({ children }) {
     boardDisplay, setBoardDisplay, boardHwLayout, setBoardHwLayout, boardDate, setBoardDate,
     tokens, tokensLoading, toastState, setToastState,
     className, classShort,
-    loginClass, loginGuest, registerClass, logout,
+    loginClass, loginGuest, registerClass, logout, configureStorage,
     update, saveSettings, saveGuestPerms, saveHomeSubjects,
     addHomework, editHomework, delHomework,
     addLeave, toggleLeave, delLeave,
@@ -713,7 +724,7 @@ export function AppProvider({ children }) {
   }), [
     store, session, role, isAdmin, isMember, isMain, ready, appConfig, configReady, refreshConfig, uiPrefs, server, now, boardDisplay, boardHwLayout,
     boardDate, tokens, tokensLoading, toastState, className, classShort,
-    loginClass, loginGuest, registerClass, logout, update, saveSettings, saveGuestPerms,
+    loginClass, loginGuest, registerClass, logout, configureStorage, update, saveSettings, saveGuestPerms,
     saveHomeSubjects, addHomework, editHomework, delHomework, addLeave, toggleLeave, delLeave,
     addReminder, toggleReminder, delReminder, addMessage, delMessage, addQuote, delQuote,
     nextQuote, favQuote, addLink, delLink, addIssue, delIssue, replyIssue, resolveIssue,
